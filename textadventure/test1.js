@@ -1,8 +1,13 @@
 import readline from "readline"
 let rooms = {
     start:{
-        look:`You are in a maze full of long twisty passages
-        There are hallways to the left and the right.
+        look:`
+        You find yourself in a dark maze with many long twisty passages.
+        You’re pretty sure this isn’t the mall anymore. You're definitely not
+        in Sears, at least. 
+        There is a dark hallway to the left. There is an even darker one to the right.
+        The narrator would suggest going back the way you came, but you can’t seem to
+        remember how you got here. So.. good luck?
         
         Type HELP or help to get help`,
         items:{},
@@ -23,8 +28,8 @@ let rooms = {
         look:`The passage leads to a larger more cavernous room, 
         probably made from an actual cavern. 
         Your first clue comes in the form of a bruise as you 
-        hit your head on a stalactite. In the middle of the 
-        room is a small table and chair with a book left open.
+        hit your head on a stalactite. *ouch* Try to be more careful, okay?
+        In the middle of the room is a small table and chair with a book on it.
         `,
         exits: {
             back:{
@@ -34,7 +39,14 @@ let rooms = {
         items:{
             book:{
                 use:"Most people use books by looking at them. What's your method?",
-                look:"yep, it's a book full of secrets"
+                look:`Yep, it's a book full of secrets. 
+                In an ancient cursed language. 
+                Probably best to put it down. But since you aren't a quick learner
+                let's take a look, shall we?
+                It mentions something about fire and heat is the only way to open ice and cold.
+                Fascinating. I'm sure that little tidbit of knowledge won't come in handy
+                later so you should probably just forget about it. kthxbye!
+                `
             },
             table:{
                 look:`It’s your basic wooden table. Four legs. 
@@ -111,11 +123,21 @@ function run_command(cmd, state, data) {
         l(`there is no ${cmd.target}`)
         return
     }
+    if(cmd.command === 'use') {
+        if(state.room.items[cmd.target]) {
+            let item = state.room.items[cmd.target]
+            console.log("the item is",item)
+            if(item.use) return l(item.use)
+
+        }
+        return l(`You can't use ${cmd.target}`)
+    }
     if(cmd.command === 'go') {
         if(state.room.exits[cmd.target]) {
             let exit = state.room.exits[cmd.target]
             if(!exit) return l(`there is no ${cmd.target}`)
             if(!exit.go) return l(`you can't go ${cmd.target}`)
+            l('')
             l(`going to`,exit)
             state.room = data[exit.go]
             l(state.room.look)
