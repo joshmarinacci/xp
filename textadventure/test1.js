@@ -56,23 +56,21 @@ function clean(str) {
 }
 function validate(rooms) {
     Object.keys(rooms).forEach(room_name => {
-        l('room',room_name)
+        // l('room',room_name)
         let room = rooms[room_name]
-        if(!room.exits) l("  missing exits")
-        if(!room.items) l("  missing items")
-        if(!room.look)  l("  room missing look")
+        if(!room.exits) l(`${room_name} missing exits`)
+        if(!room.items) l(`${room_name} missing items`)
+        if(!room.look)  l(`${room_name} missing look`)
         if(room.look) room.look = clean(room.look)
         Object.keys(room.exits).forEach(exit_name => {
             let exit = room.exits[exit_name]
-            l(`   exit ${exit_name}`)
-            if(!exit.look) l("     missing look")
+            if(!exit.look) l(`${room_name}.${exit_name} missing look`)
             if(exit.look) exit.look = clean(exit.look)
-            if(!exit.go)   l("     missing go")
+            if(!exit.go)   l(`${room_name}.${exit_name} missing go`)
         })
         Object.keys(room.items).forEach(item_name => {
             let item = room.items[item_name]
-            l(`   exit ${item_name}`)
-            if(!item.look) l("     missing look")
+            if(!item.look) l(`${room_name}.${item_name}  missing look`)
             if(item.look) item.look = clean(item.look)
         })
     })
