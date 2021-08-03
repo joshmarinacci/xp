@@ -20,7 +20,7 @@ let rooms = {
                 look:`Right: I’d look at the other one if I were you. 
                 Super dark. Like death metal dark. Seriously. 
                 Go left young man, go left.`,
-                go:'house',
+                go:'forest',
             }
         }
     },
@@ -57,7 +57,78 @@ let rooms = {
                 use: 'The chair shatters into a bunch of future splinters. I told you.'
             }
         }
+    },
+    forest:{
+        look:`You’re pretty sure this passage leads to certain doom, 
+            but you go anyway. What’s up with that? 
+            After a few minutes of following the path with your dying 
+            flashlight you enter a clearing with an old farmhouse in the 
+            middle of it. The thick trees leave no way around it. 
+            It’s either the house or return down the path.
+        `,
+        items:{
+            tree:{
+                look:`Pine, fir, and other random evergreens. 
+                    They don’t give a clue as to your present location. 
+                    Better focus on the house, dude.`
+            }
+        },
+        exits:{
+            back:{
+                go:'start',
+                look:`Yep, the same path you came on. Just as you remembered it 
+                all those many seconds ago.  `
+            },
+            house:{
+                go:'house',
+                look:`Hoo boy. It’s creepy. You’re pretty sure it was used as a set 
+                from an 80s horror movie. One of those cheap ones where you can see 
+                the sound guy off screen.`
+            }
+        }
+    },
+    house:{
+        look:`You enter the house, being sure to knock first and completely 
+            ignoring the No Trespass'n sign. Inside you see an old couch, a fireplace, 
+            and door to a kitchen.`,
+        items:{
+            couch:{
+                look:`The couch looks like it hasn't been dusted in a few centuries. 
+                You decide not to sit on it. I commend your choice.`
+            },
+            sign:{
+                look:`It's a badly handdrawn sign on a scrap of plywood. 
+                Smells of tar. You decide to take a step back.`
+            },
+            door:{
+                look:`Jeez. Do I have to describe everything for you?
+                Okay, fine! It's a, um, brown wood door. Ya happy?`
+            },
+            fireplace:{
+                look:`The fireplace`,
+            },
+            key:{
+                look:'key',
+                take:true,
+            }
+        },
+        exits:{
+            back:{
+                go:'forest'
+            },
+            door: {
+                go:'kitchen'
+            }
+        }
+    },
+    kitchen:{
+        look:`The kitchen contains an old fridge slightly ajar. 
+            You can see light coming from within. But it appears to be loosely
+            locked with a padlock and chains. You might be able to break it or
+            open it some how. You wonder what, or who, the fridge is being
+            protected from.`
     }
+
 }
 
 function l(...args) {
