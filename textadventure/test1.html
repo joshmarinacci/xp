@@ -1,0 +1,87 @@
+<html>
+
+<head>
+    <title></title>
+    <style type="text/css">
+        body {
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            line-height: 150%;
+            font-size: 1.5rem;
+            margin: auto;
+        }
+
+        #main {
+            max-width: 40em;
+            border: 0px solid green;
+        }
+
+        #scrollback {
+            font-size: 100%;
+            padding: 0.5em;
+            min-height: 50vh;
+            max-height: 50vh;
+            border: 0px solid black;
+            background-color: #f0f0f0;
+            overflow-y: scroll;
+        }
+
+        #scrollback p {
+            border: 0px solid rgb(250, 218, 149);
+            padding: 1em;
+            background-color: #e0e0e0;
+        }
+
+        #wrapper {
+            display: flex;
+            flex-direction: row;
+            border: 1px solid black;
+            margin: 0.5rem;
+            padding: 0rem;
+        }
+
+        #input {
+            font-size: 100%;
+            width: 100%;
+        }
+
+        button {
+            font-size: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main">
+        <div id="scrollback"></div>
+        <div id="wrapper">
+            <input type="text" name="input" id="input">
+            <button>go</button>
+        </div>
+    </div>
+</body>
+<script src="gamev1.js" type="module"></script>
+<script type="module">
+    import { GameEngine } from "./gamev1.js"
+    const $ = (sel) => document.querySelector(sel)
+    const on = (el, type, cb) => el.addEventListener(type, cb)
+
+    let ge = new GameEngine()
+
+    const append = (txt) => {
+        let p = document.createElement("p")
+        p.innerHTML = txt
+        $("#scrollback").appendChild(p)
+    }
+
+    append(ge.startText())
+    on($("#input"), "change", () => {
+        console.log("pressed input", $("#input").value)
+        append(ge.run($("#input").value))
+        $("#scrollback").scrollTop = $("#scrollback").scrollHeight
+        $("#input").value = ""
+
+    })
+
+</script>
+
+</html>
