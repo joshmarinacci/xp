@@ -6,21 +6,23 @@
     <style type="text/css">
         body {
             font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-            line-height: 150%;
+            line-height: 140%;
             font-size: 1.5rem;
-            margin: auto;
         }
 
         #main {
             max-width: 40em;
             border: 0px solid green;
+            margin: auto;
         }
 
         #scrollback {
             font-size: 100%;
-            padding: 0.5em;
+            padding: 0em;
+            margin: 0;
             min-height: 50vh;
-            max-height: 50vh;
+            height: 60vh;
+            max-height: 80vh;
             border: 0px solid black;
             background-color: #f0f0f0;
             overflow-y: scroll;
@@ -29,31 +31,49 @@
         #scrollback p {
             border: 0px solid rgb(250, 218, 149);
             padding: 1em;
+            margin: 1em;
             background-color: #e0e0e0;
+        }
+
+        #scrollback p.output {
+            background-color: #e0e0e0;
+        }
+
+        #scrollback p.input {
+            background-color: #faeba7;
         }
 
         #wrapper {
             display: flex;
             flex-direction: row;
             border: 1px solid black;
-            margin: 0.5rem;
+            margin: 0rem;
             padding: 0rem;
         }
 
         #input {
             font-size: 100%;
             width: 100%;
+            margin: 0;
         }
 
         button {
             font-size: 100%;
+            margin: 0;
         }
     </style>
 </head>
 
 <body>
+    <h1>Text Adventure Prototype</h1>
     <div id="main">
-        <div id="scrollback"></div>
+        <div id="scrollback">
+            <p class="output">Welcome to your adventure. You can type commands like <code>look</code>
+                to look at where you are, or <code>look candle</code> to look at a candle
+                in the room (if there is one). And you can always type <code>help</code>
+                to get help.
+            </p>
+        </div>
         <div id="wrapper">
             <input type="text" name="input" id="input">
             <button>go</button>
@@ -68,20 +88,24 @@
 
     let ge = new GameEngine()
 
-    const append = (txt) => {
+    const append = (txt, cls) => {
         let p = document.createElement("p")
         p.innerHTML = txt
+        p.classList.add(cls)
         $("#scrollback").appendChild(p)
     }
 
     append(ge.startText())
     on($("#input"), "change", () => {
         console.log("pressed input", $("#input").value)
-        append(ge.run($("#input").value))
+        append($("#input").value, 'input')
+        append(ge.run($("#input").value), 'output')
         $("#scrollback").scrollTop = $("#scrollback").scrollHeight
         $("#input").value = ""
 
     })
+
+    $("#input").focus()
 
 </script>
 

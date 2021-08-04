@@ -7,8 +7,7 @@ let rooms = {
         There is a dark hallway to the left. There is an even darker one to the right.
         The narrator would suggest going back the way you came, but you can’t seem to
         remember how you got here. So.. good luck?
-        
-        Type HELP or help to get help`,
+        `,
         items: {},
         exits: {
             left: {
@@ -52,8 +51,8 @@ let rooms = {
                 Strong enough to hold up a plot device but little more.`
             },
             chair: {
-                look: 'Look: the chair looks pretty rickety. I wouldn’t suggest using it.',
-                use: 'The chair shatters into a bunch of future splinters. I told you.'
+                look: 'The chair looks pretty rickety. I wouldn’t suggest using it.',
+                use: 'The chair shatters into a bunch of future splinters. I told you. You players never listen to me. Brain the size of a galaxy....'
             }
         }
     },
@@ -99,10 +98,6 @@ let rooms = {
                 look: `It's a badly handdrawn sign on a scrap of plywood. 
                 Smells of tar. You decide to take a step back.`
             },
-            door: {
-                look: `Jeez. Do I have to describe everything for you?
-                Okay, fine! It's a, um, brown wood door. Ya happy?`
-            },
             fireplace: {
                 look: `The fireplace`,
             },
@@ -116,6 +111,8 @@ let rooms = {
                 go: 'forest'
             },
             door: {
+                look: `Jeez. Do I have to describe everything for you?
+                    Okay, fine! It's a, um, brown wood door. Ya happy?`,
                 go: 'kitchen'
             }
         }
@@ -125,7 +122,9 @@ let rooms = {
             You can see light coming from within. But it appears to be loosely
             locked with a padlock and chains. You might be able to break it or
             open it some how. You wonder what, or who, the fridge is being
-            protected from.`
+            protected from.`,
+        exits: {},
+        items: {},
     }
 
 }
@@ -209,6 +208,9 @@ function run_command(cmd, state, data) {
             if (!exit.go) return `you can't go ${cmd.target}`
             state.room = data[exit.go]
             return state.room.look
+        } else {
+            return `There is no ${cmd.target}. 
+            Try going to one of: ${Object.keys(state.room.exits).join(", ")}.`
         }
     }
     return `What is ${cmd.command}?`
