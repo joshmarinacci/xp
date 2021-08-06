@@ -44,7 +44,8 @@ let rooms = {
                 It mentions something about fire and heat is the only way to open ice and cold.
                 Fascinating. I'm sure that little tidbit of knowledge won't come in handy
                 later so you should probably just forget about it. kthxbye!
-                `
+                `,
+                take:true
             },
             table: {
                 look: `It’s your basic wooden table. Four legs. 
@@ -99,10 +100,16 @@ let rooms = {
                 Smells of tar. You decide to take a step back.`
             },
             fireplace: {
-                look: `The fireplace`,
+                look: `The fireplace clearly hasn't been used in ages, nor cleaned. As you scour the soot without 
+                touching you see a tiny glint of metal. A key perhaps? Gum wrappers? Tiny crashed UFO? 
+                However will you find out?!`,
             },
             key: {
-                look: 'key',
+                look: `You find a rusted key with wear marks on the shaft. Someone has recently used the 
+                key then rehidden it. Why, you ask yourself? Why are you wasting
+                a perfectly good saturday afternoon playing this game. That's an excellent question.
+                In any case, you think you can take the key as long as you don't care about dirty hands.
+                `,
                 take: true,
             }
         },
@@ -120,11 +127,102 @@ let rooms = {
     kitchen: {
         look: `The kitchen contains an old fridge slightly ajar. 
             You can see light coming from within. But it appears to be loosely
-            locked with a padlock and chains. You might be able to break it or
-            open it some how. You wonder what, or who, the fridge is being
-            protected from.`,
-        exits: {},
-        items: {},
+            locked with a padlock and chains. Otherwise the kitchen is empty except for a dusty cupboard to the side.`,
+        exits: {
+            cupboard: {
+                look:'A cupboard even dustier than the fridge. Go check it out.',
+                go:`cupboard`,
+            },
+            fridge: {
+                look:`a smelly old fridge. Gonna go there?`,
+                go:`fridge`,
+            },
+            door: {
+                look:'the door that goes back to the front room',
+                go:`kitchen`,
+            }
+        },
+        items:{},
+    },
+    fridge:{
+        look:`You examine the chain and lock on the fridge. Fascinating, captain! 
+                You might be able to break the chain or open it some how. 
+                You wonder what, or who, the fridge is being
+                protected from.`,
+        exits:{
+            cupboard: {
+                look:'A cupboard even dustier than the fridge. Go check it out.',
+                go:`cupboard`,
+            },
+            kitchen: {
+                look:`The rest of the dusty old kitchen.`,
+                go:`kitchen`,
+            }
+        },
+        items: {
+            chain:{
+                look:`Yep, it's chain with a lock. Got a hole. If only you had a key. Hmm. If only. Anyway, TTFN.`,
+            },
+            pudding: {
+                look:`"Hey!" the pudding says. "Hey! You there!" \n\n
+                You stutter and stammer and stare at the quivering mass of stuff that should not be.
+                "Hey man. Can you get me some whip cream?" it asks.
+                `,
+            },
+        },
+        actions: {
+            'key': {
+                look: `You place the key in the lock, twist, and the chains clatter to the floor. The stanky fridge opens and
+                        you look within. \n\n The horror. The horror!\n\n You see a giant blob of quivering brown goo... oh wait. 
+                        Nevermind. It's just a vat of pudding. The pudding says hi.`,
+                use: {
+                    target: 'fridge',
+                    set: {
+                        key: 'look',
+                        value: 'The fridge is open and contains a vat of talking pudding. Now *thats* not something you see every day.'
+                    }
+                }
+            },
+            'cream':{
+                look:`You spray whipped cream on the pudding. "Ah", it says. "That feels better. 
+                I was burning up here!"
+                Suddenly the light in the fridge begins to brighten, becoming more and more glaring until
+                it overwhelms your senses.  You feel a pain in your head and drop to the floor, holding
+                your ears and squeezing your eyes tightly closed.
+                When the pain finally ends you open your eyes and see you are back in the appliances
+                department. You walk around, feeling the fresh spring air and pushing buttons on
+                a near by stove.  It feels good to be back in the real world.  The lights on the stove begin
+                to glow and you smell the scent of whipped cream.. Then it hits you.
+                 Sears went bankrupt years ago. Where are you really?!!!
+                 
+                \n\n
+                The End?  
+                `
+            }
+        },
+    },
+    cupboard: {
+        look:`The cupboard is empty except for a spray can of whipp-ed cream. Dust everywhere. Like serious. 
+        Who owns this dump? Clearly someone who likes their cream to be whipped.`,
+        items:{
+            cream: {
+                look:`Dispite the dust surrounding every surface of the cupboard, the can itself is both clean and still chilled.
+                Clearly the work of the devil. I've seen these kinds of things before. Back in
+                my day we used to call it Devil Whip, because that was.... You know what? Nevermind. 
+                No more long rambling stories for you.`,
+                take:true,
+            }
+        },
+        exits:{
+            kitchen: {
+                look:'Still a kitchen.',
+                go:'kitchen',
+            },
+            fridge:{
+                look:"The fridge is still there. What are you going to do about it?",
+                go:'fridge',
+            }
+        }
     }
 
 }
@@ -190,16 +288,60 @@ function run_command(cmd, state, data) {
             if (!exit.look) return `it's a ${cmd.target}. that's all`
             return exit.look
         }
+        //check bag
+        if (state.bag[cmd.target]) {
+            let item = state.bag[cmd.target]
+            if (!item.look) return `it's a ${cmd.target}. that's all`
+            return item.look
+        }
+
         //look at the room itself
         if (!cmd.target || cmd.target === 'room') return state.room.look
         return `There is no ${cmd.target}`
     }
     if (cmd.command === 'use') {
+        //check the room for an item to use
         if (state.room.items[cmd.target]) {
             let item = state.room.items[cmd.target]
             if (item.use) return item.use
         }
+        //check the bag for an item to use
+        if (state.bag[cmd.target]) {
+            let item = state.bag[cmd.target]
+            //check if you can use the item
+            if(item.use) {
+                return `using ${cmd.target}`
+            }
+            //check if the room has an action to use the item
+            let action = state.room.actions[cmd.target]
+            if(action) {
+                console.log("we have a valid action",action)
+                //do the action
+                console.log("doing ",action.use)
+                if(action.use && action.use.set) {
+                    let target = data[action.use.target]
+                    target[action.use.set.key] = action.use.set.value
+                }
+                //return the look
+                return action.look
+            }
+
+        }
         return `You can't use ${cmd.target}`
+    }
+    if (cmd.command === 'take') {
+        if (state.room.items[cmd.target]) {
+            let item = state.room.items[cmd.target]
+            console.log("Item is",item)
+            if (item.take) {
+                state.bag[cmd.target] = item
+                return `You put the ${cmd.target} in your bag.`
+            }
+        }
+        return `You can't take ${cmd.target}.`
+    }
+    if (cmd.command === 'bag') {
+        return `Your bag contains ${Object.keys(state.bag).join(", ")}`
     }
     if (cmd.command === 'go') {
         if (state.room.exits[cmd.target]) {
@@ -209,7 +351,7 @@ function run_command(cmd, state, data) {
             state.room = data[exit.go]
             return state.room.look
         } else {
-            return `There is no ${cmd.target}. 
+            return `You can't go to the ${cmd.target}. 
             Try going to one of: ${Object.keys(state.room.exits).join(", ")}.`
         }
     }
@@ -222,7 +364,7 @@ export class GameEngine {
         validate(rooms)
         this.state = {
             room: rooms.start,
-            bag: []
+            bag: {}
         }
 
     }
