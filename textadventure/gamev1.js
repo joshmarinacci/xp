@@ -256,6 +256,7 @@ function validate(rooms) {
         }
         if (!room.look) l(`${room_name} missing look`)
         if (room.look) room.look = clean(room.look)
+        if (!room.actions) l(`${room_name} missing actions`)
     })
     l("========== WELCOME =========")
 }
@@ -313,17 +314,19 @@ function run_command(cmd, state, data) {
                 return `using ${cmd.target}`
             }
             //check if the room has an action to use the item
-            let action = state.room.actions[cmd.target]
-            if(action) {
-                console.log("we have a valid action",action)
-                //do the action
-                console.log("doing ",action.use)
-                if(action.use && action.use.set) {
-                    let target = data[action.use.target]
-                    target[action.use.set.key] = action.use.set.value
+            if(state.room.actions) {
+                let action = state.room.actions[cmd.target]
+                if (action) {
+                    console.log("we have a valid action", action)
+                    //do the action
+                    console.log("doing ", action.use)
+                    if (action.use && action.use.set) {
+                        let target = data[action.use.target]
+                        target[action.use.set.key] = action.use.set.value
+                    }
+                    //return the look
+                    return action.look
                 }
-                //return the look
-                return action.look
             }
 
         }
