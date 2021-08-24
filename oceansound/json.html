@@ -160,15 +160,15 @@
         return o
     }
 
-    function makeNoise(nd,ac) {
-        const size = ac.sampleRate*2.5
-        const buffer = ac.createBuffer(1,size,ac.sampleRate)
+    function makeNoise(nd,ctx) {
+        const size = ctx.sampleRate*2.5
+        const buffer = ctx.createBuffer(1,size,ctx.sampleRate)
         let data = buffer.getChannelData(0)
         for(let i=0; i<size; i++) data[i] = Math.random()*2-1
-        let noise = ac.createBufferSource()
+        let noise = ctx.createBufferSource()
         noise.loop = true
         noise.buffer = buffer
-        let bandpass = ac.createBiquadFilter()
+        let bandpass = ctx.createBiquadFilter()
         bandpass.type = 'bandpass'
         bandpass.frequency.value = 100 // 1000 hz
         noise.connect(bandpass)
@@ -176,36 +176,33 @@
         bandpass.name = nd.name
         return bandpass
     }
+
+    function start(o) {
+        o.start()
+        return o
+    }
     const NODE_MAP = {
-        'Noise':(nd,ac)=> makeNoise(nd,ac),
-        'Gain':(nd,ac) => copy_keys(nd,ac.createGain()),
-        'Oscillator':(nd,ac) => {
-            let o = copy_keys(nd,ac.createOscillator())
-            o.start()
-            return o
-        },
-        'Destination':(nd,ac) => copy_keys(nd,ac.destination),
+        'Noise':(n,c)=> makeNoise(n,c),
+        'Gain':(n,c) => copy_keys(n,c.createGain()),
+        'Oscillator':(n,c) => start(copy_keys(n,c.createOscillator())),
+        'Destination':(n,c) => copy_keys(n,c.destination),
     }
 
     function build_graph() {
         console.log("test graph is", test_graph)
-        let map = {}
-        let connections = []
+        let nodes = {}
+        let conns = []
         test_graph.elements.forEach(nd => {
-            if(!nd.type) return connections.push(nd)
-            if(nd.type === 'default') return connections.push(nd)
-            map[nd.id] = NODE_MAP[nd.type](nd,ac)
+            if(!nd.type) return conns.push(nd)
+            if(nd.type === 'default') return conns.push(nd)
+            nodes[nd.id] = NODE_MAP[nd.type](nd,ac)
         })
-        connections.forEach(con => {
-            let src = map[con.source]
-            let tar = map[con.target]
-            if(con.targetHandle !== 'input') {
-                src.connect(tar[con.targetHandle])
-            } else {
-                src.connect(tar)
-            }
+        conns.forEach(con => {
+            let src = nodes[con.source]
+            let tar = nodes[con.target]
+            if(con.targetHandle !== 'input') tar = tar[con.targetHandle]
+            src.connect(tar)
         })
-        console.log(map)
     }
 
     on($("#play"), 'click', build_graph)
