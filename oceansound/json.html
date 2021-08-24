@@ -188,11 +188,11 @@
         'Destination':(n,c) => copy_keys(n,c.destination),
     }
 
-    function build_graph() {
-        console.log("test graph is", test_graph)
+    function build_graph(json) {
+        console.log("test graph is", json)
         let nodes = {}
         let conns = []
-        test_graph.elements.forEach(nd => {
+        json.elements.forEach(nd => {
             if(!nd.type) return conns.push(nd)
             if(nd.type === 'default') return conns.push(nd)
             nodes[nd.id] = NODE_MAP[nd.type](nd,ac)
@@ -205,7 +205,7 @@
         })
     }
 
-    on($("#play"), 'click', build_graph)
+    on($("#play"), 'click', ()=>build_graph(test_graph))
 
 </script>
 
