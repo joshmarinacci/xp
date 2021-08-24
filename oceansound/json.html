@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<button id="play">play</button>
+
+<script type="module">
+    const $ = (sel) => document.querySelector(sel)
+    const on = (el, type, cb) => el.addEventListener(type, cb)
+
+    let test_graph = {
+        "elements": [
+            {
+                "id": "Noise-d71359ab-4544-4e22-b3e1-39b1d0654ad5",
+                name:"noise",
+                "data": {
+                    "type": "Brown"
+                },
+                "type": "Noise",
+                "position": {
+                    "x": 70,
+                    "y": 50
+                }
+            },
+            {
+                "name":"main",
+                "id": "Gain-a38310ce-6d4a-4625-a417-32ff99e7175d",
+                "data": {
+                    "gain": 0.1950689964685901
+                },
+                "type": "Gain",
+                "position": {
+                    "x": 470,
+                    "y": 50
+                }
+            },
+            {
+                "name":"sine wave",
+                "id": "Oscillator-6ece3d5c-7b2c-4651-b091-7ea2380ec0a0",
+                "data": {
+                    "frequency": 0.1,
+                    "type": "sine"
+                },
+                "type": "Oscillator",
+                "position": {
+                    "x": 70,
+                    "y": 210
+                }
+            },
+            {
+                "name":"sine osc",
+                "id": "Gain-4bf96fc2-75f8-43d3-a9ea-b561612564d9",
+                "data": {
+                    "gain": 0.15
+                },
+                "type": "Gain",
+                "position": {
+                    "x": 280,
+                    "y": 210
+                }
+            },
+            {
+                "name":"main gain",
+                "id": "Gain-56cbe91d-5927-4bd1-8cb7-1dec4a03c0f0",
+                "data": {
+                    "gain": 0.1476763242410987
+                },
+                "type": "Gain",
+                "position": {
+                    "x": 650,
+                    "y": 50
+                }
+            },
+            {
+                "name":"speaker",
+                "id": "Destination-69b9b5dc-6919-48e8-9636-8c8a25caa385",
+                "data": {},
+                "type": "Destination",
+                "position": {
+                    "x": 830,
+                    "y": 50
+                }
+            },
+            {
+                "source": "Noise-d71359ab-4544-4e22-b3e1-39b1d0654ad5",
+                "sourceHandle": "output",
+                "target": "Gain-a38310ce-6d4a-4625-a417-32ff99e7175d",
+                "targetHandle": "input",
+                "style": {
+                    "stroke": "#654ad5"
+                },
+                "id": "reactflow__edge-Noise-d71359ab-4544-4e22-b3e1-39b1d0654ad5output-Gain-a38310ce-6d4a-4625-a417-32ff99e7175dinput",
+                "type": "default"
+            },
+            {
+                "source": "Oscillator-6ece3d5c-7b2c-4651-b091-7ea2380ec0a0",
+                "sourceHandle": "output",
+                "target": "Gain-4bf96fc2-75f8-43d3-a9ea-b561612564d9",
+                "targetHandle": "input",
+                "style": {
+                    "stroke": "#0ec0a0"
+                },
+                "id": "reactflow__edge-Oscillator-6ece3d5c-7b2c-4651-b091-7ea2380ec0a0output-Gain-4bf96fc2-75f8-43d3-a9ea-b561612564d9input",
+                "type": "default"
+            },
+            {
+                "source": "Gain-4bf96fc2-75f8-43d3-a9ea-b561612564d9",
+                "sourceHandle": "output",
+                "target": "Gain-a38310ce-6d4a-4625-a417-32ff99e7175d",
+                "targetHandle": "gain",
+                "style": {
+                    "stroke": "#2564d9"
+                },
+                "id": "reactflow__edge-Gain-4bf96fc2-75f8-43d3-a9ea-b561612564d9output-Gain-a38310ce-6d4a-4625-a417-32ff99e7175dgain",
+                "type": "default"
+            },
+            {
+                "source": "Gain-56cbe91d-5927-4bd1-8cb7-1dec4a03c0f0",
+                "sourceHandle": "output",
+                "target": "Destination-69b9b5dc-6919-48e8-9636-8c8a25caa385",
+                "targetHandle": "input",
+                "style": {
+                    "stroke": "#03c0f0"
+                },
+                "id": "reactflow__edge-Gain-56cbe91d-5927-4bd1-8cb7-1dec4a03c0f0output-Destination-69b9b5dc-6919-48e8-9636-8c8a25caa385input",
+                "type": "default"
+            },
+            {
+                "source": "Gain-a38310ce-6d4a-4625-a417-32ff99e7175d",
+                "sourceHandle": "output",
+                "target": "Gain-56cbe91d-5927-4bd1-8cb7-1dec4a03c0f0",
+                "targetHandle": "input",
+                "style": {
+                    "stroke": "#e7175d"
+                },
+                "id": "reactflow__edge-Gain-a38310ce-6d4a-4625-a417-32ff99e7175doutput-Gain-56cbe91d-5927-4bd1-8cb7-1dec4a03c0f0input"
+            }
+        ],
+        "id": "4b5cf8bc-51f8-470a-b5c5-0afab3573340",
+        "transform": {
+            "x": -40.24076281287239,
+            "y": 270.7896305125149,
+            "zoom": 1.434608299924152
+        }
+    }
+    const ac = new AudioContext()
+
+    function copy_keys(nd,o) {
+        Object.keys(nd.data).forEach(key => {
+            if(key === 'type') {
+                o[key] = nd.data[key]
+            } else {
+                o[key].value = nd.data[key]
+            }
+        })
+        o.name = nd.name
+        return o
+    }
+
+    function makeNoise(nd,ac) {
+        const size = ac.sampleRate*2.5
+        const buffer = ac.createBuffer(1,size,ac.sampleRate)
+        let data = buffer.getChannelData(0)
+        for(let i=0; i<size; i++) data[i] = Math.random()*2-1
+        let noise = ac.createBufferSource()
+        noise.loop = true
+        noise.buffer = buffer
+        let bandpass = ac.createBiquadFilter()
+        bandpass.type = 'bandpass'
+        bandpass.frequency.value = 100 // 1000 hz
+        noise.connect(bandpass)
+        noise.start()
+        bandpass.name = nd.name
+        return bandpass
+    }
+    const NODE_MAP = {
+        'Noise':(nd,ac)=> makeNoise(nd,ac),
+        'Gain':(nd,ac) => copy_keys(nd,ac.createGain()),
+        'Oscillator':(nd,ac) => {
+            let o = copy_keys(nd,ac.createOscillator())
+            o.start()
+            return o
+        },
+        'Destination':(nd,ac) => copy_keys(nd,ac.destination),
+    }
+
+    function build_graph() {
+        console.log("test graph is", test_graph)
+        let map = {}
+        let connections = []
+        test_graph.elements.forEach(nd => {
+            if(!nd.type) return connections.push(nd)
+            if(nd.type === 'default') return connections.push(nd)
+            map[nd.id] = NODE_MAP[nd.type](nd,ac)
+        })
+        connections.forEach(con => {
+            let src = map[con.source]
+            let tar = map[con.target]
+            if(con.targetHandle !== 'input') {
+                src.connect(tar[con.targetHandle])
+            } else {
+                src.connect(tar)
+            }
+        })
+        console.log(map)
+    }
+
+    on($("#play"), 'click', build_graph)
+
+</script>
+
+</body>
+</html>
