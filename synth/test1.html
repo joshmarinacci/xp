@@ -1,9 +1,19 @@
 <html>
     <body>
         <h1>synth test 1 for ToneJS</h1>
+
+        <button id="tone-play-toggle">play</button>
+        <script src="node_modules/tone/build/Tone.js"></script>
         <script type="module">
 
 console.log("inside of a web page")
+
+const synth = new Tone.PolySynth(Tone.Synth, {
+			oscillator: {
+				partials: [0, 2, 3, 4],
+			}
+		}).toDestination();
+synth.set({ detune: -1200 });
 
 const keys = new Tone.Players({
     urls: {
@@ -16,12 +26,26 @@ const keys = new Tone.Players({
     baseUrl: "https://tonejs.github.io/audio/casio/"
 }).toDestination();
 
-document.querySelector("tone-play-toggle").addEventListener("start", () => Tone.Transport.start());
-document.querySelector("tone-play-toggle").addEventListener("stop", () => Tone.Transport.stop());
-document.querySelector("tone-slider").addEventListener("input", (e) => Tone.Transport.bpm.value = parseFloat(e.target.value));
-document.querySelector("tone-step-sequencer").addEventListener("trigger", ({ detail }) => {
-    keys.player(detail.row).start(detail.time, 0, "16t");
-});
+const $ = (sel) => document.querySelector(sel)
+const on = (el, type, cb) => el.addEventListener(type,cb)
+
+on($("#tone-play-toggle"),'click',() => {
+    Tone.Transport.scheduleRepeat((time)=> {
+        console.log("ticking")
+        synth.triggerAttackRelease(["C4","E4","A4"],['4n'])
+    },"2n")
+    Tone.Transport.toggle();
+
+})
+
+//document.querySelector("tone-play-toggle").addEventListener("start", () => Tone.Transport.start());
+// document.querySelector("tone-play-toggle").addEventListener("stop", () => Tone.Transport.stop());
+// document.querySelector("tone-slider").addEventListener("input", (e) => Tone.Transport.bpm.value = parseFloat(e.target.value));
+// document.querySelector("tone-step-sequencer").addEventListener("trigger", ({ detail }) => {
+    // keys.player(detail.row).start(detail.time, 0, "16t");
+// });
+
+
 
 
         </script>
