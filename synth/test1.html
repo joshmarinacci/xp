@@ -1,4 +1,31 @@
 <html>
+    <head>
+        <style lang="text/css">
+        .grid {
+            border: 1px solid black;
+            display: grid;
+            grid-template-columns: repeat(8, 40px);
+            grid-template-rows: repeat(4, 40px);
+            width: calc(8*40px);
+        }
+        .note {
+            /* width: 10px; */
+            /* height: 40px; */
+            border: 1px solid black;
+            border-width: 0 1px 1px 0;
+            background-color: white;
+        }
+        .note.on {
+            background-color: red;
+        }
+        .note.active {
+            background-color: aqua;
+        }
+        .note.on.active {
+            background-color: blue;
+        }
+        </style>
+    </head>
     <body>
         <h1>synth test 1 for ToneJS</h1>
 
@@ -6,36 +33,112 @@
         <script src="node_modules/tone/build/Tone.js"></script>
         <script type="module">
 
-console.log("inside of a web page")
-
 const synth = new Tone.PolySynth(Tone.Synth, {
-			oscillator: {
-				partials: [0, 2, 3, 4],
-			}
-		}).toDestination();
+    oscillator: {
+        partials: [0, 2, 3, 4],
+    }
+}).toDestination();
 synth.set({ detune: -1200 });
 
-const keys = new Tone.Players({
-    urls: {
-        0: "A1.mp3",
-        1: "Cs2.mp3",
-        2: "E2.mp3",
-        3: "Fs2.mp3",
-    },
-    fadeOut: "64n",
-    baseUrl: "https://tonejs.github.io/audio/casio/"
-}).toDestination();
+class Grid {
+    constructor(w,h) {
+        this.w = w
+        this.h = h
+        this.data = new Array(w*h)
+        this.data.fill(0)
+    }
+    mapAll(cb) {
+        for(let y=0; y<this.h; y++) {
+            for(let x=0; x<this.w; x++) {
+                this.set(x,y,cb(x,y,this.get(x,y)))
+            }
+        }
+    }
+    forColumn(c,cb) {
+        for(let y=0; y<this.h; y++) {
+            cb(c,y,this.get(c,y))
+        }
+    }
+    get(x,y) {
+        return this.data[this.xy2n(x,y)]
+    }
+    set(x,y,value) {
+        this.data[this.xy2n(x,y)] = value
+    }
+    xy2n(x,y) {
+        return y*this.w+x
+    }
+}
+
+let grid = new Grid(8,4)
+grid.mapAll((x,y,v) => ({
+    on:false,
+    active:false,
+}))
+
+const toggle_step = (e) => {
+    let x = parseInt(e.target.getAttribute("data-x"))
+    let y = parseInt(e.target.getAttribute("data-y"))
+    console.log("toggling the step",x,y,typeof x)
+    let v = grid.get(x,y)
+    v.on = !v.on
+    grid.set(x,y,v)
+    console.log(grid.get(x,y))
+    if(v.on) e.target.classList.add('on')
+    if(!v.on) e.target.classList.remove('on')
+}
+
+function highlight_column(c,active) {
+    for(let i=0; i<grid.h; i++) {
+        let v = grid.get(c,i)
+        v.active = active
+        if(v.active) v.dom.classList.add("active")
+        if(!v.active) v.dom.classList.remove("active")
+    }
+}
+
+function make_sequencer(grid) {
+    let wrapper = document.createElement('div')
+    wrapper.classList.add("grid")
+    for(let y=0; y<grid.h; y++) {
+        for(let x=0; x<grid.w; x++) {
+            let cell = document.createElement('div')
+            cell.classList.add("note")
+            cell.setAttribute("data-x",x)
+            cell.setAttribute("data-y",y)
+            cell.addEventListener('mousedown',toggle_step)
+            wrapper.appendChild(cell)
+            grid.get(x,y).dom = cell
+        }
+    }
+    document.body.appendChild(wrapper)
+}
+
+make_sequencer(grid)
+// highlight_column(2,true)
 
 const $ = (sel) => document.querySelector(sel)
 const on = (el, type, cb) => el.addEventListener(type,cb)
+let notes = ["C4",'E4','G4',"A4"]
+notes = notes.reverse()
+let count = 0
+Tone.Transport.scheduleRepeat((time)=> {
+        let col = count%grid.w
+        let old = col-1
+        if(old <0) old = grid.w-1
+        highlight_column(old,false)
+        highlight_column(col,true)
+
+        let selected = []
+        grid.forColumn(col,(x,y,v)=>{
+            if(v.on) selected.push(notes[y])
+        })
+        synth.triggerAttackRelease(selected,"4n")
+        count++
+    },"4n")
 
 on($("#tone-play-toggle"),'click',() => {
-    Tone.Transport.scheduleRepeat((time)=> {
-        console.log("ticking")
-        synth.triggerAttackRelease(["C4","E4","A4"],['4n'])
-    },"2n")
     Tone.Transport.toggle();
-
 })
 
 //document.querySelector("tone-play-toggle").addEventListener("start", () => Tone.Transport.start());
