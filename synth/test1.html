@@ -6,7 +6,6 @@
             display: grid;
             grid-template-columns: repeat(8, 40px);
             grid-template-rows: repeat(4, 40px);
-            width: calc(8*40px);
         }
         .note {
             /* width: 10px; */
@@ -33,12 +32,13 @@
         <script src="node_modules/tone/build/Tone.js"></script>
         <script type="module">
 
-const synth = new Tone.PolySynth(Tone.Synth, {
-    oscillator: {
-        partials: [0, 2, 3, 4],
-    }
-}).toDestination();
-synth.set({ detune: -1200 });
+// const synth = new Tone.PolySynth(Tone.Synth, {
+//     oscillator: {
+//         partials: [0, 2, 3, 4],
+//     }
+// }).toDestination();
+// synth.set({ detune: -1200 });
+
 
 class Grid {
     constructor(w,h) {
@@ -76,17 +76,6 @@ grid.mapAll((x,y,v) => ({
     active:false,
 }))
 
-const toggle_step = (e) => {
-    let x = parseInt(e.target.getAttribute("data-x"))
-    let y = parseInt(e.target.getAttribute("data-y"))
-    console.log("toggling the step",x,y,typeof x)
-    let v = grid.get(x,y)
-    v.on = !v.on
-    grid.set(x,y,v)
-    console.log(grid.get(x,y))
-    if(v.on) e.target.classList.add('on')
-    if(!v.on) e.target.classList.remove('on')
-}
 
 function highlight_column(c,active) {
     for(let i=0; i<grid.h; i++) {
@@ -97,7 +86,7 @@ function highlight_column(c,active) {
     }
 }
 
-function make_sequencer(grid) {
+function make_sequencer(grid, toggle_step) {
     let wrapper = document.createElement('div')
     wrapper.classList.add("grid")
     for(let y=0; y<grid.h; y++) {
@@ -111,34 +100,89 @@ function make_sequencer(grid) {
             grid.get(x,y).dom = cell
         }
     }
-    document.body.appendChild(wrapper)
+    return wrapper;//    document.body.appendChild(wrapper)
 }
 
-make_sequencer(grid)
+// make_sequencer(grid)
 // highlight_column(2,true)
+
+
+class BeatSeq {
+    constructor(synths, notes, len) {
+        this.synths = synths
+        this.notes = notes
+        this.grid = new Grid(len,synths.length)
+        this.grid.mapAll((x,y,v) => ({
+            on:false,
+            active:false,
+        }))
+        this.count = -1
+        this.toggle_step = (e) => {
+            let x = parseInt(e.target.getAttribute("data-x"))
+            let y = parseInt(e.target.getAttribute("data-y"))
+            console.log("toggling the step",x,y,typeof x)
+            let v = this.grid.get(x,y)
+            v.on = !v.on
+            this.grid.set(x,y,v)
+            console.log(grid.get(x,y))
+            if(v.on) e.target.classList.add('on')
+            if(!v.on) e.target.classList.remove('on')
+        }
+    }
+    render(root) {
+        let div =  make_sequencer(this.grid, this.toggle_step)
+        div.style.width = (this.grid.w*40)+"px"
+        div.style.height = (this.grid.h*40)+"px"
+        return div
+    }
+    triggerNext() {
+        if(this.count >= 0) {
+            let oldc = this.count%this.grid.w
+            this.grid.forColumn(oldc,(x,y,v)=>{
+                v.active = false
+                v.dom.classList.remove("active")
+            })
+        }
+        this.count++
+        let newc = this.count%this.grid.w
+        this.grid.forColumn(newc,(x,y,v)=>{
+            v.active = true
+            v.dom.classList.add("active")
+        })
+
+        this.grid.forColumn(newc, (x,y,v)=>{
+            let sy = this.synths[y]
+            let ny = this.notes[y]
+            if(v.on)  sy.triggerAttackRelease(ny,"2n")
+        })
+    }
+}
+
+const kick = new Tone.MembraneSynth().toDestination()
+const bop = new Tone.MembraneSynth().toDestination()
+
+
+let seq1 = new BeatSeq([kick,bop],["C4","D4"],8)
+
+document.body.appendChild(seq1.render())
 
 const $ = (sel) => document.querySelector(sel)
 const on = (el, type, cb) => el.addEventListener(type,cb)
-let notes = ["C4",'E4','G4',"A4"]
-notes = notes.reverse()
-let count = 0
 Tone.Transport.scheduleRepeat((time)=> {
-        let col = count%grid.w
-        let old = col-1
-        if(old <0) old = grid.w-1
-        highlight_column(old,false)
-        highlight_column(col,true)
-
-        let selected = []
-        grid.forColumn(col,(x,y,v)=>{
-            if(v.on) selected.push(notes[y])
-        })
-        synth.triggerAttackRelease(selected,"4n")
-        count++
+        seq1.triggerNext()
     },"4n")
 
 on($("#tone-play-toggle"),'click',() => {
     Tone.Transport.toggle();
+    console.log(Tone.Transport)
+    let state = Tone.Transport.state
+    console.log(state)
+    if(state === 'stopped' || state === 'paused') {
+        $("#tone-play-toggle").innerText = "play"
+    }
+    if(state === 'started') {
+        $("#tone-play-toggle").innerText = "pause"
+    }
 })
 
 //document.querySelector("tone-play-toggle").addEventListener("start", () => Tone.Transport.start());
