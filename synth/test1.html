@@ -4,16 +4,15 @@
         .grid {
             border: 1px solid black;
             display: grid;
-            grid-template-columns: repeat(8, 40px);
-            grid-template-rows: repeat(4, 40px);
             margin: 1rem;
         }
         .note {
-            /* width: 10px; */
-            /* height: 40px; */
             border: 1px solid black;
             border-width: 0 1px 1px 0;
             background-color: white;
+        }
+        .note:nth-child(4n) {
+            border-right: 3px solid blue;
         }
         .note.on {
             background-color: red;
@@ -84,9 +83,10 @@ function make_sequencer(grid, toggle_step) {
 }
 
 class BeatSeq {
-    constructor(synths, notes, len) {
+    constructor(synths, notes, len, dur) {
         this.synths = synths
         this.notes = notes
+        this.dur = dur
         this.grid = new Grid(len,synths.length)
         this.grid.mapAll((x,y,v) => ({
             on:false,
@@ -105,10 +105,10 @@ class BeatSeq {
     }
     render(root) {
         let div =  make_sequencer(this.grid, this.toggle_step)
-        div.style.width = (this.grid.w*40)+"px"
-        div.style.height = (this.grid.h*40)+"px"
-        div.style.gridTemplateColumns = `repeat(${this.grid.w},40px)`
-        div.style.gridTemplateRows    = `repeat(${this.grid.h},'40px')`
+        div.style.width = (this.grid.w*20)+"px"
+        div.style.height = (this.grid.h*20)+"px"
+        div.style.gridTemplateColumns = `repeat(${this.grid.w},20px)`
+        div.style.gridTemplateRows    = `repeat(${this.grid.h},'20px')`
         return div
     }
     triggerNext() {
@@ -133,7 +133,7 @@ class BeatSeq {
                 if(ny === "NONE") {
                     sy.triggerAttackRelease()
                 } else {
-                    sy.triggerAttackRelease(ny,"8n")
+                    sy.triggerAttackRelease(ny,this.dur)
                 }
             }
         })
@@ -192,7 +192,7 @@ const kick = new Tone.MembraneSynth({
 
 
 
-let seq1 = new BeatSeq([kick,snare],["C2","NONE"],8)
+let seq1 = new BeatSeq([kick,snare],["C2","NONE"],8,"4n")
 document.body.appendChild(seq1.render())
 
 
@@ -219,19 +219,72 @@ const poly = new Tone.Synth({
 	}
 }).toDestination()
         
-let seq2 = new BeatSeq([bass],["D2"],16)
+let seq2 = new BeatSeq([bass],["D2"],16,"4n")
 document.body.appendChild(seq2.render())
+
+
+function makeBass() {
+const autoWah2 = new Tone.AutoWah({
+    baseFrequency: 90,
+    octaves: 8,
+    sensitivity: 0.1,
+    Q: 6,
+    gain: 3,
+    follower: {
+      attack: 0.1,
+      release: 0.2
+    },
+    wet: 0.3
+  }).toDestination()
+  autoWah2.Q.value = 3;
+
+const bassSynth = new Tone.MonoSynth({
+    volume: -5,
+    oscillator: {
+      type: 'fmsquare5',
+      modulationType: 'triangle',
+      modulationIndex: 2,
+      harmonicity: 0.501
+    },
+    filter: {
+      Q: 1,
+      type: 'lowpass',
+      rolloff: -24
+    },
+    envelope: {
+      attack: 0.01,
+      decay: 0.1,
+      sustain: 0.4,
+      release: 2
+    },
+    filterEnvelope: {
+      attack: 0.01,
+      decay: 0.1,
+      sustain: 0.8,
+      release: 1.5,
+      baseFrequency: 50,
+      octaves: 4.4
+    }
+  }).chain(autoWah2);
+  return bassSynth
+}
+
+let seq3 = new BeatSeq([makeBass(),makeBass()],["F#3","E3"],32,"32n")
+document.body.appendChild(seq3.render())
 
 const $ = (sel) => document.querySelector(sel)
 const on = (el, type, cb) => el.addEventListener(type,cb)
 Tone.Transport.scheduleRepeat((time)=> {
         seq1.triggerNext()
         seq2.triggerNext()
+        seq3.triggerNext()
     },"4n")
 
-    Tone.Transport.bpm.value = 120
+    Tone.Transport.bpm.value = 100
 on($("#tone-play-toggle"),'click',() => {
     Tone.Transport.toggle();
+    console.log("going")
+    go()
     let state = Tone.Transport.state
     if(state === 'stopped' || state === 'paused') {
         $("#tone-play-toggle").innerText = "play"
@@ -248,16 +301,87 @@ on($("#bpm"),'change',(e) => {
     $("#bpm-label").innerText = `${v} BPB`
 })
 
-//document.querySelector("tone-play-toggle").addEventListener("start", () => Tone.Transport.start());
-// document.querySelector("tone-play-toggle").addEventListener("stop", () => Tone.Transport.stop());
-// document.querySelector("tone-slider").addEventListener("input", (e) => Tone.Transport.bpm.value = parseFloat(e.target.value));
-// document.querySelector("tone-step-sequencer").addEventListener("trigger", ({ detail }) => {
-    // keys.player(detail.row).start(detail.time, 0, "16t");
-// });
+// more presets
+// http://tonejs.github.io/Presets/
 
 
-
-
+function go () {
+    const bassNotes = [
+    ['F#3', 'F#3'],
+    null,
+    ['F#3', 'F#3'],
+    null,
+    ['F#3', 'F#3'],
+    null,
+    null,
+    null,
+    ['F#3', 'F#3'],
+    null,
+    null,
+    null,
+    ['F#3', 'F#3'],
+    null,
+    null,
+    null,
+    ['E3', 'E3'],
+    null,
+    ['E3', 'E3'],
+    null,
+    ['E3', 'E3'],
+    null,
+    null,
+    null,
+    ['E3', 'E3'],
+    null,
+    null,
+    null,
+    ['E3', 'E3'],
+    null,
+    null,
+    null,
+    ['F#3', 'F#3'],
+    null,
+    ['F#3', 'F#3'],
+    null,
+    ['F#3', 'F#3'],
+    null,
+    null,
+    null,
+    ['F#3', 'F#3'],
+    null,
+    null,
+    null,
+    ['F#3', 'F#3'],
+    null,
+    null,
+    null,
+    ['G3', 'G3'],
+    null,
+    ['G3', 'G3'],
+    null,
+    ['G3', 'G3'],
+    null,
+    null,
+    null,
+    ['G3', 'G3'],
+    null,
+    null,
+    null,
+    ['G3', 'G3'],
+    null,
+    null,
+    null
+  ];
+  let bassSynth = makeBass()
+    const bassPart = new Tone.Sequence(
+        function(time, note) {
+        bassSynth.triggerAttackRelease(note, '10hz', time);
+        },
+        bassNotes,
+        '16n'
+    );
+    // bassPart.start()
+}
         </script>
     </body>
 </html>
