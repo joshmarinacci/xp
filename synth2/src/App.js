@@ -10,88 +10,80 @@ import {
 } from "tone"
 import {useState} from 'react'
 
+function MakeSynths() {
 
 
 // filtering the hi-hats a bit
 // to make them sound nicer
-const lowPass = new Filter({ frequency: 14000, }).toDestination();
+    const lowPass = new Filter({frequency: 14000,}).toDestination();
 
 // we can make our own hi hats with
 // the noise synth and a sharp filter envelope
-const openHiHat = new NoiseSynth({
-    volume: -10,
-    envelope: {
-        attack: 0.01,
-        decay: 0.7
-    },
-}).connect(lowPass);
-// const open_hat_def = {
-//     title:'Open Hat',
-//     name:'open_hat',
-//     dur:'4n',
-//     synth: openHiHat,
-//     play:()=> {
-//          openHiHat.triggerAttack(open_hat_def.dur)
-//     }
-// }
+    const openHiHat = new NoiseSynth({
+        volume: -10,
+        envelope: {
+            attack: 0.01,
+            decay: 0.7
+        },
+    }).connect(lowPass);
 
 
+    const closedHiHat = new NoiseSynth({
+        volume: -10,
+        envelope: {
+            attack: 0.01,
+            decay: 0.05
+        },
+    }).connect(lowPass);
 
-const closedHiHat = new NoiseSynth({
-    volume: -10,
-    envelope: {
-        attack: 0.01,
-        decay: 0.05
-    },
-}).connect(lowPass);
+    let clap_synth = new NoiseSynth()
+    clap_synth.connect(lowPass)
+    clap_synth.set({
+        volume:-10,
+        "noise": {
+            "type": "brown",
+            "playbackRate": 0.4
+        },
+        "envelope": {
+            "attackCurve": "exponential",
+            "attack": 0.003,
+            "decay": 0.5,
+            "sustain": 0,
+            "release": 0.4
+        }
+    })
 
-let clap_synth = new NoiseSynth()
-clap_synth.connect(lowPass)
-clap_synth.set({
-    "noise": {
-        "type": "white",
-        "playbackRate" : 0.4
-    },
-    "envelope": {
-        "attackCurve" : "exponential",
-        "attack": 0.003,
-        "decay": 0.5,
-        "sustain": 0,
-        "release": 0.4
+    const kickSynth = new MembraneSynth({
+        volume:-10
+    }).toDestination()
+
+    function makeDef(synth, simple, dur, note) {
+        let syn = {
+            name: simple.toLowerCase().replaceAll(" ", "_"),
+            title: simple,
+            synth: synth,
+            dur: dur,
+            count: 0,
+            note: note||"C4",
+        }
+        return syn
     }
-})
 
-const kickSynth = new MembraneSynth().toDestination()
+    // const simple_def = makeDef(new Synth().toDestination(),
+    //     'simple', '8n', "C4")
+    const kick_def = makeDef(kickSynth, "kick", "16n", "C1")
+    const open_hat_def = makeDef(openHiHat, "Open Hat", "4n", "C2")
+    const closed_hat_def = makeDef(closedHiHat, "Closed Hat", "4n", "C2")
+    const clap_def = makeDef(clap_synth, "Clap", "4n", "C2")
+    let synths = [
+        open_hat_def,
+        closed_hat_def,
+        clap_def,
+        kick_def,
+    ]
 
-function makeDef(synth, simple, dur,note) {
-    let syn = {
-        name:simple.toLowerCase().replaceAll(" ","_"),
-        title:simple,
-        synth:synth,
-        dur:dur,
-        count:0,
-        note:note,
-    }
-    return syn
+    return synths
 }
-
-const simple_def = makeDef(new Synth().toDestination(),
-    'simple','8n',"C4")
-const kick_def = makeDef(kickSynth,"kick","8n","C2")
-const open_hat_def = makeDef(openHiHat,"Open Hat","4n","C2")
-const closed_hat_def = makeDef(closedHiHat,"Closed Hat","4n","C2")
-const clap_def = makeDef(clap_synth,"Clap","4n","C2")
-let synths = [
-    // simple_def,
-    open_hat_def,
-    closed_hat_def,
-    clap_def,
-    kick_def,
-]
-
-open_hat_def.synth.volume.value = -20
-kick_def.synth.volume.value = -20
-
 
 function BPMControl() {
     const [value, set_value] = useState(Transport.bpm.value)
@@ -116,17 +108,66 @@ function PlayPauseButton() {
     if(state === "started") text = "pause"
     if(state === "stopped") text = "play"
     return <button onClick={()=>{
-        Transport.toggle()
+        if(Transport.state === "started") {
+            Transport.stop()
+        } else {
+            Transport.start()//0,0)
+        }
         console.log("new state is",Transport.state)
         setState(Transport.state)
     }}>{text}</button>
 }
 
+// Transport.on("start",(t) => {
+//     console.log("starting",t)
+// })
+// Transport.on("stop",(t) => {
+//     console.log("stopping",t)
+// })
+// Transport.on("pause",(t) => {
+//     console.log("pausing",t)
+// })
+// Transport.on("loop",(t) => {
+//     console.log("looping",t)
+//})
+
+
+let STATES = {
+    "clear8":{
+        name:"Empty 8",
+        steps:8,
+        stepSize:"40px",
+        rowSize:"40px",
+    },
+    "clear16":{
+        name:"Empty 16",
+        steps:16,
+        stepSize:"40px",
+        rowSize:"40px",
+    }
+}
+function PresetsLoader({onChange}) {
+    const [value, set_value] = useState("clear8")
+    return <select value={value} onChange={(e)=>{
+        console.log("changed to",e.target.value)
+        onChange(STATES[e.target.value])
+        set_value(e.target.value)
+    }}>
+        <option value={"clear16"}>clear 16note</option>
+        <option value={"clear8"}>clear 8note</option>
+    </select>
+}
+
+
 function App() {
+    const [global_state, set_global_state] = useState(STATES['clear8'])
 
   return (
     <div className="App">
-        <SequencerGrid steps={8} synths={synths}/>
+        <PresetsLoader onChange={(preset)=>set_global_state(preset)}/>
+        <h3>{global_state.name}</h3>
+        <SequencerGrid
+            steps={global_state.steps} synths={MakeSynths()} stepSize={global_state.stepSize} rowSize={global_state.rowSize}/>
         <HBox>
             <BPMControl/>
             <PlayPauseButton/>
