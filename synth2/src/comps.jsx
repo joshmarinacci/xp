@@ -39,7 +39,7 @@ function make_Seq(synth, stepCount) {
     // console.log("made sequence for ",synth.name)
     let events = range(stepCount).map(i => null)
     let seq = new Sequence((time,note)=>{
-        console.log("playing",time,0.1,note,synth.synth.name)
+        // console.log("playing",time,0.1,note,synth.synth.name)
         if(synth.synth.name === 'NoiseSynth') {
             synth.synth.triggerAttackRelease("4n",time)
             return
@@ -79,14 +79,27 @@ function fill_empty(stepCount) {
     return range(stepCount).map(i => ({on:false, col:i}))
 }
 
-function SynthRow({synth, stepCount, active_step}) {
-    let [steps, setSteps] = useState(()=>fill_empty(stepCount))
+function SynthRow({synth, stepCount, active_step, initial_data}) {
+    let [steps, setSteps] = useState([])
     useEffect(()=>{
         make_Seq(synth,stepCount)
-        console.log("remaking the steps",stepCount)
-        setSteps(fill_empty(stepCount))
+        if(initial_data) {
+            let data = initial_data.split("").filter(ch => ch !== " ")
+            setSteps(data.map((ch,i)=>{
+                if(ch === "1") {
+                    synth.seq.events[i] = synth.note
+                } else {
+                    synth.seq.events[i] = null
+                }
+                return {
+                    on:ch==="1",
+                    col:i
+                }
+            }))
+        } else {
+            setSteps(fill_empty(stepCount))
+        }
         return () => {
-            console.log("destrying the old synth")
             synth.seq.stop()
             synth.seq.dispose()
         }
@@ -106,7 +119,7 @@ function SynthRow({synth, stepCount, active_step}) {
     </>
 }
 
-export function SequencerGrid({synths, steps, stepSize, rowSize}) {
+export function SequencerGrid({synths, steps, stepSize, rowSize, initial_data}) {
     const [step, set_step] = useState(0)
     useEffect(()=>{
         let ticks = range(steps).map(()=>"C4")
@@ -122,7 +135,7 @@ export function SequencerGrid({synths, steps, stepSize, rowSize}) {
             seq.dispose()
         }
     },[synths,steps])
-    let rows = synths.map((synth) => <SynthRow key={synth.name} stepCount={steps} synth={synth} active_step={step}/>)
+    let rows = synths.map((synth,i) => <SynthRow key={synth.name} stepCount={steps} synth={synth} active_step={step} initial_data={initial_data[i]}/>)
     let style = {
         display:"grid",
         gridTemplateColumns:`15rem repeat(${steps},${stepSize})`,

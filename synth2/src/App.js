@@ -138,36 +138,51 @@ let STATES = {
         steps:8,
         stepSize:"40px",
         rowSize:"40px",
+        data:null,
     },
     "clear16":{
         name:"Empty 16",
         steps:16,
         stepSize:"40px",
         rowSize:"40px",
+        data:null
+    },
+    "4floor":{
+        name:"Four on the Floor",
+        steps:16,
+        stepSize:"40px",
+        rowSize:"40px",
+        data:["0000 0000 0000 0000",
+            "0000 0000 0000 0000",
+            "0000 0000 0000 0000",
+            "1000 1000 1000 1000",
+        ]
     }
 }
 function PresetsLoader({onChange}) {
     const [value, set_value] = useState("clear8")
     return <select value={value} onChange={(e)=>{
-        console.log("changed to",e.target.value)
         onChange(STATES[e.target.value])
         set_value(e.target.value)
-    }}>
-        <option value={"clear16"}>clear 16note</option>
-        <option value={"clear8"}>clear 8note</option>
+    }}>{Object.keys(STATES).map(name => <option key={name} value={name}>{STATES[name].name}</option>)}
     </select>
 }
 
 
 function App() {
     const [global_state, set_global_state] = useState(STATES['clear8'])
-
+    if(!global_state.data) global_state.data = []
   return (
     <div className="App">
         <PresetsLoader onChange={(preset)=>set_global_state(preset)}/>
         <h3>{global_state.name}</h3>
         <SequencerGrid
-            steps={global_state.steps} synths={MakeSynths()} stepSize={global_state.stepSize} rowSize={global_state.rowSize}/>
+            steps={global_state.steps}
+            synths={MakeSynths()}
+            stepSize={global_state.stepSize}
+            rowSize={global_state.rowSize}
+            initial_data={global_state.data}
+        />
         <HBox>
             <BPMControl/>
             <PlayPauseButton/>
