@@ -157,7 +157,55 @@ let STATES = {
             "0000 0000 0000 0000",
             "1000 1000 1000 1000",
         ]
-    }
+    },
+    "4floorbb":{
+        name:"Four on the Floor w/ Backbeat",
+        steps:16,
+        stepSize:"40px",
+        rowSize:"40px",
+        data:[
+            "0000 0000 0000 0000",
+            "0000 0000 0000 0000",
+            "0000 1000 0000 1000",
+            "1000 1000 1000 1000",
+        ]
+    },
+    "rock":{
+        name:"Rock Basic",
+        steps:16,
+        stepSize:"40px",
+        rowSize:"40px",
+        data:[
+            "0000 0000 0000 0000",
+            "1010 1010 1010 1010",
+            "0000 1000 0000 1000",
+            "1000 0000 1000 0000",
+        ]
+    },
+    "house":{
+        name:"Classic House",
+        steps:16,
+        stepSize:"40px",
+        rowSize:"40px",
+        data:[
+            "0000 0000 0000 0000",
+            "0010 0010 0010 0010",
+            "0000 1000 0000 1000",
+            "1000 1000 1000 1000",
+        ]
+    },
+    "wewillrockyou":{
+        name:"We Will Rock You",
+        steps:16,
+        stepSize:"40px",
+        rowSize:"40px",
+        data:[
+            null,
+            null,
+            "0000 1000 0000 1000",
+            "1010 0000 1010 0000",
+        ]
+    },
 }
 function PresetsLoader({onChange}) {
     const [value, set_value] = useState("clear8")
