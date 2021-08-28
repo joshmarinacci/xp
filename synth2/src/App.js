@@ -1,5 +1,5 @@
 import './App.css';
-import {SequencerGrid} from './comps.jsx'
+import {SequencerGrid, Spacer} from './comps.jsx'
 import {
     AmplitudeEnvelope,
     Filter,
@@ -92,37 +92,45 @@ let synths = [
 open_hat_def.synth.volume.value = -20
 kick_def.synth.volume.value = -20
 
-/*
 
+function BPMControl() {
+    const [value, set_value] = useState(Transport.bpm.value)
+    return <div className={"hbox control"}>
+        <label>BPM</label>
+        <input type={"range"} min={30} max={240} value={""+Math.floor(value)} step={1} onChange={(e)=>{
+            let v = Math.floor(parseFloat(e.target.value))
+            set_value(v)
+            Transport.bpm.value = v
+        }}/>
+        <label style={{minWidth:"30px"}}>{Math.floor(Transport.bpm.value)}</label>
+    </div>
+}
 
- * ADD volume control to each row
- * make active column be highlighted. top level sequence that triggers
-  the active column and restyles the step squares
- */
+function HBox({children}) {
+    return <div className={'hbox'}>{children}</div>
+}
 
-
-// const simplesynth = new Synth().toDestination();
-// let count = 0
-// let seq = new Sequence((time,note)=>{
-//     console.log(time)
-//     // console.log("triggering",note,time,count)//seq.length,seq.progress,seq.loopStart,seq.loopEnd,seq.loop, seq.subdivision, seq.value,seq.humanize)
-//     // count = (count + 1) % seq.length
-//     simplesynth.triggerAttackRelease(note,0.1,time)
-//     // console.log(seq.events)
-// },["C4","E4","G4"]).start(0)
+function PlayPauseButton() {
+    let [state, setState] = useState(Transport.state)
+    let text = "???"
+    if(state === "started") text = "pause"
+    if(state === "stopped") text = "play"
+    return <button onClick={()=>{
+        Transport.toggle()
+        console.log("new state is",Transport.state)
+        setState(Transport.state)
+    }}>{text}</button>
+}
 
 function App() {
 
   return (
     <div className="App">
         <SequencerGrid steps={8} synths={synths}/>
-        <button onClick={()=>{
-            Transport.toggle()
-        }}>toggle</button>
-        <button onClick={()=>{
-            // seq.events = ["C4",null,"G4"]
-            // seq.events[1] = null
-        }}>change</button>
+        <HBox>
+            <BPMControl/>
+            <PlayPauseButton/>
+        </HBox>
     </div>
   );
 }

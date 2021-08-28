@@ -1,0 +1,15 @@
+.hbox {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: center;
+    /*justify-items: center;*/
+    /*justify-content: center;*/
+}
+
+
+.control {
+    border: 1px solid black;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+}

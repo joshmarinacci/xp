@@ -48,6 +48,35 @@ function make_Seq(synth, stepCount) {
     },events).start(0)
     synth.seq = seq
 }
+function VolumeControl({volume,label}) {
+    const [vol, set_vol] = useState(volume.value)
+    return <>
+        <label>{label}</label>
+        <input type={"number"} min={-40} max={40} value={""+Math.floor(vol)} step={1} onChange={(e)=>{
+            let v = parseInt(e.target.value)
+            set_vol(v)
+            volume.value = v
+        }
+        }/>
+        {/*<label>{Math.floor(vol)}</label>*/}
+    </>
+}
+
+export function Spacer() {
+    return <span className={"spacer"}></span>
+}
+
+function SynthControl({synth}) {
+    const [volume, set_volume] = useState(synth.synth.volume.value)
+    return <div className={"control hbox"}
+    >
+        <label style={{ minWidth:"50px"}} onClick={()=>play_example(synth)}>{synth.title}</label>
+        <Spacer/>
+        <VolumeControl volume={synth.synth.volume} label={"vol"}/>
+    </div>
+
+}
+
 function SynthRow({synth, stepCount, active_step}) {
     let [steps, setSteps] = useState(()=>{
         return range(stepCount).map(i => ({on:false, col:i}))
@@ -56,7 +85,7 @@ function SynthRow({synth, stepCount, active_step}) {
         make_Seq(synth,stepCount)
     },[synth])
     return <>
-        <label key={'label'+synth.name} onClick={()=>play_example(synth)}>{synth.title}</label>
+        <SynthControl key={"control_"+synth.name} synth={synth}/>
         {steps.map(step => <Step step={step} col={step.col}  key={synth.name+"_"+step.col} active_step={active_step} onToggle={(step)=>{
             // console.log('toggling',step, synth.seq.events[step.col])
             synth.seq.events[step.col] = null
@@ -92,5 +121,6 @@ export function SequencerGrid({synths, steps}) {
         gridTemplateColumns:`10rem repeat(${steps},40px)`,
         gridTemplateRows: `repeat(${synths.length}, 40px)`,
     }
-    return <div className={"sequencer-grid"} style={style}>{rows}</div>
+    let legend = range(steps).map((n)=><div key={"legend"+n} className={'legend ' + ((step===n)?"active":"")}>{n+1}</div>)
+    return <div className={"sequencer-grid"} style={style}>{rows}<div></div>{legend}</div>
 }
