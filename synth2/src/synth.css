@@ -1,0 +1,29 @@
+.sequencer-grid {
+    border: 1px solid #333;
+    background-color: #754;
+    grid-gap: 1px;
+}
+
+.sequencer-grid label {
+    background-color: aquamarine;
+    user-select: none;
+    padding: 0.25rem;
+}
+.sequencer-grid label:active {
+    background-color: #faeba7;
+}
+
+.sequencer-grid .step {
+    background-color: oldlace;
+}
+.sequencer-grid .step:active {
+    background-color: orangered;
+}
+
+.sequencer-grid .step.four {
+    border-left: 3px solid red;
+}
+
+.step.on {
+    background-color: orange;
+}

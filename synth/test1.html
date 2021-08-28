@@ -140,14 +140,6 @@ class BeatSeq {
     }
 }
 
-// const kick = new Tone.MembraneSynth().toDestination()
-const bop = new Tone.MembraneSynth().toDestination()
-// const feedbackDelay = new Tone.PingPongDelay({
-// 			"delayTime" : "8t",
-// 			"feedback" : 0.25,
-// 			"wet" : 0.25
-// 		}).toDestination();
-
 const snare = new Tone.NoiseSynth({
     "volume" : -5,
     "envelope" : {
@@ -160,7 +152,6 @@ const snare = new Tone.NoiseSynth({
         "decay" : 0.1,
         "sustain" : 0
     }
-// }).connect(feedbackDelay);
 }).toDestination()
 
 var autoWah = new Tone.AutoWah(120, 10, -20).toDestination()
@@ -218,7 +209,7 @@ const poly = new Tone.Synth({
 		"modulationType": "sine"
 	}
 }).toDestination()
-        
+
 let seq2 = new BeatSeq([bass],["D2"],16,"4n")
 document.body.appendChild(seq2.render())
 
