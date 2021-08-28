@@ -1,10 +1,11 @@
 import './App.css';
 import {SequencerGrid} from './comps.jsx'
-import {NoiseSynth} from "tone"
+import {MembraneSynth, NoiseSynth} from "tone"
 
 const open_hat = {
     title:'Open Hat',
     name:'open_hat',
+    dur:'4n',
     synth: new NoiseSynth({
         "volume" : -5,
         "envelope" : {
@@ -22,6 +23,7 @@ const open_hat = {
 const closed_hat = {
     title:'Closed Hat',
     name:'closed_hat',
+    dur:'4n',
     synth: new NoiseSynth({
         "volume" : -5,
         "envelope" : {
@@ -39,6 +41,7 @@ const closed_hat = {
 const clap = {
     name:'clap',
     title:'Clap',
+    dur:'4n',
     synth: new NoiseSynth({
         "volume" : -5,
         "envelope" : {
@@ -56,20 +59,17 @@ const clap = {
 const kick = {
     name:'kick',
     title:'kick',
-    synth: new NoiseSynth({
-        "volume" : -5,
+    dur:'8n',
+    synth: new MembraneSynth({
         "envelope" : {
-            "attack" : 0.001,
-            "decay" : 0.2,
-            "sustain" : 0
+            "sustain" : 0,
+            "attack" : 0.02,
+            "decay" : 0.1
         },
-        "filterEnvelope" : {
-            "attack" : 0.001,
-            "decay" : 0.1,
-            "sustain" : 0
-        }
+        "octaves" : 10
     }).toDestination()
 }
+
 
 
 let synths = [

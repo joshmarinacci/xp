@@ -9,8 +9,12 @@ function range(len){
 }
 
 function play_example(synth) {
-    console.log("playing",synth)
-    synth.synth.triggerAttackRelease("4n")
+    console.log("playing",synth.synth.name)
+    if(synth.synth.name === 'MembraneSynth') {
+        synth.synth.triggerAttackRelease('C2',synth.dur)
+        return
+    }
+    synth.synth.triggerAttackRelease(synth.dur)
 }
 
 function cls2str(obj) {
