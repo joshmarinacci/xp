@@ -1,5 +1,6 @@
 import "./synth.css"
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
+import {Sequence, Transport} from 'tone'
 function range(len){
     let nums = []
     for(let i=0; i<len; i++) {
@@ -33,14 +34,38 @@ function Step({col, onToggle, step}) {
     return <div className={cls2str(cls)} onClick={()=>onToggle(step)}/>
 }
 
+function make_Seq(synth, stepCount) {
+    console.log("made sequence for ",synth.name)
+    let events = range(stepCount).map(i => null)
+    let seq = new Sequence((time,note)=>{
+        console.log("playing",time,note,synth.synth.name)
+        if(synth.synth.name === 'NoiseSynth') {
+            synth.synth.triggerAttackRelease("4n",time)
+            return
+        }
+        synth.synth.triggerAttackRelease(note,0.1,time)
+    },events).start(0)
+    synth.seq = seq
+}
 function SynthRow({synth, stepCount}) {
     let [steps, setSteps] = useState(()=>{
         return range(stepCount).map(i => ({on:false, col:i}))
     })
+    useEffect(()=>{
+        make_Seq(synth,stepCount)
+    },[synth])
     return <>
         <label key={'label'+synth.name} onClick={()=>play_example(synth)}>{synth.title}</label>
         {steps.map(step => <Step step={step} col={step.col}  key={synth.name+"_"+step.col} onToggle={(step)=>{
+            // console.log('toggling',step, synth.seq.events[step.col])
+            synth.seq.events[step.col] = null
             step.on = !step.on
+            if(step.on) {
+                synth.seq.events[step.col] = synth.note
+            } else {
+                synth.seq.events[step.col] = null
+            }
+            // console.log(`synth "${synth.name}" notes are ${synth.seq.events}`)
             setSteps(steps.slice())
         }}/>)}
     </>
