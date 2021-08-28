@@ -8,6 +8,7 @@ import {
     NoiseSynth,
     Oscillator, Part, Sequence, Synth, Transport
 } from "tone"
+import {useState} from 'react'
 
 
 
@@ -81,7 +82,7 @@ const open_hat_def = makeDef(openHiHat,"Open Hat","4n","C2")
 const closed_hat_def = makeDef(closedHiHat,"Closed Hat","4n","C2")
 const clap_def = makeDef(clap_synth,"Clap","4n","C2")
 let synths = [
-    simple_def,
+    // simple_def,
     open_hat_def,
     closed_hat_def,
     clap_def,
@@ -91,6 +92,13 @@ let synths = [
 open_hat_def.synth.volume.value = -20
 kick_def.synth.volume.value = -20
 
+/*
+
+
+ * ADD volume control to each row
+ * make active column be highlighted. top level sequence that triggers
+  the active column and restyles the step squares
+ */
 
 
 // const simplesynth = new Synth().toDestination();
@@ -104,6 +112,7 @@ kick_def.synth.volume.value = -20
 // },["C4","E4","G4"]).start(0)
 
 function App() {
+
   return (
     <div className="App">
         <SequencerGrid steps={8} synths={synths}/>

@@ -25,20 +25,21 @@ function cls2str(obj) {
 
 }
 
-function Step({col, onToggle, step}) {
+function Step({col, onToggle, step, active_step}) {
     const cls = {
         step:true,
         four:step.col%4===0,
         on:step.on,
+        active:step.col === active_step
     }
     return <div className={cls2str(cls)} onClick={()=>onToggle(step)}/>
 }
 
 function make_Seq(synth, stepCount) {
-    console.log("made sequence for ",synth.name)
+    // console.log("made sequence for ",synth.name)
     let events = range(stepCount).map(i => null)
     let seq = new Sequence((time,note)=>{
-        console.log("playing",time,note,synth.synth.name)
+        // console.log("playing",time,note,synth.synth.name)
         if(synth.synth.name === 'NoiseSynth') {
             synth.synth.triggerAttackRelease("4n",time)
             return
@@ -47,7 +48,7 @@ function make_Seq(synth, stepCount) {
     },events).start(0)
     synth.seq = seq
 }
-function SynthRow({synth, stepCount}) {
+function SynthRow({synth, stepCount, active_step}) {
     let [steps, setSteps] = useState(()=>{
         return range(stepCount).map(i => ({on:false, col:i}))
     })
@@ -56,7 +57,7 @@ function SynthRow({synth, stepCount}) {
     },[synth])
     return <>
         <label key={'label'+synth.name} onClick={()=>play_example(synth)}>{synth.title}</label>
-        {steps.map(step => <Step step={step} col={step.col}  key={synth.name+"_"+step.col} onToggle={(step)=>{
+        {steps.map(step => <Step step={step} col={step.col}  key={synth.name+"_"+step.col} active_step={active_step} onToggle={(step)=>{
             // console.log('toggling',step, synth.seq.events[step.col])
             synth.seq.events[step.col] = null
             step.on = !step.on
@@ -72,7 +73,20 @@ function SynthRow({synth, stepCount}) {
 }
 
 export function SequencerGrid({synths, steps}) {
-    let rows = synths.map((synth) => <SynthRow key={synth.name} stepCount={steps} synth={synth}/>)
+    const [step, set_step] = useState(0)
+    useEffect(()=>{
+        let ticks = range(steps).map(()=>"C4")
+        let count = 0
+        let seq = new Sequence((time,note)=>{
+            count++
+            console.log(count)
+            set_step(count%steps)
+        },ticks).start(0)
+        return () => {
+            console.log("have to shut it down")
+        }
+    },[synths,steps])
+    let rows = synths.map((synth) => <SynthRow key={synth.name} stepCount={steps} synth={synth} active_step={step}/>)
     let style = {
         display:"grid",
         gridTemplateColumns:`10rem repeat(${steps},40px)`,
