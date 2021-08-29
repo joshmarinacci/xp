@@ -1,9 +1,9 @@
 import './App.css'
 import {
-    AmplitudeEnvelope,
+    AmplitudeEnvelope, DuoSynth,
     Filter,
     FrequencyEnvelope, Loop,
-    MembraneSynth,
+    MembraneSynth, MetalSynth,
     MonoSynth, Noise,
     NoiseSynth, now,
     Synth,
@@ -11,6 +11,7 @@ import {
 } from "tone"
 import {useEffect, useState} from 'react'
 import {EnvelopeEditor, FilterEditor, NoiseEditor, SynthEditor} from './editors.jsx'
+import {HBox, SequencerGrid} from './comps.jsx'
 
 function MakeSynths() {
 
@@ -289,29 +290,49 @@ function TriggerButton({beatLength}) {
 // editable_synth.toDestination()
 function App() {
     const [global_state, set_global_state] = useState(STATES['clear8'])
+    const [synths, set_synths] = useState([])
     if(!global_state.data) global_state.data = []
   return (
     <div className="App">
         <button onClick={()=>Transport.toggle()}>start</button>
-        {/*<PresetsLoader onChange={(preset)=>set_global_state(preset)}/>*/}
-        {/*<h3>{global_state.name}</h3>*/}
-        {/*<SequencerGrid*/}
-        {/*    steps={global_state.steps}*/}
-        {/*    synths={MakeSynths()}*/}
-        {/*    stepSize={global_state.stepSize}*/}
-        {/*    rowSize={global_state.rowSize}*/}
-        {/*    initial_data={global_state.data}*/}
-        {/*/>*/}
-        {/*<HBox>*/}
-        {/*    <BPMControl/>*/}
-        {/*    <PlayPauseButton/>*/}
-        {/*</HBox>*/}
+        <PresetsLoader onChange={(preset)=>set_global_state(preset)}/>
+        <h3>{global_state.name}</h3>
+        <SequencerGrid
+            steps={global_state.steps}
+            synths={MakeSynths()}
+            stepSize={global_state.stepSize}
+            rowSize={global_state.rowSize}
+            initial_data={global_state.data}
+        />
+        <HBox>
+            <BPMControl/>
+            <PlayPauseButton/>
+        </HBox>
+        <div className={"hbox"}>
+            <button onClick={()=>{
+                set_synths(synths.concat([new Synth().toDestination()]))
+            }}>add simple synth</button>
+            <button onClick={()=>{
+                set_synths(synths.concat([new MonoSynth().toDestination()]))
+            }}>add mono synth</button>
+            <button onClick={()=>{
+                set_synths(synths.concat([new DuoSynth().toDestination()]))
+            }}>add duo synth</button>
+            <button onClick={()=>{
+                set_synths(synths.concat([new NoiseSynth().toDestination()]))
+            }}>add noise synth</button>
+            <button onClick={()=>{
+                set_synths(synths.concat([new MembraneSynth().toDestination()]))
+            }}>add membrane synth</button>
+            <button onClick={()=>{
+                set_synths(synths.concat([new MetalSynth().toDestination()]))
+            }}>add metal synth</button>
+        </div>
         <TriggerButton triggers={triggers} beatLength={"2n"}/>
-        {/*<NoiseEditor noise={noise}/>*/}
         {/*<TriggerButton triggers={triggers} beatLength={"4n"}/>*/}
-        <SynthEditor synth={noise}/>
-        {/*<EnvelopeEditor envelope={am}/>*/}
-        {/*<FilterEditor filter={low_pass}/>*/}
+        {synths.map((synth,i) => {
+            return <SynthEditor key={"synth_"+i} synth={synth}/>
+        })}
     </div>
   );
 }

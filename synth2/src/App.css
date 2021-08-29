@@ -43,8 +43,24 @@ h3 {
 
 .prop-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-auto-rows: 2rem;
     padding: 0.5em;
     background-color: goldenrod;
     border-radius: 0.5rem;
+    margin:0.5em;
+    align-items: center;
+}
+
+.prop-grid label {
+    grid-column: 1;
+}
+.prop-grid input, .prop-grid select {
+    grid-column: 2;
+}
+
+
+.duo-panel {
+    border: 1px solid red;
+    background-color: #592b0c;
 }
