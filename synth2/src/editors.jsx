@@ -27,7 +27,7 @@ function PropGrid({obj, props}) {
 
 export function OscillatorEditor({oscillator}) {
     let [type, set_type] = useState(oscillator.type)
-    return <VBox>
+    return <div className={"vbox panel"}>
         <div><b>name</b> {oscillator.name}</div>
         <div><b>type</b>
             <label>{oscillator.type}</label>
@@ -41,18 +41,30 @@ export function OscillatorEditor({oscillator}) {
         {/*    <b>harmonicity</b><i>{oscillator.harmonicity.value}</i>*/}
         {/*</div>*/}
         {/*<PropGrid obj={oscillator} props={["modulationType","partialCount","phase","type"]}/>*/}
-    </VBox>
+    </div>
 }
 
 function TSlider({prop, obj, min, max, name}) {
-    const [value, set_value] = useState(obj[prop])
+    const [value, set_value] = useState(()=>{
+        if(obj[prop].name && obj[prop].name === "Signal") {
+            // console.log("is a signal")
+            return obj[prop].value
+        } else {
+            return obj[prop]
+        }
+    })
     return <HBox>
-        <label>{name}</label>
+        <label>{name?name:prop}</label>
         <input className={"tslider"}
         type={"range"} min={min*100} max={max*100} value={value*100}
                onChange={(e)=>{
                    let v = (parseFloat(e.target.value))/100
-                   obj[prop] = v
+                   if(obj[prop].name && obj[prop].name=== 'Signal') {
+                       // console.log("setting", v, "on", obj, prop)
+                       obj[prop].value = v
+                   } else {
+                       obj[prop] = v
+                   }
                    set_value(v)
                }}
         />
@@ -68,6 +80,7 @@ function TSelect({obj, prop, values}) {
             let v = e.target.value
             set_value(v)
             obj[prop] = v
+            console.log("object is now",obj)
         }}>
             {values.map(v => <option key={v} value={v}>{v}</option>)}
         </select>
@@ -77,6 +90,10 @@ function TSelect({obj, prop, values}) {
 let CURVES = ["linear","exponential"]
 
 function EnvelopeEditor({envelope}) {
+    let extras = ""
+    if(envelope.baseFrequency) {
+        extras = <TSlider min={0} max={1000} obj={envelope} prop={"baseFrequency"}/>
+    }
     return <div className={"vbox panel"}>
         <label><b>Envelope:</b> {envelope.name}</label>
         <label>{envelope.attack}</label>
@@ -85,15 +102,19 @@ function EnvelopeEditor({envelope}) {
         <TSlider name={"decay"} min={0} max={2} obj={envelope} prop={"decay"}/>
         <TSlider name={"release"} min={0} max={5} obj={envelope} prop={"release"}/>
         <TSlider name={"sustain"} min={0} max={1} obj={envelope} prop={"sustain"}/>
-        <label>{envelope.decay}</label>
+        {extras}
     </div>
 }
-
+let FILTER_TYPES = ["lowpass","highpass","bandpass","lowshelf","highshelf","notch","allpass","peaking"]
 function FilterEditor({filter}) {
     return <div className={"vbox panel"}>
-        <h4>Filter</h4>
-        <TSlider name={"frequency"} min={0} max={1500} obj={filter.frequency} prop={"value"}/>
-        <PropGrid obj={filter} props={["frequency","Q","detune","type"]}/>
+        <h4>Filter {filter.name}</h4>
+        <TSlider name={"frequency"} min={0} max={20000} obj={filter} prop={"frequency"}/>
+        <TSlider name={"Q"} min={0} max={100} obj={filter} prop={"Q"}/>
+        <TSlider name={"detune"} min={0} max={100} obj={filter} prop={"detune"}/>
+        <TSlider name={"gain"} min={0} max={100} obj={filter} prop={"gain"}/>
+        <TSelect obj={filter} prop={"type"} values={FILTER_TYPES}/>
+        <PropGrid obj={filter} props={["frequency","Q","detune","type","gain"]}/>
     </div>
 }
 
@@ -114,9 +135,10 @@ export function SynthEditor({synth}) {
     return <div className={'control'}>
         <h4>edit</h4>
         <VBox>
-            <label>osc<OscillatorEditor oscillator={synth.oscillator}/></label>
-            <label>env<EnvelopeEditor envelope={synth.envelope}/></label>
+            <label><OscillatorEditor oscillator={synth.oscillator}/></label>
+            <label><EnvelopeEditor envelope={synth.envelope}/></label>
             <label><FilterEditor filter={synth.filter}/></label>
+            <label><EnvelopeEditor envelope={synth.filterEnvelope}/></label>
             <TSlider name="volume" obj={synth.volume} prop={'value'} min={-20} max={20}/>
         </VBox>
         <button onClick={() => Transport.toggle()}>start</button>

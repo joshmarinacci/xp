@@ -205,57 +205,7 @@ function PresetsLoader({onChange}) {
     </select>
 }
 
-let editable_synth = new MonoSynth({
-    "volume": -8,
-    "detune": 0,
-    "portamento": 0,
-    "envelope": {
-        "attack": 0.0015,
-        "attackCurve": "linear",
-        "decay": 1.2,
-        "decayCurve": "exponential",
-        "release": 0.005,
-        "releaseCurve": "exponential",
-        "sustain": 0.0
-    },
-    "filter": {
-        "Q": 1,
-        "detune": 0,
-        "frequency": 244.5,
-        "gain": 0,
-        "rolloff": -12,
-        "type": "lowpass"
-    },
-    "filterEnvelope": {
-        "attack": 0.001,
-        "attackCurve": "linear",
-        "decay": 0.7,
-        "decayCurve": "exponential",
-        "release": 0.8,
-        "releaseCurve": "exponential",
-        "sustain": 0.1,
-        "baseFrequency": 300,
-        "exponent": 2,
-        "octaves": 4
-    },
-    "oscillator": {
-        "detune": 0,
-        "frequency": 440,
-        "partialCount": 8,
-        "partials": [
-            1.2732395447351628,
-            0,
-            0.4244131815783876,
-            0,
-            0.25464790894703254,
-            0,
-            0.18189136353359467,
-            0
-        ],
-        "phase": 0,
-        "type": "square8"
-    }
-})
+let editable_synth = new MonoSynth();
 editable_synth.toDestination()
 
 function App() {
