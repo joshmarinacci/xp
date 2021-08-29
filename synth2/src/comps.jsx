@@ -1,6 +1,7 @@
 import "./synth.css"
 import {useEffect, useState} from 'react'
-import {Sequence, Transport} from 'tone'
+import {Sequence} from 'tone'
+
 function range(len){
     let nums = []
     for(let i=0; i<len; i++) {
@@ -143,4 +144,12 @@ export function SequencerGrid({synths, steps, stepSize, rowSize, initial_data}) 
     }
     let legend = range(steps).map((n)=><div key={"legend"+n} className={'legend ' + ((step===n)?"active":"")}>{n+1}</div>)
     return <div className={"sequencer-grid"} style={style}>{rows}<div></div>{legend}</div>
+}
+
+export function HBox({children}) {
+    return <div className={'hbox'}>{children}</div>
+}
+
+export function VBox({children}) {
+    return <div className={'vbox'}>{children}</div>
 }

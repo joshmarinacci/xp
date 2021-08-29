@@ -14,10 +14,37 @@ h3 {
     /*justify-content: center;*/
 }
 
+.vbox {
+    display: flex;
+    flex-direction: column;
+}
+
 
 .control {
     border: 1px solid black;
     border-radius: 0.5rem;
     padding: 0.5rem;
     background-color: sienna;
+}
+
+
+
+.tslider {
+    min-width: 10em;
+}
+
+.panel {
+    background-color: gold;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+}
+
+
+
+.prop-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    padding: 0.5em;
+    background-color: goldenrod;
+    border-radius: 0.5rem;
 }
