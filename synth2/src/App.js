@@ -1,7 +1,16 @@
 import './App.css'
-import {Filter, MembraneSynth, MonoSynth, NoiseSynth, Synth, Transport} from "tone"
-import {useState} from 'react'
-import {SynthEditor} from './editors.jsx'
+import {
+    AmplitudeEnvelope,
+    Filter,
+    FrequencyEnvelope, Loop,
+    MembraneSynth,
+    MonoSynth, Noise,
+    NoiseSynth,
+    Synth,
+    Transport
+} from "tone"
+import {useEffect, useState} from 'react'
+import {EnvelopeEditor, FilterEditor, NoiseEditor, SynthEditor} from './editors.jsx'
 
 function MakeSynths() {
 
@@ -205,9 +214,64 @@ function PresetsLoader({onChange}) {
     </select>
 }
 
-let editable_synth = new MonoSynth();
-editable_synth.toDestination()
+// let editable_synth = new Synth({
+//     //amplitude envelope
+//     envelope:{
+//         attack:0,
+//         decay:0.775,
+//         sustain:0,
+//         release:0.651
+//     }
+// });
+// let low_pass = new Filter({
+//     type:'lowpass',
+//     frequency:100,
+//     Q:0.2,
+// })
+// // low_pass.connect(editable_synth.output)
+// editable_synth.connect(low_pass)
+// let freq_env = new FrequencyEnvelope({
+//     attack: 0,
+//     decay:0.075,
+//     sustain:0,
+//     release:0.075,
+//     baseFrequency: 107,
+//     octaves: -0.5
+// })
+// freq_env.connect(editable_synth.oscillator.frequency)
+// low_pass.toDestination()
+//
 
+let noise = new Noise()
+let am = new AmplitudeEnvelope()
+noise.connect(am)
+am.toDestination()
+noise.start()
+let triggers = [noise,am]
+// let editable_synth = new NoiseSynth()
+function TriggerButton({beatLength}) {
+    useEffect(()=>{
+        let notes = ["C4", "D4", "E4","F4"]
+        let count = 0
+        let loop = new Loop(time => {
+            let note = notes[count % notes.length]
+            triggers.forEach(trg => {
+                console.log(trg.name)
+                if(trg.name === "Synth") trg.triggerAttackRelease(note, "8n", time)
+                if(trg.name === "FrequencyEnvelope") trg.triggerAttackRelease(time)
+                if(trg.name === "NoiseSynth") trg.triggerAttackRelease("8n",time)
+                if(trg.name === "AmplitudeEnvelope") trg.triggerAttackRelease("8n",time)
+            })
+            count = count + 1
+        }, beatLength).start(0)
+        return () => {
+            console.log("stopping")
+        }
+    })
+    return <button onClick={() => Transport.toggle()}>start {beatLength}</button>
+}
+
+// editable_synth.toDestination()
 function App() {
     const [global_state, set_global_state] = useState(STATES['clear8'])
     if(!global_state.data) global_state.data = []
@@ -226,7 +290,12 @@ function App() {
         {/*    <BPMControl/>*/}
         {/*    <PlayPauseButton/>*/}
         {/*</HBox>*/}
-        <SynthEditor synth={editable_synth}/>
+        <TriggerButton triggers={triggers} beatLength={"2n"}/>
+        <NoiseEditor noise={noise}/>
+        {/*<TriggerButton triggers={triggers} beatLength={"4n"}/>*/}
+        {/*<SynthEditor synth={editable_synth} triggers={[editable_synth]}/>*/}
+        <EnvelopeEditor envelope={am}/>
+        {/*<FilterEditor filter={low_pass}/>*/}
     </div>
   );
 }

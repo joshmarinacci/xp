@@ -26,7 +26,8 @@ function PropGrid({obj, props}) {
 }
 
 export function OscillatorEditor({oscillator}) {
-    let [type, set_type] = useState(oscillator.type)
+    let [type, set_type] = useState(oscillator?oscillator.type:"")
+    if(!oscillator) return <div></div>
     return <div className={"vbox panel"}>
         <div><b>name</b> {oscillator.name}</div>
         <div><b>type</b>
@@ -41,6 +42,7 @@ export function OscillatorEditor({oscillator}) {
         {/*    <b>harmonicity</b><i>{oscillator.harmonicity.value}</i>*/}
         {/*</div>*/}
         {/*<PropGrid obj={oscillator} props={["modulationType","partialCount","phase","type"]}/>*/}
+        <TSlider name={"detune"} min={-100} max={100} obj={oscillator} prop={"detune"}/>
     </div>
 }
 
@@ -89,43 +91,54 @@ function TSelect({obj, prop, values}) {
 
 let CURVES = ["linear","exponential"]
 
-function EnvelopeEditor({envelope}) {
-    let extras = ""
+export function EnvelopeEditor({envelope}) {
+    if(!envelope) return <div></div>
+    let extras = []
     if(envelope.baseFrequency) {
-        extras = <TSlider min={0} max={1000} obj={envelope} prop={"baseFrequency"}/>
+        extras.push(<TSlider min={0} max={1000} obj={envelope} prop={"baseFrequency"}/>)
+    }
+    if(envelope.octaves) {
+        extras.push(<TSlider min={-4} max={4} obj={envelope} prop={"octaves"}/>)
     }
     return <div className={"vbox panel"}>
         <label><b>Envelope:</b> {envelope.name}</label>
-        <label>{envelope.attack}</label>
         <TSlider name={"attack"} min={0} max={2} obj={envelope} prop={"attack"}/>
-        <TSelect obj={envelope} prop={"attackCurve"} values={CURVES}/>
+        {/*<TSelect obj={envelope} prop={"attackCurve"} values={CURVES}/>*/}
         <TSlider name={"decay"} min={0} max={2} obj={envelope} prop={"decay"}/>
-        <TSlider name={"release"} min={0} max={5} obj={envelope} prop={"release"}/>
         <TSlider name={"sustain"} min={0} max={1} obj={envelope} prop={"sustain"}/>
+        <TSlider name={"release"} min={0} max={5} obj={envelope} prop={"release"}/>
         {extras}
     </div>
 }
 let FILTER_TYPES = ["lowpass","highpass","bandpass","lowshelf","highshelf","notch","allpass","peaking"]
-function FilterEditor({filter}) {
+export function FilterEditor({filter}) {
+    if(!filter) return <div></div>
     return <div className={"vbox panel"}>
         <h4>Filter {filter.name}</h4>
+        <TSelect obj={filter} prop={"type"} values={FILTER_TYPES}/>
         <TSlider name={"frequency"} min={0} max={20000} obj={filter} prop={"frequency"}/>
         <TSlider name={"Q"} min={0} max={100} obj={filter} prop={"Q"}/>
         <TSlider name={"detune"} min={0} max={100} obj={filter} prop={"detune"}/>
         <TSlider name={"gain"} min={0} max={100} obj={filter} prop={"gain"}/>
-        <TSelect obj={filter} prop={"type"} values={FILTER_TYPES}/>
-        <PropGrid obj={filter} props={["frequency","Q","detune","type","gain"]}/>
+        {/*<PropGrid obj={filter} props={["frequency","Q","detune","type","gain"]}/>*/}
     </div>
 }
 
-export function SynthEditor({synth}) {
+export function SynthEditor({synth, triggers=[]}) {
     useEffect(() => {
         console.log('initial setup')
-        let nows = now()
+        // let nows = now()
         let notes = ["C4", "D4", "E4","F4"]
         let count = 0
         let loop = new Loop(time => {
-            synth.triggerAttackRelease(notes[count % notes.length], "8n", time)
+            let note = notes[count % notes.length]
+            triggers.forEach(trg => {
+                console.log(trg.name)
+                if(trg.name === "Synth") trg.triggerAttackRelease(note, "8n", time)
+                if(trg.name === "FrequencyEnvelope") trg.triggerAttackRelease(time)
+                if(trg.name === "NoiseSynth") trg.triggerAttackRelease("8n",time)
+            })
+            // synth.triggerAttackRelease(note, "8n", time)
             count = count + 1
         }, "4n").start(0)
         // synth.triggerAttackRelease("C4","8n",nows)
@@ -142,5 +155,13 @@ export function SynthEditor({synth}) {
             <TSlider name="volume" obj={synth.volume} prop={'value'} min={-20} max={20}/>
         </VBox>
         <button onClick={() => Transport.toggle()}>start</button>
+    </div>
+}
+
+export function NoiseEditor({noise}) {
+    if(!noise) return <div/>
+    return <div className={"vbox panel"}>
+        <h4>Noise {noise.name}</h4>
+        <TSelect obj={noise} prop={"type"} values={["white","brown","pink"]}/>
     </div>
 }
