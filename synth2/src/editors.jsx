@@ -148,13 +148,14 @@ export function SynthEditor({synth, triggers=[]}) {
     return <div className={'control'}>
         <h4>edit</h4>
         <VBox>
+            <NoiseEditor noise={synth.noise}/>
             <label><OscillatorEditor oscillator={synth.oscillator}/></label>
             <label><EnvelopeEditor envelope={synth.envelope}/></label>
             <label><FilterEditor filter={synth.filter}/></label>
             <label><EnvelopeEditor envelope={synth.filterEnvelope}/></label>
             <TSlider name="volume" obj={synth.volume} prop={'value'} min={-20} max={20}/>
         </VBox>
-        <button onClick={() => Transport.toggle()}>start</button>
+        {/*<button onClick={() => Transport.toggle()}>start</button>*/}
     </div>
 }
 
