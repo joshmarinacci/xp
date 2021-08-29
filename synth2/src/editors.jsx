@@ -138,8 +138,8 @@ export function SynthEditor({synth}) {
         set_loop(loop)
     }, [synth])
     const pulse = () => {
-        let note = "C4"
-        let dur = "4n"
+        let note = "C1"
+        let dur = "16n"
         let time = now()
         if(synth.name === "NoiseSynth") return synth.triggerAttackRelease(dur,time)
         return synth.triggerAttackRelease(note,dur,time)

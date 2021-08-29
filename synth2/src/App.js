@@ -303,6 +303,10 @@ function App() {
             stepSize={global_state.stepSize}
             rowSize={global_state.rowSize}
             initial_data={global_state.data}
+            onEdit={synth => {
+                console.log("changing the edit",synth)
+                set_synths([synth.synth])
+            }}
         />
         <HBox>
             <BPMControl/>

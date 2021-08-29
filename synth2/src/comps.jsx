@@ -67,8 +67,9 @@ export function Spacer() {
     return <span className={"spacer"}/>
 }
 
-function SynthControl({synth}) {
+function SynthControl({synth,onEdit}) {
     return <div className={"control hbox"}>
+        <button onClick={()=>onEdit(synth)}>edit</button>
         <label style={{ minWidth:"50px"}} onClick={()=>play_example(synth)}>{synth.title}</label>
         <Spacer/>
         <VolumeControl volume={synth.synth.volume} label={"vol"}/>
@@ -80,7 +81,7 @@ function fill_empty(stepCount) {
     return range(stepCount).map(i => ({on:false, col:i}))
 }
 
-function SynthRow({synth, stepCount, active_step, initial_data}) {
+function SynthRow({synth, stepCount, active_step, initial_data, onEdit}) {
     let [steps, setSteps] = useState([])
     useEffect(()=>{
         make_Seq(synth,stepCount)
@@ -106,7 +107,7 @@ function SynthRow({synth, stepCount, active_step, initial_data}) {
         }
     },[synth,stepCount])
     return <>
-        <SynthControl key={"control_"+synth.name} synth={synth}/>
+        <SynthControl key={"control_"+synth.name} synth={synth} onEdit={onEdit}/>
         {steps.map(step => <Step step={step} col={step.col}  key={synth.name+"_"+step.col} active_step={active_step} onToggle={(step)=>{
             synth.seq.events[step.col] = null
             step.on = !step.on
@@ -120,7 +121,7 @@ function SynthRow({synth, stepCount, active_step, initial_data}) {
     </>
 }
 
-export function SequencerGrid({synths, steps, stepSize, rowSize, initial_data}) {
+export function SequencerGrid({synths, steps, stepSize, rowSize, initial_data, onEdit}) {
     const [step, set_step] = useState(0)
     useEffect(()=>{
         let ticks = range(steps).map(()=>"C4")
@@ -136,7 +137,7 @@ export function SequencerGrid({synths, steps, stepSize, rowSize, initial_data}) 
             seq.dispose()
         }
     },[synths,steps])
-    let rows = synths.map((synth,i) => <SynthRow key={synth.name} stepCount={steps} synth={synth} active_step={step} initial_data={initial_data[i]}/>)
+    let rows = synths.map((synth,i) => <SynthRow key={synth.name} stepCount={steps} synth={synth} active_step={step} initial_data={initial_data[i]} onEdit={onEdit}/>)
     let style = {
         display:"grid",
         gridTemplateColumns:`15rem repeat(${steps},${stepSize})`,
