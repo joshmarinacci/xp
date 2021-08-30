@@ -14,6 +14,9 @@ h3 {
     /*justify-items: center;*/
     /*justify-content: center;*/
 }
+.hbox > * {
+    margin: 0.125em;
+}
 
 .vbox {
     display: flex;

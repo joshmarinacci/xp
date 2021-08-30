@@ -1,7 +1,8 @@
 .sequencer-grid2 {
-    border: 1px solid red;
-    background-color: #e0e0e0;
+    border: 1px solid black;
+    background-color: saddlebrown;
     grid-gap: 1px;
+    color: white;
 }
 
 .sequencer-grid2 .header {
@@ -11,15 +12,16 @@
     padding: 0.25em;
 }
 .sequencer-grid2 .step-cell {
-    background-color: #888888;
+    background-color: #888;
+    color:#444;
     font-size: 75%;
     text-align: center;
 }
 .sequencer-grid2 .step-cell.on {
-    background-color: #cccccc;
+    background-color: gold;
 }
 .sequencer-grid2 .step-cell.active {
-    background-color: gold;
+    background-color: #ccc;
 }
 .sequencer-grid2 .step-cell.on.active {
     background-color: lightgoldenrodyellow;
