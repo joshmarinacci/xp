@@ -125,24 +125,40 @@ function SynthRow({synth, stepCount, row, active_step, initial_data, onEdit, tog
     </>
 }
 
+function gen_grid(rows,cols) {
+    let grid = []
+    range(rows).forEach(()=>{
+        let arr = range(cols).map(i => {
+            return {
+                on:false,
+                col:i
+            }
+        })
+        grid.push(arr)
+    })
+    return grid
+}
+
 export function SequencerGrid({synths, stepCount, stepSize, rowSize, initial_data, onEdit}) {
     const [step, set_step] = useState(0)
     const [loop, set_loop] = useState(null)
     const [playing, set_playing] = useState(false)
     const [steps, set_steps] = useState([[]])
     useEffect(()=>{
-        let grid = []
-        synths.forEach(()=>{
-            let arr = range(stepCount).map(i => {
-                return {
-                    on:false,
-                    col:i
+        set_steps(gen_grid(synths.length,stepCount))
+    },[synths,stepCount])
+    useEffect(()=>{
+        let grid = gen_grid(synths.length, stepCount)
+        initial_data.forEach((str_row,j) => {
+            let row = str_row.split("").filter(ch => ch !== " ")
+            row.map((ch,i)=>{
+                if(ch === "1") {
+                    grid[j][i].on = true
                 }
             })
-            grid.push(arr)
         })
         set_steps(grid)
-    },[synths,stepCount])
+    },[initial_data])
     function toggle_sequencer() {
         if(playing) {
             set_playing(false)
@@ -152,21 +168,20 @@ export function SequencerGrid({synths, stepCount, stepSize, rowSize, initial_dat
             let count = 0
             set_loop(new Loop((time)=>{
                 let step = count%stepCount
-                let note = "C4"
                 set_step(step)
                 synths.forEach((syn,row) => {
                     let data = steps[row]
                     let cell = data[step]
                     if(cell.on) {
                         if(syn.synth.name === "NoiseSynth") {
-                            syn.synth.triggerAttackRelease('4n',time)
+                            syn.synth.triggerAttackRelease(syn.dur,time)
                         } else {
-                            syn.synth.triggerAttackRelease(note, '4n', time)
+                            syn.synth.triggerAttackRelease(syn.note, syn.dur, time)
                         }
                     }
                 })
                 count++
-            }).start())
+            },'8n').start())
         }
     }
     let rows = synths.map((synth,i) => <SynthRow key={synth.name} stepCount={stepCount} synth={synth} active_step={step}
