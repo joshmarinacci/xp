@@ -7,6 +7,8 @@ let OSC_TYPES = [
     "amsine","amsquare","amtriangle","amsawtooth",
     "fmsine","fmsquare","fmtriangle","fmsawtooth",
 ]
+let CURVES = ["linear","exponential"]
+let FILTER_TYPES = ["lowpass","highpass","bandpass","lowshelf","highshelf","notch","allpass","peaking"]
 
 function PropGrid({obj, props}) {
     return <div className={"prop-grid"}>
@@ -18,6 +20,24 @@ function PropGrid({obj, props}) {
                 <i key={`value_${prop}`}>{obj.get_value(prop)}</i>
             </>
         })}
+    </div>
+}
+
+function PropEditorRow({obj,prop}) {
+    if(prop === 'vibratoAmount') return <PropSlider name={prop} prop={prop} obj={obj} min={0} max={1}/>
+    if(prop === 'vibratoRate') return <PropSlider name={prop} prop={prop} obj={obj} min={0} max={1000}/>
+    if(prop === 'harmonicity') return <PropSlider name={prop} prop={prop} obj={obj} min={0} max={2}/>
+    return <>
+            <label key={`name_${prop}`}>{prop}</label>
+            <b></b>
+            <i key={`value_${prop}`}>{obj.get_value(prop)}</i>
+    </>
+}
+
+function PropEditorGrid({obj, props}) {
+    return <div className={"prop-grid"}>
+        <label>other props</label> <b></b>
+        {props.map(prop => <PropEditorRow key={`row_${prop}`} obj={obj} prop={prop}/>)}
     </div>
 }
 
@@ -53,24 +73,19 @@ function PropSlider({prop, obj, min, max, name}) {
         <b>{value.toFixed(2)}</b>
     </>
 }
-
-function TSelect({obj, prop, values}) {
-    const [value, set_value] = useState(obj[prop])
+function PropSelect({obj, prop, values}) {
+    const [value, set_value] = useState(obj.get_value(prop))
     return <>
         <label>{prop}</label>
         <select value={value} onChange={(e)=>{
             let v = e.target.value
             set_value(v)
-            obj[prop] = v
-            console.log("object is now",obj)
+            obj.set_value(prop,v)
         }}>
             {values.map(v => <option key={v} value={v}>{v}</option>)}
         </select>
     </>
 }
-
-let CURVES = ["linear","exponential"]
-
 export function EnvelopeEditor({envelope}) {
     if(!envelope) return <div></div>
     let extras = []
@@ -90,13 +105,10 @@ export function EnvelopeEditor({envelope}) {
         {extras}
     </div>
 }
-let FILTER_TYPES = ["lowpass","highpass","bandpass","lowshelf","highshelf","notch","allpass","peaking"]
 export function FilterEditor({filter}) {
-    console.log("filter is",filter)
-    if(!filter) return <div></div>
     return <div className={"prop-grid"}>
-        <label>Filter</label> <b>{filter.name}</b>
-        <TSelect obj={filter} prop={"type"} values={FILTER_TYPES}/>
+        <label>Filter</label> <b>{filter.get_value('name')}</b>
+        <PropSelect obj={filter} prop={"type"} values={FILTER_TYPES}/>
         <PropSlider name={"frequency"} min={0} max={20000} obj={filter} prop={"frequency"}/>
         <PropSlider name={"Q"} min={0} max={100} obj={filter} prop={"Q"}/>
         <PropSlider name={"detune"} min={0} max={100} obj={filter} prop={"detune"}/>
@@ -105,61 +117,24 @@ export function FilterEditor({filter}) {
 }
 
 export function SynthEditor({synth}) {
-    console.log("synth is",synth)
-    // let [looper, set_loop] = useState(null)
-    // useEffect(() => {
-    //     console.log('initial setup')
-    //     let notes = ["C4", "D4", "E4","F4"]
-    //     let count = 0
-    //     let loop = new Loop(time => {
-    //         let note = notes[count % notes.length]
-    //         // triggers.forEach(trg => {
-    //         //     console.log(trg.name)
-    //         //     if(trg.name === "Synth") trg.triggerAttackRelease(note, "8n", time)
-    //         //     if(trg.name === "FrequencyEnvelope") trg.triggerAttackRelease(time)
-    //         // if(synth.name === "NoiseSynth") synth.triggerAttackRelease("8n",time)
-    //         // })
-    //         synth.triggerAttackRelease(note, "8n", time)
-    //         count = count + 1
-    //     }, "2n")
-    //     set_loop(loop)
-    // }, [synth])
     const pulse = () => {
         let note = "C1"
         let dur = "16n"
         let time = now()
         synth.triggerAttackRelease(note,dur,time)
     }
-    const cycle = () => {
-        // console.log("looper is",looper)
-        // looper.start(now())
-    }
-
-    // if(synth.name === "DuoSynth") {
-    //     return <div className={'vbox duo-panel'}>
-    //         <HBox>
-    //             <button onClick={pulse}>pulse</button>
-    //             <button onClick={cycle}>cycle</button>
-    //         </HBox>
-    //         <SynthEditor key={"voice0"} synth={synth.voice0}/>
-    //         <SynthEditor key={"voice1"} synth={synth.voice1}/>
-    //     </div>
-    // }
-    let noise = <div/>
-    if(synth.synth.noise) noise = <NoiseEditor noise={synth.synth.noise}/>
-    // let osc = <div/>
     return <div className={"hbox control"}>
         <VBox>
             <h4>{synth.title()}</h4>
             <h4>{synth.get_value('name')}</h4>
             <button onClick={pulse}>pulse</button>
         </VBox>
-        {noise}
+        {synth.noises().map(noise => <NoiseEditor key={noise.id} noise={noise}/>)}
         {synth.oscillators().map(osc => <OscillatorEditor key={osc.id} oscillator={osc}/>)}
         {synth.envelopes().map(env =>   <EnvelopeEditor key={env.id} envelope={env}/>)}
         {synth.filters().map(filter =>  <FilterEditor key={filter.id} filter={filter}/>)}
-        {/*<EnvelopeEditor envelope={synth.filterEnvelope}/>*/}
-        <PropGrid obj={synth} props={synth.extra_props()}/>
+        {/*<PropGrid obj={synth} props={synth.extra_props()}/>*/}
+        <PropEditorGrid obj={synth} props={synth.extra_props()}/>
         <PropSlider name="volume" obj={synth} prop={'volume'} min={-20} max={20}/>
     </div>
 }
@@ -175,6 +150,6 @@ export function NoiseEditor({noise}) {
     if(!noise) return <div/>
     return <div className={"vbox panel"}>
         <h4>Noise {noise.name}</h4>
-        <TSelect obj={noise} prop={"type"} values={["white","brown","pink"]}/>
+        <PropSelect obj={noise} prop={"type"} values={["white","brown","pink"]}/>
     </div>
 }

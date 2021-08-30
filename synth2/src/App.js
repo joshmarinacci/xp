@@ -296,15 +296,12 @@ class Wrapper {
         let prop = this.obj[name]
         // console.log("get_value",name,prop, this.obj)
         if(prop === undefined) return null
-        if(prop && prop.name && prop.name === "Param") return prop.value
-        if(prop && prop.name && prop.name === "Signal") return prop.value
+        if(prop && prop.name) return prop.value
         return prop
     }
     set_value(name,value) {
         let prop = this.obj[name]
-        // console.log("setting",name,value,prop)
-        if(prop && prop.name && prop.name === "Param") return prop.value = value
-        if(prop && prop.name && prop.name === "Signal") return prop.value = value
+        if(prop && prop.name) return prop.value = value
         this.obj[name] = value
     }
 }
@@ -319,31 +316,37 @@ class SynthWrapper {
     }
     get_value(name) {
         let prop = this.synth[name]
-        console.log("getting",name,prop)
-        if(prop.name && prop.name === "Param") return prop.value
+        if(prop === undefined) return null
+        if(prop && prop.name) return prop.value
         return prop
     }
     set_value(name,value) {
         let prop = this.synth[name]
-        console.log("setting",name,value,prop)
-        if(prop.name && prop.name === "Param") return prop.value = value
+        if(prop && prop.name) return prop.value = value
         this.synth[name] = value
     }
     triggerAttackRelease(note,dur,time) {
         if(this.synth.name === "NoiseSynth") return this.synth.triggerAttackRelease(dur,time)
         return this.synth.triggerAttackRelease(note,dur,time)
     }
-    oscillators(){
-        if(this.synth.oscillator) return [new Wrapper(this.synth.oscillator)]
+    noises() {
+        if(this.synth.noise) return [new Wrapper(this.synth.noise)]
         return []
     }
+    oscillators(){
+        let oscs = []
+        if(this.synth.voice0) oscs.push(new Wrapper(this.synth.voice0.oscillator))
+        if(this.synth.voice1) oscs.push(new Wrapper(this.synth.voice1.oscillator))
+        if(this.synth.oscillator) oscs.push(new Wrapper(this.synth.oscillator))
+        return oscs
+    }
     envelopes() {
-        // console.log("envelopes for",this.synth.envelope.sustain)
         if(this.synth.envelope) return [new Wrapper(this.synth.envelope)]
         return []
     }
     extra_props() {
         if(this.synth.name === "MembraneSynth") return ['octaves','pitchDecay','volume']
+        if(this.synth.name === "DuoSynth") return ['vibratoAmount','vibratoRate','harmonicity']
         return []
     }
     filters() {
@@ -373,10 +376,10 @@ function App() {
                 set_editing_synth(new SynthWrapper(synth.synth,synth.name))
             }}
         />
-        {/*<HBox>*/}
-        {/*    <button onClick={()=>{*/}
-        {/*        set_synths(synths.concat([new Synth().toDestination()]))*/}
-        {/*    }}>add simple synth</button>*/}
+        <HBox>
+            {/*<button onClick={()=>set_editing_synth(new SynthWrapper(new Synth().toDestination()))}>+ simple synth</button>*/}
+            <button onClick={()=>set_editing_synth(new SynthWrapper(new MonoSynth().toDestination()))}>+ mono synth</button>
+            <button onClick={()=>set_editing_synth(new SynthWrapper(new DuoSynth().toDestination()))}>+ duo synth</button>
         {/*    <button onClick={()=>{*/}
         {/*        set_synths(synths.concat([new MonoSynth().toDestination()]))*/}
         {/*    }}>add mono synth</button>*/}
@@ -392,7 +395,7 @@ function App() {
         {/*    <button onClick={()=>{*/}
         {/*        set_synths(synths.concat([new MetalSynth().toDestination()]))*/}
         {/*    }}>add metal synth</button>*/}
-        {/*</HBox>*/}
+        </HBox>
         {/*<TriggerButton triggers={triggers} beatLength={"2n"}/>*/}
         {/*<TriggerButton triggers={triggers} beatLength={"4n"}/>*/}
         {editing_synth?<SynthEditor key={editing_synth.id} synth={editing_synth}/>:<div/>}

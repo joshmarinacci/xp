@@ -50,7 +50,7 @@ h3 {
     border-radius: 0.5rem;
     margin:0.5em;
     align-items: center;
-    width: 20em;
+    min-width: 20em;
 }
 
 .prop-grid label {
