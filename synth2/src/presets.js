@@ -156,12 +156,17 @@ export function MakeInstruments() {
         'simple-sine': new MonoSynth({
             title:'simple-sine',
             oscillator:{
-                type:"sine",
+                type:"amsine",
             },
         }).toDestination(),
         'simple-square': new MonoSynth({
             oscillator:{
-                type:"square",
+                type:"amsquare",
+            },
+        }).toDestination(),
+        'simple-sawtooth': new MonoSynth({
+            oscillator:{
+                type:"amsawtooth",
             },
         }).toDestination(),
     }
