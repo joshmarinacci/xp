@@ -12,6 +12,8 @@
 }
 .sequencer-grid2 .step-cell {
     background-color: #888888;
+    font-size: 75%;
+    text-align: center;
 }
 .sequencer-grid2 .step-cell.on {
     background-color: #cccccc;
@@ -21,4 +23,7 @@
 }
 .sequencer-grid2 .step-cell.on.active {
     background-color: lightgoldenrodyellow;
+}
+.sequencer-grid2 .step-cell.four {
+    border-left: 3px solid black;
 }

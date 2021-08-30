@@ -107,21 +107,23 @@ class EventSource {
 }
 
 export class BassLineSequence extends EventSource {
-    constructor(synth, notes, stepCount) {
+    constructor(synth, notes, default_duration, stepCount) {
         super()
         this.synth = synth
         this.notes = notes
         this.stepCount = stepCount
+        this.default_duration = default_duration
         this.steps = this.notes.map((n, j) => {
             return range(stepCount).map(i => {
                 return {
                     on: false,
                     col: i,
-                    row: j
+                    row: j,
+                    dur:this.default_duration
                 }
             })
         })
-        console.log("final steps are", this.steps)
+        // console.log("final steps are", this.steps)
         // this.synth.start()
     }
 
@@ -136,13 +138,18 @@ export class BassLineSequence extends EventSource {
 
     playNote(row, col) {
         let note = this.notes[row]
+        let cell = this.getCell(row,col)
         if (this.isOn(row, col)) {
             let time = now()
-            this.synth.triggerAttackRelease(note, '8n', time)
+            this.synth.triggerAttackRelease(note, cell.dur, time)
         }
     }
 
     playColumn(col) {
         this.notes.forEach((note, row) => this.playNote(row, col))
+    }
+
+    getCell(row, col) {
+        return this.steps[row][col]
     }
 }

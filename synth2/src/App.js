@@ -4,7 +4,6 @@ import {useState} from 'react'
 import {SynthEditor} from './editors.jsx'
 import {BPMControl, HBox, PlayPauseButton, SequencerGrid} from './comps.jsx'
 
-import "./grid2.css"
 import {SequencerGrid2} from './sequencer.jsx'
 import {BassLineSequence, SynthWrapper} from './dataobjects.js'
 import {MakeSynths, STATES} from './presets.js'
@@ -22,6 +21,7 @@ function PresetsLoader({onChange}) {
 let MASTER_SYNTHS = MakeSynths()
 let bass_steps = new BassLineSequence(new MonoSynth().toDestination(),
     ["C4",'D4',"E4"].reverse(),
+    '16n',
     8)
 
 
@@ -47,7 +47,9 @@ function App() {
                 set_editing_synth(new SynthWrapper(synth.synth,synth.name))
             }}
         />
-        <SequencerGrid2 data={bass_steps} onEdit={data => set_editing_synth(new SynthWrapper(data.synth, data.name))}/>
+        <SequencerGrid2
+            data={bass_steps}
+            onEdit={data => set_editing_synth(new SynthWrapper(data.synth, data.name))}/>
         {/*<HBox>*/}
         {/*    <button onClick={()=>set_editing_synth(new SynthWrapper(new MonoSynth().toDestination()))}>+ mono synth</button>*/}
         {/*    <button onClick={()=>set_editing_synth(new SynthWrapper(new DuoSynth().toDestination()))}>+ duo synth</button>*/}

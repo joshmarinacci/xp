@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react'
-import {cls2str, range} from './comps.jsx'
+import {cls2str, HBox, range} from './comps.jsx'
 import {Loop} from 'tone'
+import "./sequencer.css"
 
 function StepCell({row, col, data, active_step}) {
     const [on, set_on] = useState(data.isOn(row, col))
@@ -17,14 +18,15 @@ function StepCell({row, col, data, active_step}) {
     let clss = {
         'step-cell': true,
         'on': on,
-        'active': col === active_step
+        'active': col === active_step,
+        'four':col%4 === 0,
     }
 
     return <div className={cls2str(clss)} onClick={() => {
         data.toggle(row, col)
         data.playNote(row, col)
     }
-    }/>
+    }>{data.getCell(row,col).dur}</div>
 }
 
 export function SequencerGrid2({data, onEdit}) {
@@ -55,7 +57,7 @@ export function SequencerGrid2({data, onEdit}) {
                 set_step(step)
                 data.playColumn(step)
                 count++
-            }, '8n').start())
+            }, '4n').start())
         }
     }
 
@@ -69,8 +71,10 @@ export function SequencerGrid2({data, onEdit}) {
         </>
     })
     return <div style={style} className={'sequencer-grid2'}>{rows}
-        <button onClick={toggle_sequencer}>{playing ? "pause" : "play"}</button>
-        <button onClick={edit_synth}>edit</button>
-        <label>{data.synth.name}</label>
+        <HBox>
+            <button onClick={toggle_sequencer}>{playing ? "pause" : "play"}</button>
+            <button onClick={edit_synth}>edit</button>
+            <label>{data.synth.name}</label><label>{data.default_duration}</label>
+        </HBox>
     </div>
 }

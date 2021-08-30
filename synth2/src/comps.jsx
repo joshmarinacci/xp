@@ -11,7 +11,6 @@ export function range(len){
 }
 
 function play_example(synth) {
-    console.log("playing",synth.synth.name,synth.dur)
     if(synth.synth.name === 'MembraneSynth') {
         synth.synth.triggerAttackRelease('C2',synth.dur)
         return
