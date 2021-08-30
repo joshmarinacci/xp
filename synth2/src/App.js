@@ -24,9 +24,9 @@ let INSTRUMENTS = MakeInstruments();
 let bass_steps = new BassLineSequence(
     'simple-sine',
     INSTRUMENTS['simple-sine'],
-    ["C4",'D4',"E4"].reverse(),
+    ["C2",'D2',"E2","F2","G2"].reverse(),
     '16n',
-    8)
+    16)
 
 
 function App() {
