@@ -22,9 +22,17 @@ let MASTER_SYNTHS = MakePercussionInstruments()
 
 let INSTRUMENTS = MakeInstruments();
 let bass_steps = new BassLineSequence(
-    "Base Line",
+    "Bass Line",
     'simple-sine',
     INSTRUMENTS['simple-sine'],
+    ["C2",'D2',"E2","F2","G2"].reverse(),
+    '16n',
+    16)
+
+let lead_steps = new BassLineSequence(
+    "Lead",
+    "simple-square",
+    INSTRUMENTS['simple-square'],
     ["C2",'D2',"E2","F2","G2"].reverse(),
     '16n',
     16)
@@ -57,10 +65,11 @@ function App() {
             onEdit={data => set_editing_synth(new SynthWrapper(data.synth, data.name))}
             availableInstruments={INSTRUMENTS}
         />
-        {/*<HBox>*/}
-        {/*    <button onClick={()=>set_editing_synth(new SynthWrapper(new MonoSynth().toDestination()))}>+ mono synth</button>*/}
-        {/*    <button onClick={()=>set_editing_synth(new SynthWrapper(new DuoSynth().toDestination()))}>+ duo synth</button>*/}
-        {/*</HBox>*/}
+        <SequencerGrid2
+            data={lead_steps}
+            onEdit={data => set_editing_synth(new SynthWrapper(data.synth, data.name))}
+            availableInstruments={INSTRUMENTS}
+        />
         <div>
             <h3>current synth</h3>
             {editing_synth?<SynthEditor key={editing_synth.id} synth={editing_synth}/>:<div/>}
