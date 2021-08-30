@@ -1,0 +1,17 @@
+.sequencer-grid2 {
+    border: 1px solid red;
+    grid-gap: 1px;
+}
+
+.sequencer-grid2 .header {
+    background-color: darkgoldenrod;
+    color: white;
+    border-radius: 0.5em;
+    padding: 0.25em;
+}
+.sequencer-grid2 .step-cell {
+    background-color: #888888;
+}
+.sequencer-grid2 .step-cell.on {
+    background-color: #cccccc;
+}

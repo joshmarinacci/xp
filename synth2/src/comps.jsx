@@ -2,7 +2,7 @@ import "./synth.css"
 import {useEffect, useState} from 'react'
 import {Loop, Sequence} from 'tone'
 
-function range(len){
+export function range(len){
     let nums = []
     for(let i=0; i<len; i++) {
         nums.push(i)
@@ -19,7 +19,7 @@ function play_example(synth) {
     synth.synth.triggerAttackRelease(synth.dur)
 }
 
-function cls2str(obj) {
+export function cls2str(obj) {
     return Object.entries(obj).filter(([key,value])=>value)
         .map(([key,value])=>key)
         .join(" ")

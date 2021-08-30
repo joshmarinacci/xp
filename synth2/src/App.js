@@ -11,9 +11,10 @@ import {
 } from "tone"
 import {useEffect, useState} from 'react'
 import {EnvelopeEditor, FilterEditor, NoiseEditor, SynthEditor} from './editors.jsx'
-import {HBox, SequencerGrid} from './comps.jsx'
+import {cls2str, HBox, range, SequencerGrid} from './comps.jsx'
 import {generateUniqueID} from 'web-vitals/dist/modules/lib/generateUniqueID.js'
 
+import "./grid2.css"
 function MakeSynths() {
 
 
@@ -360,6 +361,106 @@ class SynthWrapper {
         return filters
     }
 }
+
+let bass_line = {
+    //the active synth
+    //number of notes
+    //the actual notes available
+    //the beats on or off
+}
+
+class EventSource {
+    constructor() {
+        this.listeners = {}
+    }
+    on(type, cb) {
+        if(!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type].push(cb)
+    }
+    off(type, cb) {
+        if(!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type] = this.listeners[type].filter(c => c !== cb)
+    }
+    fire(type,payload) {
+        if(!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type].forEach(cb => cb(payload))
+    }
+}
+class BassLineSequence extends EventSource {
+    constructor(synth,notes,stepCount) {
+        super()
+        this.synth = synth
+        this.notes = notes
+        this.stepCount = stepCount
+        this.steps = this.notes.map((n,j) => {
+            return range(stepCount).map(i => {
+                return {
+                    on:false,
+                    col:i,
+                    row:j,
+                }
+            })
+        })
+        console.log("final steps are",this.steps)
+        // this.synth.start()
+    }
+    toggle(row,col) {
+        this.steps[row][col].on = !this.steps[row][col].on
+        this.fire("change",{})
+    }
+    isOn(row,col) {
+        return this.steps[row][col].on
+    }
+}
+
+let bass_steps = new BassLineSequence(new MonoSynth(),["C4",'D4',"E4"],4)
+
+
+function StepCell({row, col, data}) {
+    const [on,set_on] = useState(data.isOn(row,col))
+    useEffect(()=>{
+        console.log("rebuilt")
+        let cb = () => {
+            set_on(data.isOn(row,col))
+        }
+        data.on('change',cb)
+        return () => {
+            data.off('change',cb)
+        }
+    })
+
+    let clss = {
+        'step-cell':true,
+        'on':on
+    }
+
+    return <div className={cls2str(clss)} onClick={()=>{
+        console.log("toggling at",row,col)
+        data.toggle(row,col)
+    }
+    }/>
+}
+
+function SequencerGrid2({data}) {
+    // const [dt, set_dt] = useState(data)
+    let stepSize = '40px'
+    let rowSize = '40px'
+    let style = {
+        display:"grid",
+        gridTemplateColumns:`5rem repeat(${data.stepCount},${stepSize})`,
+        gridTemplateRows: `repeat(${data.notes.length}, ${rowSize})`,
+    }
+    let rows = data.notes.map((note,j) => {
+        return <>
+            <div className={'header'} key={'header'+note}>{note}</div>
+            {range(data.stepCount).map((col)=> {
+                return <StepCell key={"step"+col} row={j} col={col} data={data}/>
+            })}
+        </>
+    })
+    return <div style={style} className={'sequencer-grid2'}>{rows}</div>
+}
+
 function App() {
     const [global_state, set_global_state] = useState(STATES['clear8'])
     const [editing_synth, set_editing_synth] = useState(null)
@@ -382,6 +483,7 @@ function App() {
                 set_editing_synth(new SynthWrapper(synth.synth,synth.name))
             }}
         />
+        <SequencerGrid2 data={bass_steps}/>
         <HBox>
             {/*<button onClick={()=>set_editing_synth(new SynthWrapper(new Synth().toDestination()))}>+ simple synth</button>*/}
             <button onClick={()=>set_editing_synth(new SynthWrapper(new MonoSynth().toDestination()))}>+ mono synth</button>
