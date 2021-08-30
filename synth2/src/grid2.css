@@ -15,3 +15,9 @@
 .sequencer-grid2 .step-cell.on {
     background-color: #cccccc;
 }
+.sequencer-grid2 .step-cell.active {
+    background-color: gold;
+}
+.sequencer-grid2 .step-cell.on.active {
+    background-color: lightgoldenrodyellow;
+}

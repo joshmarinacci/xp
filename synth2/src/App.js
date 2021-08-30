@@ -411,12 +411,24 @@ class BassLineSequence extends EventSource {
     isOn(row,col) {
         return this.steps[row][col].on
     }
+    playNote(row,col) {
+        let note = this.notes[row]
+        if(this.isOn(row,col)) {
+            let time = now()
+            this.synth.triggerAttackRelease(note,'8n',time)
+        }
+    }
+    playColumn(col) {
+        this.notes.forEach((note,row)=>this.playNote(row,col))
+    }
 }
 
-let bass_steps = new BassLineSequence(new MonoSynth(),["C4",'D4',"E4"],4)
+let bass_steps = new BassLineSequence(new MonoSynth().toDestination(),
+    ["C4",'D4',"E4"].reverse(),
+    8)
 
 
-function StepCell({row, col, data}) {
+function StepCell({row, col, data, active_step}) {
     const [on,set_on] = useState(data.isOn(row,col))
     useEffect(()=>{
         console.log("rebuilt")
@@ -431,18 +443,21 @@ function StepCell({row, col, data}) {
 
     let clss = {
         'step-cell':true,
-        'on':on
+        'on':on,
+        'active':col === active_step
     }
 
     return <div className={cls2str(clss)} onClick={()=>{
-        console.log("toggling at",row,col)
         data.toggle(row,col)
+        data.playNote(row,col)
     }
     }/>
 }
 
-function SequencerGrid2({data}) {
-    // const [dt, set_dt] = useState(data)
+function SequencerGrid2({data, onEdit}) {
+    const [playing, set_playing] = useState(false)
+    const [loop, set_loop] = useState(null)
+    const [step, set_step] = useState(0)
     let stepSize = '40px'
     let rowSize = '40px'
     let style = {
@@ -450,15 +465,36 @@ function SequencerGrid2({data}) {
         gridTemplateColumns:`5rem repeat(${data.stepCount},${stepSize})`,
         gridTemplateRows: `repeat(${data.notes.length}, ${rowSize})`,
     }
+    function edit_synth() {
+        onEdit(data)
+    }
+    function toggle_sequencer() {
+        if(playing) {
+            set_playing(false)
+            loop.stop()
+        } else {
+            set_playing(true)
+            let count = 0
+            set_loop(new Loop((time)=>{
+                let step = count%data.stepCount
+                set_step(step)
+                data.playColumn(step)
+                count++
+            },'8n').start())
+        }
+    }
     let rows = data.notes.map((note,j) => {
         return <>
             <div className={'header'} key={'header'+note}>{note}</div>
             {range(data.stepCount).map((col)=> {
-                return <StepCell key={"step"+col} row={j} col={col} data={data}/>
+                return <StepCell key={"step"+col} row={j} col={col} data={data} active_step={step}/>
             })}
         </>
     })
-    return <div style={style} className={'sequencer-grid2'}>{rows}</div>
+    return <div style={style} className={'sequencer-grid2'}>{rows}
+        <button onClick={toggle_sequencer}>{playing?"pause":"play"}</button>
+        <button onClick={edit_synth}>edit</button>
+    </div>
 }
 
 function App() {
@@ -483,7 +519,7 @@ function App() {
                 set_editing_synth(new SynthWrapper(synth.synth,synth.name))
             }}
         />
-        <SequencerGrid2 data={bass_steps}/>
+        <SequencerGrid2 data={bass_steps} onEdit={data => set_editing_synth(new SynthWrapper(data.synth, data.name))}/>
         <HBox>
             {/*<button onClick={()=>set_editing_synth(new SynthWrapper(new Synth().toDestination()))}>+ simple synth</button>*/}
             <button onClick={()=>set_editing_synth(new SynthWrapper(new MonoSynth().toDestination()))}>+ mono synth</button>
