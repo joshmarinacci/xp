@@ -33,7 +33,7 @@ let lead_steps = new BassLineSequence(
     "Lead",
     "simple-square",
     INSTRUMENTS['simple-square'],
-    ["C2",'D2',"E2","F2","G2"].reverse(),
+    ["C4",'D4',"E4","F4","G4"].reverse(),
     '16n',
     16)
 
