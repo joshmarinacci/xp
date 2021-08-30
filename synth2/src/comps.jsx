@@ -1,6 +1,6 @@
 import "./synth.css"
 import {useEffect, useState} from 'react'
-import {Sequence} from 'tone'
+import {Loop, Sequence} from 'tone'
 
 function range(len){
     let nums = []
@@ -81,70 +81,114 @@ function fill_empty(stepCount) {
     return range(stepCount).map(i => ({on:false, col:i}))
 }
 
-function SynthRow({synth, stepCount, active_step, initial_data, onEdit}) {
-    let [steps, setSteps] = useState([])
-    useEffect(()=>{
-        make_Seq(synth,stepCount)
-        if(initial_data) {
-            let data = initial_data.split("").filter(ch => ch !== " ")
-            setSteps(data.map((ch,i)=>{
-                if(ch === "1") {
-                    synth.seq.events[i] = synth.note
-                } else {
-                    synth.seq.events[i] = null
-                }
-                return {
-                    on:ch==="1",
-                    col:i
-                }
-            }))
-        } else {
-            setSteps(fill_empty(stepCount))
-        }
-        return () => {
-            synth.seq.stop()
-            synth.seq.dispose()
-        }
-    },[synth,stepCount])
+function SynthRow({synth, stepCount, row, active_step, initial_data, onEdit, toggleStep, steps}) {
+    // console.log("making row with data",steps)
+    if(!steps) return <>loading</>
+    // let [steps, setSteps] = useState([])
+    // useEffect(()=>{
+    //     // make_Seq(synth,stepCount)
+    //     // console.log("rebuilding from initial_data")
+    //     if(initial_data) {
+    //         let data = initial_data.split("").filter(ch => ch !== " ")
+    //         setSteps(data.map((ch,i)=>{
+    //             if(ch === "1") {
+    //                 synth.seq.events[i] = synth.note
+    //             } else {
+    //                 synth.seq.events[i] = null
+    //             }
+    //             return {
+    //                 on:ch==="1",
+    //                 col:i
+    //             }
+    //         }))
+    //     } else {
+    //         setSteps(fill_empty(stepCount))
+    //     }
+    //     return () => {
+    //         // synth.seq.stop()
+    //         // synth.seq.dispose()
+    //     }
+    // },[synth,stepCount])
     return <>
         <SynthControl key={"control_"+synth.name} synth={synth} onEdit={onEdit}/>
-        {steps.map(step => <Step step={step} col={step.col}  key={synth.name+"_"+step.col} active_step={active_step} onToggle={(step)=>{
-            synth.seq.events[step.col] = null
-            step.on = !step.on
-            if(step.on) {
-                synth.seq.events[step.col] = synth.note
-            } else {
-                synth.seq.events[step.col] = null
-            }
-            setSteps(steps.slice())
+        {steps.map((step,col) => <Step step={step} col={step.col}  key={synth.name+"_"+step.col} active_step={active_step} onToggle={(step)=>{
+            // step.on = !step.on
+            toggleStep(col,row,step.on)
+            // synth.seq.events[step.col] = null
+            // if(step.on) {
+            //     synth.seq.events[step.col] = synth.note
+            // } else {
+            //     synth.seq.events[step.col] = null
+            // }
+            // setSteps(steps.slice())
         }}/>)}
     </>
 }
 
-export function SequencerGrid({synths, steps, stepSize, rowSize, initial_data, onEdit}) {
+export function SequencerGrid({synths, stepCount, stepSize, rowSize, initial_data, onEdit}) {
     const [step, set_step] = useState(0)
+    const [loop, set_loop] = useState(null)
+    const [playing, set_playing] = useState(false)
+    const [steps, set_steps] = useState([[]])
     useEffect(()=>{
-        let ticks = range(steps).map(()=>"C4")
-        let count = 0
-        let seq = new Sequence((time,note)=>{
-            // console.log("main time",time)
-            count++
-            set_step(count%steps)
-        },ticks).start(0)
-        set_step(0)
-        return () => {
-            seq.stop()
-            seq.dispose()
+        let grid = []
+        synths.forEach(()=>{
+            let arr = range(stepCount).map(i => {
+                return {
+                    on:false,
+                    col:i
+                }
+            })
+            grid.push(arr)
+        })
+        set_steps(grid)
+    },[synths,stepCount])
+    function toggle_sequencer() {
+        if(playing) {
+            set_playing(false)
+            loop.stop()
+        } else {
+            set_playing(true)
+            let count = 0
+            set_loop(new Loop((time)=>{
+                let step = count%stepCount
+                let note = "C4"
+                set_step(step)
+                synths.forEach((syn,row) => {
+                    let data = steps[row]
+                    let cell = data[step]
+                    if(cell.on) {
+                        if(syn.synth.name === "NoiseSynth") {
+                            syn.synth.triggerAttackRelease('4n',time)
+                        } else {
+                            syn.synth.triggerAttackRelease(note, '4n', time)
+                        }
+                    }
+                })
+                count++
+            }).start())
         }
-    },[synths,steps])
-    let rows = synths.map((synth,i) => <SynthRow key={synth.name} stepCount={steps} synth={synth} active_step={step} initial_data={initial_data[i]} onEdit={onEdit}/>)
+    }
+    let rows = synths.map((synth,i) => <SynthRow key={synth.name} stepCount={stepCount} synth={synth} active_step={step}
+                                                 // initial_data={initial_data[i]}
+        steps={steps[i]}
+                                                 onEdit={onEdit} row={i} toggleStep={(col,row,on)=>{
+        // console.log("toggling",row,col,on)
+        steps[row][col].on = !steps[row][col].on
+        set_steps(steps.slice())
+    }
+    }/>)
     let style = {
         display:"grid",
-        gridTemplateColumns:`15rem repeat(${steps},${stepSize})`,
+        gridTemplateColumns:`15rem repeat(${stepCount},${stepSize})`,
         gridTemplateRows: `repeat(${synths.length}, ${rowSize})`,
     }
-    let legend = range(steps).map((n)=><div key={"legend"+n} className={'legend ' + ((step===n)?"active":"")}>{n+1}</div>)
-    return <div className={"sequencer-grid"} style={style}>{rows}<div></div>{legend}</div>
+    let legend = range(stepCount).map((n)=><div key={"legend"+n} className={'legend ' + ((step===n)?"active":"")}>{n+1}</div>)
+
+
+    return <div className={"sequencer-grid"} style={style}>{rows}<HBox>
+        <button onClick={toggle_sequencer}>{playing?"pause":"play"}</button>
+    </HBox>{legend}</div>
 }
 
 export function HBox({children}) {

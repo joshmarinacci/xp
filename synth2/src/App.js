@@ -373,7 +373,7 @@ function App() {
         <PresetsLoader onChange={(preset)=>set_global_state(preset)}/>
         <h3>{global_state.name}</h3>
         <SequencerGrid
-            steps={global_state.steps}
+            stepCount={global_state.steps}
             synths={MASTER_SYNTHS}
             stepSize={global_state.stepSize}
             rowSize={global_state.rowSize}
