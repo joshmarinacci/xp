@@ -105,9 +105,12 @@ function BPMControl() {
 function PlayPauseButton() {
     let [state, setState] = useState(Transport.state)
     let text = "???"
-    if(state === "started") text = "pause"
-    if(state === "stopped") text = "play"
-    return <button onClick={()=>{
+    if(state === "started") text = "on"
+    if(state === "stopped") text = "off"
+    return <button style={{
+        fontSize:'200%',
+        minWidth:'3em',
+    }} onClick={()=>{
         if(Transport.state === "started") {
             Transport.stop()
         } else {
@@ -350,8 +353,11 @@ class SynthWrapper {
         return []
     }
     filters() {
-        console.log("filters for",this.synth)
-        return []
+        let filters = []
+        if(this.synth.filter) filters.push(new Wrapper(this.synth.filter))
+        if(this.synth.voice0) filters.push(new Wrapper(this.synth.voice0.filter))
+        if(this.synth.voice1) filters.push(new Wrapper(this.synth.voice1.filter))
+        return filters
     }
 }
 function App() {
@@ -360,11 +366,11 @@ function App() {
     if(!global_state.data) global_state.data = []
   return (
     <div className="App">
-        <PresetsLoader onChange={(preset)=>set_global_state(preset)}/>
         <HBox>
-            <BPMControl/>
             <PlayPauseButton/>
+            <BPMControl/>
         </HBox>
+        <PresetsLoader onChange={(preset)=>set_global_state(preset)}/>
         <h3>{global_state.name}</h3>
         <SequencerGrid
             steps={global_state.steps}

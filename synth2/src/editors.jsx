@@ -1,6 +1,6 @@
 import {HBox, VBox} from './comps.jsx'
 import {useEffect, useState} from 'react'
-import {Loop, now, Transport} from 'tone'
+import {Loop, now, Pattern, Transport} from 'tone'
 
 
 let OSC_TYPES = [
@@ -116,6 +116,34 @@ export function FilterEditor({filter}) {
     </div>
 }
 
+function CycleButton({synth}) {
+    const [loop, set_loop] = useState(null)
+    const [octave, set_octave] = useState(2)
+    const [playing, set_playing] = useState(false)
+    let notes = ["C","D","E","F"].map(l => l+octave)
+    useEffect(()=>{
+        if(loop) {
+            loop.stop()
+            set_loop(null)
+        }
+
+        if(playing) {
+            let lp = new Pattern((time,note)=>{
+                synth.triggerAttackRelease(note,"8n",time)
+            },notes,"up").start()
+            set_loop(lp)
+        }
+    },[octave,playing])
+    return <HBox>
+        <button onClick={()=>{
+            set_playing(!playing)
+        }}>{playing?"cycling":"cycle"}</button>
+        <button onClick={()=>set_octave(Math.max(1,octave-1))}>-</button>
+        <label>{octave}</label>
+        <button onClick={()=>set_octave(Math.min(6,octave+1))}>+</button>
+    </HBox>
+}
+
 export function SynthEditor({synth}) {
     const pulse = () => {
         let note = "C1"
@@ -128,6 +156,7 @@ export function SynthEditor({synth}) {
             <h4>{synth.title()}</h4>
             <h4>{synth.get_value('name')}</h4>
             <button onClick={pulse}>pulse</button>
+            <CycleButton synth={synth}/>
         </VBox>
         {synth.noises().map(noise => <NoiseEditor key={noise.id} noise={noise}/>)}
         {synth.oscillators().map(osc => <OscillatorEditor key={osc.id} oscillator={osc}/>)}
@@ -137,13 +166,6 @@ export function SynthEditor({synth}) {
         <PropEditorGrid obj={synth} props={synth.extra_props()}/>
         <PropSlider name="volume" obj={synth} prop={'volume'} min={-20} max={20}/>
     </div>
-}
-
-export function DuoSynthEditor({synth}) {
-    return <VBox>
-        <SynthEditor synth={synth.voice0}/>
-        <SynthEditor synth={synth.voice1}/>
-    </VBox>
 }
 
 export function NoiseEditor({noise}) {
