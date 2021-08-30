@@ -124,7 +124,6 @@ function SynthRow({synth, stepCount, active_step, initial_data, onEdit}) {
 export function SequencerGrid({synths, steps, stepSize, rowSize, initial_data, onEdit}) {
     const [step, set_step] = useState(0)
     useEffect(()=>{
-        console.log("redoing the loiop")
         let ticks = range(steps).map(()=>"C4")
         let count = 0
         let seq = new Sequence((time,note)=>{
