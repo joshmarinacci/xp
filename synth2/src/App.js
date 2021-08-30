@@ -1,11 +1,10 @@
 import './App.css'
-import {MonoSynth} from "tone"
 import {useState} from 'react'
 import {SynthEditor} from './editors.jsx'
 import {BPMControl, HBox, PlayPauseButton, SequencerGrid} from './comps.jsx'
 
 import {SequencerGrid2} from './sequencer.jsx'
-import {BassLineSequence, SynthWrapper} from './dataobjects.js'
+import {SingleInstrumentSequence, MultiInstrumentSequence, SynthWrapper} from './dataobjects.js'
 import {MakeInstruments, MakePercussionInstruments, STATES} from './presets.js'
 
 
@@ -18,10 +17,16 @@ function PresetsLoader({onChange}) {
     </select>
 }
 
-let MASTER_SYNTHS = MakePercussionInstruments()
+let DRUM_SYNTHS = MakePercussionInstruments()
+
+let drum_track = new MultiInstrumentSequence("drum track",
+    DRUM_SYNTHS,
+    '16n',
+    8
+)
 
 let INSTRUMENTS = MakeInstruments();
-let bass_steps = new BassLineSequence(
+let bass_steps = new SingleInstrumentSequence(
     "Bass Line",
     'simple-sine',
     INSTRUMENTS['simple-sine'],
@@ -29,7 +34,7 @@ let bass_steps = new BassLineSequence(
     '16n',
     16)
 
-let lead_steps = new BassLineSequence(
+let lead_steps = new SingleInstrumentSequence(
     "Lead",
     "simple-square",
     INSTRUMENTS['simple-square'],
@@ -37,6 +42,16 @@ let lead_steps = new BassLineSequence(
     '16n',
     16)
 
+
+let loops = []
+function start_global_loop() {
+    if(loops.length > 0) {
+        loops.forEach(lo => lo.stop())
+        loops = []
+    } else {
+        loops = [drum_track.startLoop(),bass_steps.startLoop(), lead_steps.startLoop()]
+    }
+}
 
 function App() {
     const [global_state, set_global_state] = useState(STATES['clear8'])
@@ -47,18 +62,14 @@ function App() {
         <HBox>
             <PlayPauseButton/>
             <BPMControl/>
+            <button onClick={()=>{
+                start_global_loop()
+            }}>global loop</button>
         </HBox>
         <PresetsLoader onChange={(preset)=>set_global_state(preset)}/>
         <h3>{global_state.name}</h3>
-        <SequencerGrid
-            stepCount={global_state.steps}
-            synths={MASTER_SYNTHS}
-            stepSize={global_state.stepSize}
-            rowSize={global_state.rowSize}
-            initial_data={global_state.data}
-            onEdit={synth => {
-                set_editing_synth(new SynthWrapper(synth.synth,synth.name))
-            }}
+        <SequencerGrid2
+            data={drum_track}
         />
         <SequencerGrid2
             data={bass_steps}

@@ -1,6 +1,6 @@
 import "./synth.css"
 import {useEffect, useState} from 'react'
-import {Loop, Sequence, Transport} from 'tone'
+import {Loop, Sequence, Transport, start} from 'tone'
 
 export function range(len){
     let nums = []
@@ -235,11 +235,13 @@ export function PlayPauseButton() {
     return <button style={{
         fontSize: '200%',
         minWidth: '3em'
-    }} onClick={() => {
+    }} onClick={async () => {
         if (Transport.state === "started") {
             Transport.stop()
         } else {
+            await start()
             Transport.start()//0,0)
+            console.log("audio is ready now")
         }
         console.log("new state is", Transport.state)
         setState(Transport.state)

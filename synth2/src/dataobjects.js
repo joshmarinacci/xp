@@ -1,5 +1,5 @@
 import {range} from './comps.jsx'
-import {now} from 'tone'
+import {Loop, now} from 'tone'
 import {generateUniqueID} from 'web-vitals/dist/modules/lib/generateUniqueID.js'
 
 class Wrapper {
@@ -106,14 +106,40 @@ class EventSource {
     }
 }
 
-export class BassLineSequence extends EventSource {
-    constructor(name, instrumentName, synth, notes, default_duration, stepCount) {
+class GenericSequence extends EventSource {
+    constructor(name, stepCount) {
         super()
         this.name = name
+        this.stepCount = stepCount
+    }
+    getStepCount() {
+        return this.stepCount
+    }
+    isOn(row, col) {
+        return this.steps[row][col].on
+    }
+    toggle(row, col) {
+        this.steps[row][col].on = !this.steps[row][col].on
+        this.fire("change", {})
+    }
+    getCell(row, col) {
+        return this.steps[row][col]
+    }
+    startLoop() {
+        let count = 0
+        return new Loop((time)=>{
+            let step = count % this.stepCount
+            this.playColumn(step)
+            count++
+        },'4n').start(0)
+    }
+}
+export class SingleInstrumentSequence extends GenericSequence {
+    constructor(name, instrumentName, synth, notes, default_duration, stepCount) {
+        super(name,stepCount)
         this.instrumentName = instrumentName
         this.synth = synth
         this.notes = notes
-        this.stepCount = stepCount
         this.default_duration = default_duration
         this.steps = this.notes.map((n, j) => {
             return range(stepCount).map(i => {
@@ -128,15 +154,13 @@ export class BassLineSequence extends EventSource {
         // console.log("final steps are", this.steps)
         // this.synth.start()
     }
-
-    toggle(row, col) {
-        this.steps[row][col].on = !this.steps[row][col].on
-        this.fire("change", {})
+    getRowName(row) {
+        return this.notes[row]
+    }
+    getRowCount() {
+        return this.notes.length
     }
 
-    isOn(row, col) {
-        return this.steps[row][col].on
-    }
 
     playNote(row, col) {
         let note = this.notes[row]
@@ -151,9 +175,6 @@ export class BassLineSequence extends EventSource {
         this.notes.forEach((note, row) => this.playNote(row, col))
     }
 
-    getCell(row, col) {
-        return this.steps[row][col]
-    }
     getInstrumentName() {
         return this.instrumentName
     }
@@ -163,4 +184,43 @@ export class BassLineSequence extends EventSource {
         this.fire("change",{})
         console.log("set instrument to",this.instrumentName,this.synth)
     }
+}
+
+export class MultiInstrumentSequence extends GenericSequence {
+    constructor(name, DRUM_SYNTHS, default_duration, stepCount) {
+        super(name,stepCount)
+        this.synths = DRUM_SYNTHS
+        this.default_duration = default_duration
+        this.steps = this.synths.map((syn, j) => {
+            return range(stepCount).map(i => {
+                return {
+                    on: false,
+                    col: i,
+                    row: j,
+                    dur:this.default_duration
+                }
+            })
+        })
+    }
+    getInstrumentName() {
+        return "multi"
+    }
+    getRowName(row) {
+        return this.synths.name
+    }
+    getRowCount() {
+        return this.synths.length
+    }
+    playNote(row, col) {
+        let synth = this.synths[row]
+        let cell = this.getCell(row,col)
+        if (this.isOn(row, col)) {
+            let time = now()
+            synth.synth.triggerAttackRelease(cell.dur, time)
+        }
+    }
+    playColumn(col) {
+        this.synths.forEach((note, row) => this.playNote(row, col))
+    }
+
 }

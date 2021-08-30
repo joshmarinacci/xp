@@ -59,8 +59,8 @@ export function SequencerGrid2({data, onEdit, availableInstruments}) {
     let rowSize = '40px'
     let style = {
         display: "grid",
-        gridTemplateColumns: `5rem repeat(${data.stepCount},${stepSize})`,
-        gridTemplateRows: `repeat(${data.notes.length}, ${rowSize})`
+        gridTemplateColumns: `5rem repeat(${data.getStepCount()},${stepSize})`,
+        gridTemplateRows: `repeat(${data.getRowCount()}, ${rowSize})`
     }
 
     function edit_synth() {
@@ -83,9 +83,9 @@ export function SequencerGrid2({data, onEdit, availableInstruments}) {
         }
     }
 
-    let rows = data.notes.map((note, j) => {
+    let rows = range(data.getRowCount()).map((num, j) => {
         return <>
-            <div className={'header'} key={'header' + note}>{note}</div>
+            <div className={'header'} key={'header' + num}>{data.getRowName(j)}</div>
             {range(data.stepCount).map((col) => {
                 return <StepCell key={"step" + col} row={j} col={col} data={data}
                                  active_step={step}/>
@@ -98,13 +98,13 @@ export function SequencerGrid2({data, onEdit, availableInstruments}) {
         {rows}
         </div>
         <HBox>
-            <InstrumentSelector
-                availableInstruments={availableInstruments}
-                data={data}
-            />
+            {/*<InstrumentSelector*/}
+            {/*    availableInstruments={availableInstruments}*/}
+            {/*    data={data}*/}
+            {/*/>*/}
             <button onClick={toggle_sequencer}>{playing ? "pause" : "play"}</button>
             <button onClick={edit_synth}>edit</button>
-            <label>{data.synth.name}</label><label>{data.default_duration}</label>
+            {/*<label>{data.synth.name}</label><label>{data.default_duration}</label>*/}
         </HBox>
     </div>
 }
