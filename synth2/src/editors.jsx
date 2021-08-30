@@ -10,62 +10,47 @@ let OSC_TYPES = [
 
 function PropGrid({obj, props}) {
     return <div className={"prop-grid"}>
+        <label>other</label> <b></b>
         {props.map(prop => {
-            let v = obj[prop]
-            let name = <b key={`name_${prop}`}>{prop}</b>
-            if(typeof v === 'object') v = v.value
             return <>
-            {name}
-                <i key={`value_${prop}`}>{v}</i>
+                <label key={`name_${prop}`}>{prop}</label>
+                <b></b>
+                <i key={`value_${prop}`}>{obj.get_value(prop)}</i>
             </>
         })}
     </div>
 }
 
 export function OscillatorEditor({oscillator}) {
-    let [type, set_type] = useState(oscillator?oscillator.type:"")
-    if(!oscillator) return <div></div>
+    let [type, set_type] = useState(oscillator.get_value('type'))//oscillator?oscillator.type:"")
     return <div className={"prop-grid"}>
-        <label>name</label> <b>{oscillator.name}</b>
-        <label>type</label>
-        <select value={type} onChange={(e)=>{
-            oscillator.set({type:e.target.value})
+        <label>name</label> <b>{oscillator.get_value('name')}</b>
+        <label>type</label><select value={type} onChange={(e)=>{
+            oscillator.set_value('type',e.target.value)
             set_type(e.target.value)
         }}>{OSC_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
         {/*<div className={"prop-grid"}>*/}
-        {/*    <b>harmonicity</b><i>{oscillator.harmonicity.value}</i>*/}
+            {/*<b>harmonicity</b><i>{oscillator.get_value('harmonicity')}</i>*/}
         {/*</div>*/}
         {/*<PropGrid obj={oscillator} props={["modulationType","partialCount","phase","type"]}/>*/}
-        <TSlider name={"detune"} min={-100} max={100} obj={oscillator} prop={"detune"}/>
+        <PropSlider name={"detune"} min={-100} max={100} obj={oscillator} prop={"detune"}/>
     </div>
 }
 
-function TSlider({prop, obj, min, max, name}) {
-    const [value, set_value] = useState(()=>{
-        if(obj[prop].name && obj[prop].name === "Signal") {
-            // console.log("is a signal")
-            return obj[prop].value
-        } else {
-            return obj[prop]
-        }
-    })
+function PropSlider({prop, obj, min, max, name}) {
+    const [value, set_value] = useState(()=> obj.get_value(prop))
     return <>
         <label>{name?name:prop}</label>
         <input className={"tslider"}
-        type={"range"} min={min*100} max={max*100} value={value*100}
+            type={"range"} min={min*100} max={max*100} value={value*100}
                onChange={(e)=>{
                    let v = (parseFloat(e.target.value))/100
-                   if(obj[prop].name && obj[prop].name=== 'Signal') {
-                       // console.log("setting", v, "on", obj, prop)
-                       obj[prop].value = v
-                   } else {
-                       obj[prop] = v
-                   }
+                   obj.set_value(name,v)
                    set_value(v)
                }}
         />
-        <b>{value}</b>
+        <b>{value.toFixed(2)}</b>
     </>
 }
 
@@ -90,87 +75,92 @@ export function EnvelopeEditor({envelope}) {
     if(!envelope) return <div></div>
     let extras = []
     if(envelope.baseFrequency) {
-        extras.push(<TSlider min={0} max={1000} obj={envelope} prop={"baseFrequency"}/>)
+        extras.push(<PropSlider min={0} max={1000} obj={envelope} prop={"baseFrequency"}/>)
     }
     if(envelope.octaves) {
-        extras.push(<TSlider min={-4} max={4} obj={envelope} prop={"octaves"}/>)
+        extras.push(<PropSlider min={-4} max={4} obj={envelope} prop={"octaves"}/>)
     }
     return <div className={"prop-grid"}>
-        <label>Envelope:</label> <b>{envelope.name}</b>
-        <TSlider name={"attack"} min={0} max={2} obj={envelope} prop={"attack"}/>
+        <label>name</label> <b>{envelope.get_value('name')}</b>
+        <PropSlider name={"attack"} min={0} max={2} obj={envelope} prop={"attack"}/>
         {/*<TSelect obj={envelope} prop={"attackCurve"} values={CURVES}/>*/}
-        <TSlider name={"decay"} min={0} max={2} obj={envelope} prop={"decay"}/>
-        <TSlider name={"sustain"} min={0} max={1} obj={envelope} prop={"sustain"}/>
-        <TSlider name={"release"} min={0} max={5} obj={envelope} prop={"release"}/>
+        <PropSlider name={"decay"} min={0} max={2} obj={envelope} prop={"decay"}/>
+        <PropSlider name={"sustain"} min={0} max={1} obj={envelope} prop={"sustain"}/>
+        <PropSlider name={"release"} min={0} max={5} obj={envelope} prop={"release"}/>
         {extras}
     </div>
 }
 let FILTER_TYPES = ["lowpass","highpass","bandpass","lowshelf","highshelf","notch","allpass","peaking"]
 export function FilterEditor({filter}) {
+    console.log("filter is",filter)
     if(!filter) return <div></div>
     return <div className={"prop-grid"}>
         <label>Filter</label> <b>{filter.name}</b>
         <TSelect obj={filter} prop={"type"} values={FILTER_TYPES}/>
-        <TSlider name={"frequency"} min={0} max={20000} obj={filter} prop={"frequency"}/>
-        <TSlider name={"Q"} min={0} max={100} obj={filter} prop={"Q"}/>
-        <TSlider name={"detune"} min={0} max={100} obj={filter} prop={"detune"}/>
-        <TSlider name={"gain"} min={0} max={100} obj={filter} prop={"gain"}/>
+        <PropSlider name={"frequency"} min={0} max={20000} obj={filter} prop={"frequency"}/>
+        <PropSlider name={"Q"} min={0} max={100} obj={filter} prop={"Q"}/>
+        <PropSlider name={"detune"} min={0} max={100} obj={filter} prop={"detune"}/>
+        <PropSlider name={"gain"} min={0} max={100} obj={filter} prop={"gain"}/>
     </div>
 }
 
 export function SynthEditor({synth}) {
-    let [looper, set_loop] = useState(null)
-    useEffect(() => {
-        console.log('initial setup')
-        let notes = ["C4", "D4", "E4","F4"]
-        let count = 0
-        let loop = new Loop(time => {
-            let note = notes[count % notes.length]
-            // triggers.forEach(trg => {
-            //     console.log(trg.name)
-            //     if(trg.name === "Synth") trg.triggerAttackRelease(note, "8n", time)
-            //     if(trg.name === "FrequencyEnvelope") trg.triggerAttackRelease(time)
-            // if(synth.name === "NoiseSynth") synth.triggerAttackRelease("8n",time)
-            // })
-            synth.triggerAttackRelease(note, "8n", time)
-            count = count + 1
-        }, "2n")
-        set_loop(loop)
-    }, [synth])
+    console.log("synth is",synth)
+    // let [looper, set_loop] = useState(null)
+    // useEffect(() => {
+    //     console.log('initial setup')
+    //     let notes = ["C4", "D4", "E4","F4"]
+    //     let count = 0
+    //     let loop = new Loop(time => {
+    //         let note = notes[count % notes.length]
+    //         // triggers.forEach(trg => {
+    //         //     console.log(trg.name)
+    //         //     if(trg.name === "Synth") trg.triggerAttackRelease(note, "8n", time)
+    //         //     if(trg.name === "FrequencyEnvelope") trg.triggerAttackRelease(time)
+    //         // if(synth.name === "NoiseSynth") synth.triggerAttackRelease("8n",time)
+    //         // })
+    //         synth.triggerAttackRelease(note, "8n", time)
+    //         count = count + 1
+    //     }, "2n")
+    //     set_loop(loop)
+    // }, [synth])
     const pulse = () => {
         let note = "C1"
         let dur = "16n"
         let time = now()
-        if(synth.name === "NoiseSynth") return synth.triggerAttackRelease(dur,time)
-        return synth.triggerAttackRelease(note,dur,time)
+        synth.triggerAttackRelease(note,dur,time)
     }
     const cycle = () => {
-        console.log("looper is",looper)
-        looper.start(now())
+        // console.log("looper is",looper)
+        // looper.start(now())
     }
 
-    if(synth.name === "DuoSynth") {
-        return <div className={'vbox duo-panel'}>
-            <HBox>
-                <button onClick={pulse}>pulse</button>
-                <button onClick={cycle}>cycle</button>
-            </HBox>
-            <SynthEditor key={"voice0"} synth={synth.voice0}/>
-            <SynthEditor key={"voice1"} synth={synth.voice1}/>
-        </div>
-    }
-    return <div className={"vbox control"}>
-        <h4>{synth.name}</h4>
-        <HBox>
+    // if(synth.name === "DuoSynth") {
+    //     return <div className={'vbox duo-panel'}>
+    //         <HBox>
+    //             <button onClick={pulse}>pulse</button>
+    //             <button onClick={cycle}>cycle</button>
+    //         </HBox>
+    //         <SynthEditor key={"voice0"} synth={synth.voice0}/>
+    //         <SynthEditor key={"voice1"} synth={synth.voice1}/>
+    //     </div>
+    // }
+    let noise = <div/>
+    if(synth.synth.noise) noise = <NoiseEditor noise={synth.synth.noise}/>
+    // let osc = <div/>
+    return <div className={"hbox control"}>
+        <VBox>
+            <h4>{synth.title()}</h4>
+            <h4>{synth.get_value('name')}</h4>
             <button onClick={pulse}>pulse</button>
-            <button onClick={cycle}>cycle</button>
-        </HBox>
-        <NoiseEditor noise={synth.noise}/>
-        <OscillatorEditor oscillator={synth.oscillator}/>
-        <EnvelopeEditor envelope={synth.envelope}/>
-        <FilterEditor filter={synth.filter}/>
-        <EnvelopeEditor envelope={synth.filterEnvelope}/>
-        <TSlider name="volume" obj={synth.volume} prop={'value'} min={-20} max={20}/>
+        </VBox>
+        {noise}
+        {synth.oscillators().map(osc => <OscillatorEditor key={osc.id} oscillator={osc}/>)}
+        {synth.envelopes().map(env =>   <EnvelopeEditor key={env.id} envelope={env}/>)}
+        {synth.filters().map(filter =>  <FilterEditor key={filter.id} filter={filter}/>)}
+        {/*<EnvelopeEditor envelope={synth.filterEnvelope}/>*/}
+        <PropGrid obj={synth} props={synth.extra_props()}/>
+        <PropSlider name="volume" obj={synth} prop={'volume'} min={-20} max={20}/>
     </div>
 }
 

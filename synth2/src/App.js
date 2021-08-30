@@ -12,6 +12,7 @@ import {
 import {useEffect, useState} from 'react'
 import {EnvelopeEditor, FilterEditor, NoiseEditor, SynthEditor} from './editors.jsx'
 import {HBox, SequencerGrid} from './comps.jsx'
+import {generateUniqueID} from 'web-vitals/dist/modules/lib/generateUniqueID.js'
 
 function MakeSynths() {
 
@@ -250,11 +251,10 @@ function PresetsLoader({onChange}) {
 // noise.start()
 // let triggers = [noise,am]
 
-let noise = new NoiseSynth()
-noise.toDestination()
-let triggers = [noise]
-// let editable_synth = new NoiseSynth()
-function TriggerButton({beatLength}) {
+// let noise = new NoiseSynth()
+// noise.toDestination()
+
+function TriggerButton({beatLength, synth}) {
     useEffect(()=>{
         // let notes = ["C4", "D4", "E4","F4"]
         // let count = 0
@@ -275,68 +275,127 @@ function TriggerButton({beatLength}) {
     })
     return <button onClick={() => {
         let note = "C4"
-        let dur = "4n"
+        let dur = beatLength
         let time = now()
-        triggers.forEach(trg => {
-            console.log(trg.name)
-            if(trg.name === "Synth") trg.triggerAttackRelease(note, dur, time)
-            if(trg.name === "FrequencyEnvelope") trg.triggerAttackRelease(time)
-            if(trg.name === "NoiseSynth") trg.triggerAttackRelease(dur,time)
-            if(trg.name === "AmplitudeEnvelope") trg.triggerAttackRelease(dur,time)
-        })
+        let trg = synth
+        if(trg.name === "Synth") trg.triggerAttackRelease(note, dur, time)
+        if(trg.name === "FrequencyEnvelope") trg.triggerAttackRelease(time)
+        if(trg.name === "NoiseSynth") trg.triggerAttackRelease(dur,time)
+        if(trg.name === "AmplitudeEnvelope") trg.triggerAttackRelease(dur,time)
     }}>pulse</button>
 }
-
+let MASTER_SYNTHS = MakeSynths()
 // editable_synth.toDestination()
+
+class Wrapper {
+    constructor(obj) {
+        this.obj = obj
+        this.id = generateUniqueID()
+    }
+    get_value(name) {
+        let prop = this.obj[name]
+        // console.log("get_value",name,prop, this.obj)
+        if(prop === undefined) return null
+        if(prop && prop.name && prop.name === "Param") return prop.value
+        if(prop && prop.name && prop.name === "Signal") return prop.value
+        return prop
+    }
+    set_value(name,value) {
+        let prop = this.obj[name]
+        // console.log("setting",name,value,prop)
+        if(prop && prop.name && prop.name === "Param") return prop.value = value
+        if(prop && prop.name && prop.name === "Signal") return prop.value = value
+        this.obj[name] = value
+    }
+}
+class SynthWrapper {
+    constructor(synth,name) {
+        this.synth = synth
+        this.name = name
+        this.id = generateUniqueID()
+    }
+    title() {
+        return this.name
+    }
+    get_value(name) {
+        let prop = this.synth[name]
+        console.log("getting",name,prop)
+        if(prop.name && prop.name === "Param") return prop.value
+        return prop
+    }
+    set_value(name,value) {
+        let prop = this.synth[name]
+        console.log("setting",name,value,prop)
+        if(prop.name && prop.name === "Param") return prop.value = value
+        this.synth[name] = value
+    }
+    triggerAttackRelease(note,dur,time) {
+        if(this.synth.name === "NoiseSynth") return this.synth.triggerAttackRelease(dur,time)
+        return this.synth.triggerAttackRelease(note,dur,time)
+    }
+    oscillators(){
+        if(this.synth.oscillator) return [new Wrapper(this.synth.oscillator)]
+        return []
+    }
+    envelopes() {
+        // console.log("envelopes for",this.synth.envelope.sustain)
+        if(this.synth.envelope) return [new Wrapper(this.synth.envelope)]
+        return []
+    }
+    extra_props() {
+        if(this.synth.name === "MembraneSynth") return ['octaves','pitchDecay','volume']
+        return []
+    }
+    filters() {
+        console.log("filters for",this.synth)
+        return []
+    }
+}
 function App() {
     const [global_state, set_global_state] = useState(STATES['clear8'])
-    const [synths, set_synths] = useState([])
+    const [editing_synth, set_editing_synth] = useState(null)
     if(!global_state.data) global_state.data = []
   return (
     <div className="App">
-        <button onClick={()=>Transport.toggle()}>start</button>
         <PresetsLoader onChange={(preset)=>set_global_state(preset)}/>
-        <h3>{global_state.name}</h3>
-        <SequencerGrid
-            steps={global_state.steps}
-            synths={MakeSynths()}
-            stepSize={global_state.stepSize}
-            rowSize={global_state.rowSize}
-            initial_data={global_state.data}
-            onEdit={synth => {
-                console.log("changing the edit",synth)
-                set_synths([synth.synth])
-            }}
-        />
         <HBox>
             <BPMControl/>
             <PlayPauseButton/>
         </HBox>
-        <div className={"hbox"}>
-            <button onClick={()=>{
-                set_synths(synths.concat([new Synth().toDestination()]))
-            }}>add simple synth</button>
-            <button onClick={()=>{
-                set_synths(synths.concat([new MonoSynth().toDestination()]))
-            }}>add mono synth</button>
-            <button onClick={()=>{
-                set_synths(synths.concat([new DuoSynth().toDestination()]))
-            }}>add duo synth</button>
-            <button onClick={()=>{
-                set_synths(synths.concat([new NoiseSynth().toDestination()]))
-            }}>add noise synth</button>
-            <button onClick={()=>{
-                set_synths(synths.concat([new MembraneSynth().toDestination()]))
-            }}>add membrane synth</button>
-            <button onClick={()=>{
-                set_synths(synths.concat([new MetalSynth().toDestination()]))
-            }}>add metal synth</button>
-        </div>
-        <TriggerButton triggers={triggers} beatLength={"2n"}/>
+        <h3>{global_state.name}</h3>
+        <SequencerGrid
+            steps={global_state.steps}
+            synths={MASTER_SYNTHS}
+            stepSize={global_state.stepSize}
+            rowSize={global_state.rowSize}
+            initial_data={global_state.data}
+            onEdit={synth => {
+                set_editing_synth(new SynthWrapper(synth.synth,synth.name))
+            }}
+        />
+        {/*<HBox>*/}
+        {/*    <button onClick={()=>{*/}
+        {/*        set_synths(synths.concat([new Synth().toDestination()]))*/}
+        {/*    }}>add simple synth</button>*/}
+        {/*    <button onClick={()=>{*/}
+        {/*        set_synths(synths.concat([new MonoSynth().toDestination()]))*/}
+        {/*    }}>add mono synth</button>*/}
+        {/*    <button onClick={()=>{*/}
+        {/*        set_synths(synths.concat([new DuoSynth().toDestination()]))*/}
+        {/*    }}>add duo synth</button>*/}
+        {/*    <button onClick={()=>{*/}
+        {/*        set_synths(synths.concat([new NoiseSynth().toDestination()]))*/}
+        {/*    }}>add noise synth</button>*/}
+        {/*    <button onClick={()=>{*/}
+        {/*        set_synths(synths.concat([new MembraneSynth().toDestination()]))*/}
+        {/*    }}>add membrane synth</button>*/}
+        {/*    <button onClick={()=>{*/}
+        {/*        set_synths(synths.concat([new MetalSynth().toDestination()]))*/}
+        {/*    }}>add metal synth</button>*/}
+        {/*</HBox>*/}
+        {/*<TriggerButton triggers={triggers} beatLength={"2n"}/>*/}
         {/*<TriggerButton triggers={triggers} beatLength={"4n"}/>*/}
-        {synths.map((synth,i) => {
-            return <SynthEditor key={"synth_"+i} synth={synth}/>
-        })}
+        {editing_synth?<SynthEditor key={editing_synth.id} synth={editing_synth}/>:<div/>}
     </div>
   );
 }

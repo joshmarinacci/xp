@@ -72,7 +72,7 @@ function SynthControl({synth,onEdit}) {
         <button onClick={()=>onEdit(synth)}>edit</button>
         <label style={{ minWidth:"50px"}} onClick={()=>play_example(synth)}>{synth.title}</label>
         <Spacer/>
-        <VolumeControl volume={synth.synth.volume} label={"vol"}/>
+        {/*<VolumeControl volume={synth.synth.volume} label={"vol"}/>*/}
     </div>
 
 }
@@ -124,6 +124,7 @@ function SynthRow({synth, stepCount, active_step, initial_data, onEdit}) {
 export function SequencerGrid({synths, steps, stepSize, rowSize, initial_data, onEdit}) {
     const [step, set_step] = useState(0)
     useEffect(()=>{
+        console.log("redoing the loiop")
         let ticks = range(steps).map(()=>"C4")
         let count = 0
         let seq = new Sequence((time,note)=>{
