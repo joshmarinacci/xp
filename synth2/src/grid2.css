@@ -1,5 +1,6 @@
 .sequencer-grid2 {
     border: 1px solid red;
+    background-color: #e0e0e0;
     grid-gap: 1px;
 }
 

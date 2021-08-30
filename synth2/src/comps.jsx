@@ -1,6 +1,6 @@
 import "./synth.css"
 import {useEffect, useState} from 'react'
-import {Loop, Sequence} from 'tone'
+import {Loop, Sequence, Transport} from 'tone'
 
 export function range(len){
     let nums = []
@@ -212,4 +212,37 @@ export function HBox({children}) {
 
 export function VBox({children}) {
     return <div className={'vbox'}>{children}</div>
+}
+
+export function BPMControl() {
+    const [value, set_value] = useState(Transport.bpm.value)
+    return <div className={"hbox control"}>
+        <label>BPM</label>
+        <input type={"range"} min={30} max={240} value={"" + Math.floor(value)} step={1}
+               onChange={(e) => {
+                   let v = Math.floor(parseFloat(e.target.value))
+                   set_value(v)
+                   Transport.bpm.value = v
+               }}/>
+        <label style={{minWidth: "30px"}}>{Math.floor(Transport.bpm.value)}</label>
+    </div>
+}
+
+export function PlayPauseButton() {
+    let [state, setState] = useState(Transport.state)
+    let text = "???"
+    if (state === "started") text = "on"
+    if (state === "stopped") text = "off"
+    return <button style={{
+        fontSize: '200%',
+        minWidth: '3em'
+    }} onClick={() => {
+        if (Transport.state === "started") {
+            Transport.stop()
+        } else {
+            Transport.start()//0,0)
+        }
+        console.log("new state is", Transport.state)
+        setState(Transport.state)
+    }}>{text}</button>
 }
