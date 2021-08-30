@@ -1,4 +1,4 @@
-import {Filter, MembraneSynth, NoiseSynth} from 'tone'
+import {Filter, MembraneSynth, MonoSynth, NoiseSynth} from 'tone'
 
 export let STATES = {
     "clear8": {
@@ -76,7 +76,7 @@ export let STATES = {
     }
 }
 
-export function MakeSynths() {
+export function MakePercussionInstruments() {
 
 
 // filtering the hi-hats a bit
@@ -149,4 +149,20 @@ export function MakeSynths() {
     ]
 
     return synths
+}
+
+export function MakeInstruments() {
+    return {
+        'simple-sine': new MonoSynth({
+            title:'simple-sine',
+            oscillator:{
+                type:"sine",
+            },
+        }).toDestination(),
+        'simple-square': new MonoSynth({
+            oscillator:{
+                type:"square",
+            },
+        }).toDestination(),
+    }
 }

@@ -107,8 +107,9 @@ class EventSource {
 }
 
 export class BassLineSequence extends EventSource {
-    constructor(synth, notes, default_duration, stepCount) {
+    constructor(instrumentName, synth, notes, default_duration, stepCount) {
         super()
+        this.instrumentName = instrumentName
         this.synth = synth
         this.notes = notes
         this.stepCount = stepCount
@@ -151,5 +152,14 @@ export class BassLineSequence extends EventSource {
 
     getCell(row, col) {
         return this.steps[row][col]
+    }
+    getInstrumentName() {
+        return this.instrumentName
+    }
+    setInstrument(key,value) {
+        this.instrumentName = key
+        this.synth = value
+        this.fire("change",{})
+        console.log("set instrument to",this.instrumentName,this.synth)
     }
 }

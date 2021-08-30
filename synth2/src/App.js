@@ -1,12 +1,12 @@
 import './App.css'
-import {DuoSynth, MonoSynth} from "tone"
+import {MonoSynth} from "tone"
 import {useState} from 'react'
 import {SynthEditor} from './editors.jsx'
 import {BPMControl, HBox, PlayPauseButton, SequencerGrid} from './comps.jsx'
 
 import {SequencerGrid2} from './sequencer.jsx'
 import {BassLineSequence, SynthWrapper} from './dataobjects.js'
-import {MakeSynths, STATES} from './presets.js'
+import {MakeInstruments, MakePercussionInstruments, STATES} from './presets.js'
 
 
 function PresetsLoader({onChange}) {
@@ -18,8 +18,12 @@ function PresetsLoader({onChange}) {
     </select>
 }
 
-let MASTER_SYNTHS = MakeSynths()
-let bass_steps = new BassLineSequence(new MonoSynth().toDestination(),
+let MASTER_SYNTHS = MakePercussionInstruments()
+
+let INSTRUMENTS = MakeInstruments();
+let bass_steps = new BassLineSequence(
+    'simple-sine',
+    INSTRUMENTS['simple-sine'],
     ["C4",'D4',"E4"].reverse(),
     '16n',
     8)
@@ -49,7 +53,9 @@ function App() {
         />
         <SequencerGrid2
             data={bass_steps}
-            onEdit={data => set_editing_synth(new SynthWrapper(data.synth, data.name))}/>
+            onEdit={data => set_editing_synth(new SynthWrapper(data.synth, data.name))}
+            availableInstruments={INSTRUMENTS}
+        />
         {/*<HBox>*/}
         {/*    <button onClick={()=>set_editing_synth(new SynthWrapper(new MonoSynth().toDestination()))}>+ mono synth</button>*/}
         {/*    <button onClick={()=>set_editing_synth(new SynthWrapper(new DuoSynth().toDestination()))}>+ duo synth</button>*/}

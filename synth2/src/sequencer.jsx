@@ -29,7 +29,29 @@ function StepCell({row, col, data, active_step}) {
     }>{data.getCell(row,col).dur}</div>
 }
 
-export function SequencerGrid2({data, onEdit}) {
+function InstrumentSelector({availableInstruments,data}) {
+    const [name,sname] = useState(data.getInstrumentName())
+    useEffect(() => {
+        let cb = () => sname(data.getInstrumentName())
+        data.on('change', cb)
+        return () => {
+            data.off('change', cb)
+        }
+    })
+    return <select
+        value={name}
+        onChange={(e)=>{
+            let name = e.target.value
+            data.setInstrument(name, availableInstruments[name])
+        }}
+    >
+        {Object.keys(availableInstruments).map(name => {
+            return <option key={name} name={name}>{name}</option>
+        })}
+    </select>
+}
+
+export function SequencerGrid2({data, onEdit, availableInstruments}) {
     const [playing, set_playing] = useState(false)
     const [loop, set_loop] = useState(null)
     const [step, set_step] = useState(0)
@@ -72,6 +94,10 @@ export function SequencerGrid2({data, onEdit}) {
     })
     return <div style={style} className={'sequencer-grid2'}>{rows}
         <HBox>
+            <InstrumentSelector
+                availableInstruments={availableInstruments}
+                data={data}
+            />
             <button onClick={toggle_sequencer}>{playing ? "pause" : "play"}</button>
             <button onClick={edit_synth}>edit</button>
             <label>{data.synth.name}</label><label>{data.default_duration}</label>
