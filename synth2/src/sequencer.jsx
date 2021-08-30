@@ -92,7 +92,11 @@ export function SequencerGrid2({data, onEdit, availableInstruments}) {
             })}
         </>
     })
-    return <div style={style} className={'sequencer-grid2'}>{rows}
+    return <div className={'sequencer'}>
+        <h4>{data.name}</h4>
+        <div style={style} className={'grid'}>
+        {rows}
+        </div>
         <HBox>
             <InstrumentSelector
                 availableInstruments={availableInstruments}

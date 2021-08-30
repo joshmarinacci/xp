@@ -1,31 +1,33 @@
-.sequencer-grid2 {
-    border: 1px solid black;
+.sequencer {
     background-color: saddlebrown;
-    grid-gap: 1px;
     color: white;
 }
+.sequencer .grid {
+    border: 0px solid black;
+    grid-gap: 1px;
+}
 
-.sequencer-grid2 .header {
+.sequencer .grid .header {
     background-color: darkgoldenrod;
     color: white;
     border-radius: 0.5em;
     padding: 0.25em;
 }
-.sequencer-grid2 .step-cell {
+.sequencer .step-cell {
     background-color: #888;
     color:#444;
     font-size: 75%;
     text-align: center;
 }
-.sequencer-grid2 .step-cell.on {
+.sequencer .step-cell.on {
     background-color: gold;
 }
-.sequencer-grid2 .step-cell.active {
+.sequencer .step-cell.active {
     background-color: #ccc;
 }
-.sequencer-grid2 .step-cell.on.active {
+.sequencer .step-cell.on.active {
     background-color: lightgoldenrodyellow;
 }
-.sequencer-grid2 .step-cell.four {
+.sequencer .step-cell.four {
     border-left: 3px solid black;
 }

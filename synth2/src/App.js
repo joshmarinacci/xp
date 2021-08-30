@@ -22,6 +22,7 @@ let MASTER_SYNTHS = MakePercussionInstruments()
 
 let INSTRUMENTS = MakeInstruments();
 let bass_steps = new BassLineSequence(
+    "Base Line",
     'simple-sine',
     INSTRUMENTS['simple-sine'],
     ["C2",'D2',"E2","F2","G2"].reverse(),

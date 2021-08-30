@@ -107,8 +107,9 @@ class EventSource {
 }
 
 export class BassLineSequence extends EventSource {
-    constructor(instrumentName, synth, notes, default_duration, stepCount) {
+    constructor(name, instrumentName, synth, notes, default_duration, stepCount) {
         super()
+        this.name = name
         this.instrumentName = instrumentName
         this.synth = synth
         this.notes = notes
