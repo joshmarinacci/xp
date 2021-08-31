@@ -144,10 +144,11 @@ export function FilterEditor({filter}) {
     return <div className={"prop-grid"}>
         <label>Filter</label> <b>{filter.get_value('name')}</b>
         <PropSelect obj={filter} prop={"type"} values={FILTER_TYPES}/>
-        <PropNonLinearSlider name={"frequency"} min={1} max={20000} obj={filter} prop={"frequency"}/>
-        <PropSlider name={"Q"} min={0} max={100} obj={filter} prop={"Q"}/>
+        <PropNonLinearSlider name={"frequency"} min={20} max={20000} obj={filter} prop={"frequency"}/>
+        <PropSlider name={"Q"} min={1} max={100} obj={filter} prop={"Q"}/>
         <PropSlider name={"detune"} min={0} max={100} obj={filter} prop={"detune"}/>
         <PropSlider name={"gain"} min={0} max={100} obj={filter} prop={"gain"}/>
+        <label>rolloff</label>  <b>{filter.get_value('rolloff')}</b>
     </div>
 }
 
