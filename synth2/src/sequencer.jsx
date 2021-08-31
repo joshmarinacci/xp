@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react'
 import {cls2str, HBox, range} from './comps.jsx'
 import "./sequencer.css"
+import {STATES} from './presets.js'
 
 function StepCell({row, col, data, active_step}) {
     const [on, set_on] = useState(data.isOn(row, col))
@@ -19,11 +20,17 @@ function StepCell({row, col, data, active_step}) {
         'four':col%4 === 0,
     }
 
-    return <div className={cls2str(clss)} onClick={() => {
-        data.toggle(row, col)
-        data.playNote(row, col)
-    }
-    }>{data.getCell(row,col).dur}</div>
+    return <div className={cls2str(clss)}
+        onMouseDown={() => {
+            data.toggle(row, col)
+            data.playNote(row, col)
+        }}
+        onMouseMove={(e)=>{
+            if(e.buttons === 1 && !data.isOn(row,col)) {
+                data.setOn(row,col,true)
+            }
+        }}
+    >{data.getCell(row,col).dur}</div>
 }
 function InstrumentSelector({availableInstruments,data}) {
     const [name,sname] = useState(data.getInstrumentName())
@@ -103,11 +110,27 @@ function MuteButton({instrument}) {
     }}>{instrument.isMute()?"unmute":"mute"}</button>
 }
 
+function VolumeSlider({volumeNode}) {
+    const [val, set_val] = useState(volumeNode.volume.value)
+    return <HBox>
+        <label>volume</label>
+        <input type={'range'} min={-20} max={20} value={val}
+               onChange={(e)=>{
+                   let val = parseFloat(e.target.value)
+                   volumeNode.volume.value = val
+                   set_val(val)
+               }}
+        />
+        <label>{val.toFixed(1)}</label>
+    </HBox>
+}
+
 export function SingleInstrumentSequencerGrid({data, onEdit, availableInstruments}) {
     return <div className={'sequencer'}>
         <HBox>
             <h4>{data.name}</h4>
             <MuteButton instrument={data}/>
+            <VolumeSlider volumeNode={data.volume}/>
         </HBox>
         <SequenceGrid data={data}/>
         <HBox>
@@ -120,9 +143,24 @@ export function SingleInstrumentSequencerGrid({data, onEdit, availableInstrument
         </HBox>
     </div>
 }
+
+function PresetsLoader({onChange}) {
+    const [value, set_value] = useState("clear8")
+    return <select value={value} onChange={(e)=>{
+        onChange(STATES[e.target.value])
+        set_value(e.target.value)
+    }}>{Object.keys(STATES).map(name => <option key={name} value={name}>{STATES[name].name}</option>)}
+    </select>
+}
+
 export function MultiInstrumentSequencerGrid({data,onEdit}) {
     return <div className={'sequencer'}>
-        <h4>{data.name}</h4>
+        <HBox>
+            <h4>{data.name}</h4>
+            <PresetsLoader onChange={(preset)=>{
+                data.loadPreset(preset)
+            }}/>
+        </HBox>
         <SequenceGrid data={data}/>
         <HBox>
             <label>{data.default_duration}</label>

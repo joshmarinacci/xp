@@ -123,6 +123,10 @@ class GenericSequence extends EventSource {
         this.steps[row][col].on = !this.steps[row][col].on
         this.fire("change", {})
     }
+    setOn(row,col,on) {
+        this.steps[row][col].on = on
+        this.fire("change", {})
+    }
     getCell(row, col) {
         return this.steps[row][col]
     }

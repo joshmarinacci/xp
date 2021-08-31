@@ -5,17 +5,7 @@ import {BPMControl, HBox, PlayPauseButton, SequencerGrid} from './comps.jsx'
 
 import {MultiInstrumentSequencerGrid, SingleInstrumentSequencerGrid} from './sequencer.jsx'
 import {SingleInstrumentSequence, MultiInstrumentSequence, SynthWrapper} from './dataobjects.js'
-import {MakeInstruments, MakePercussionInstruments, STATES} from './presets.js'
-
-
-function PresetsLoader({onChange}) {
-    const [value, set_value] = useState("clear8")
-    return <select value={value} onChange={(e)=>{
-        onChange(STATES[e.target.value])
-        set_value(e.target.value)
-    }}>{Object.keys(STATES).map(name => <option key={name} value={name}>{STATES[name].name}</option>)}
-    </select>
-}
+import {MakeInstruments, MakePercussionInstruments} from './presets.js'
 
 let DRUM_SYNTHS = MakePercussionInstruments()
 
@@ -55,9 +45,9 @@ function start_global_loop() {
 
 
 function App() {
-    const [global_state, set_global_state] = useState(STATES['clear8'])
+    // const [global_state, set_global_state] = useState(STATES['clear8'])
     const [editing_synth, set_editing_synth] = useState(null)
-    if(!global_state.data) global_state.data = []
+    // if(!global_state.data) global_state.data = []
   return (
     <div className="App">
         <HBox>
@@ -67,11 +57,6 @@ function App() {
                 start_global_loop()
             }}>global loop</button>
         </HBox>
-        <PresetsLoader onChange={(preset)=>{
-            drum_track.loadPreset(preset)
-            set_global_state(preset)
-        }}/>
-        <h3>{global_state.name}</h3>
         <MultiInstrumentSequencerGrid data={drum_track}
                                       onEdit={(synth,name) => set_editing_synth(new SynthWrapper(synth, name))}/>
         <SingleInstrumentSequencerGrid data={bass_steps}
