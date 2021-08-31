@@ -89,21 +89,25 @@ function PropSelect({obj, prop, values}) {
 export function EnvelopeEditor({envelope}) {
     if(!envelope) return <div></div>
     let extras = []
-    if(envelope.baseFrequency) {
-        extras.push(<PropSlider min={0} max={1000} obj={envelope} prop={"baseFrequency"}/>)
+    if(envelope.has_prop('baseFrequency')) {
+        extras.push(<PropNonLinearSlider key={'baseFrequency'} min={0} max={20000} obj={envelope} prop={"baseFrequency"}/>)
     }
-    if(envelope.octaves) {
-        extras.push(<PropSlider min={-4} max={4} obj={envelope} prop={"octaves"}/>)
+    if(envelope.has_prop('octaves')) {
+        extras.push(<PropSlider key={"octaves"} min={-4} max={4} obj={envelope} prop={"octaves"}/>)
     }
     return <div className={"prop-grid"}>
         <label>name</label> <b>{envelope.get_value('name')}</b>
-        <PropSlider name={"attack"} min={0} max={2} obj={envelope} prop={"attack"}/>
+        <PropSlider key={"attack"} name={"attack"} min={0} max={2} obj={envelope} prop={"attack"}/>
         {/*<TSelect obj={envelope} prop={"attackCurve"} values={CURVES}/>*/}
-        <PropSlider name={"decay"} min={0} max={2} obj={envelope} prop={"decay"}/>
-        <PropSlider name={"sustain"} min={0} max={1} obj={envelope} prop={"sustain"}/>
-        <PropSlider name={"release"} min={0} max={5} obj={envelope} prop={"release"}/>
+        <PropSlider key="decay" name={"decay"} min={0} max={2} obj={envelope} prop={"decay"}/>
+        <PropSlider key="sustain" name={"sustain"} min={0} max={1} obj={envelope} prop={"sustain"}/>
+        <PropSlider key="release" name={"release"} min={0} max={5} obj={envelope} prop={"release"}/>
         {extras}
     </div>
+}
+
+function FrequencyEnvelopeEditor({envelope}) {
+
 }
 
 function HumanHertz({value}) {
@@ -198,6 +202,7 @@ export function SynthEditor({synth}) {
         {synth.oscillators().map(osc => <OscillatorEditor key={osc.id} oscillator={osc}/>)}
         {synth.envelopes().map(env =>   <EnvelopeEditor key={env.id} envelope={env}/>)}
         {synth.filters().map(filter =>  <FilterEditor key={filter.id} filter={filter}/>)}
+        {synth.filterEnvelopes().map(env =><EnvelopeEditor key={env.id} envelope={env}/>)}
         {/*<PropGrid obj={synth} props={synth.extra_props()}/>*/}
         <PropEditorGrid obj={synth} props={synth.extra_props()}/>
         <PropSlider name="volume" obj={synth} prop={'volume'} min={-20} max={20}/>

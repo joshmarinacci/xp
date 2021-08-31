@@ -8,6 +8,10 @@ class Wrapper {
         this.id = generateUniqueID()
     }
 
+    has_prop(name) {
+        console.log("checking",name,'on',this.obj)
+        return (this.obj[name] !== undefined)
+    }
     get_value(name) {
         let prop = this.obj[name]
         // console.log("get_value",name,prop, this.obj)
@@ -82,6 +86,13 @@ export class SynthWrapper {
         if (this.synth.voice0) filters.push(new Wrapper(this.synth.voice0.filter))
         if (this.synth.voice1) filters.push(new Wrapper(this.synth.voice1.filter))
         return filters
+    }
+    filterEnvelopes() {
+        let fenvs = []
+        console.log('checking synth',this.synth)
+        if (this.synth.filterEnvelope) fenvs.push(new Wrapper(this.synth.filterEnvelope))
+        console.log(fenvs)
+        return fenvs
     }
 }
 
