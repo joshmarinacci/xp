@@ -215,16 +215,7 @@ export class MultiInstrumentSequence extends GenericSequence {
         super(name,stepCount)
         this.synths = DRUM_SYNTHS
         this.default_duration = default_duration
-        this.steps = this.synths.map((syn, j) => {
-            return range(stepCount).map(i => {
-                return {
-                    on: false,
-                    col: i,
-                    row: j,
-                    dur:this.default_duration
-                }
-            })
-        })
+        this.steps = this.generateEmptySteps()
     }
     getInstrumentName() {
         return "multi"
@@ -247,4 +238,31 @@ export class MultiInstrumentSequence extends GenericSequence {
         this.synths.forEach((note, row) => this.playNote(row, col))
     }
 
+    loadPreset(preset) {
+        this.stepCount = preset.steps
+        this.steps = this.generateEmptySteps()
+        if(preset.data) {
+            preset.data.forEach((rowData,row) => {
+                let chs = rowData.replaceAll(" ","").split("")
+                chs.forEach((ch,col)=>{
+                    this.getCell(row,col).on = (ch === "1")
+                })
+            })
+        }
+        this.fire("data",this)
+        this.fire("change", {})
+    }
+
+    generateEmptySteps() {
+        return this.synths.map((syn, j) => {
+            return range(this.stepCount).map(i => {
+                return {
+                    on: false,
+                    col: i,
+                    row: j,
+                    dur:this.default_duration
+                }
+            })
+        })
+    }
 }

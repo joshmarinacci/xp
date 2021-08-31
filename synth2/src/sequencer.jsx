@@ -5,9 +5,7 @@ import "./sequencer.css"
 function StepCell({row, col, data, active_step}) {
     const [on, set_on] = useState(data.isOn(row, col))
     useEffect(() => {
-        let cb = () => {
-            set_on(data.isOn(row, col))
-        }
+        let cb = () => set_on(data.isOn(row, col))
         data.on('change', cb)
         return () => {
             data.off('change', cb)
@@ -50,11 +48,12 @@ function InstrumentSelector({availableInstruments,data}) {
 }
 function SequenceGrid({data}) {
     const [step, setStep] = useState(data.getCurrentStep())
+    const [stepCount, setStepCount] = useState(data.getStepCount())
     let stepSize = '40px'
     let rowSize = '40px'
     let style = {
         display: "grid",
-        gridTemplateColumns: `10rem repeat(${data.getStepCount()},${stepSize})`,
+        gridTemplateColumns: `10rem repeat(${stepCount},${stepSize})`,
         gridTemplateRows: `repeat(${data.getRowCount()}, ${rowSize})`
     }
     useEffect(() => {
@@ -65,6 +64,13 @@ function SequenceGrid({data}) {
         data.on("step",hand)
         return () => {
             data.off("step",hand)
+        }
+    })
+    useEffect(() => {
+        let cb = () => setStepCount(data.getStepCount())
+        data.on('data', cb)
+        return () => {
+            data.off('data', cb)
         }
     })
     let rows = range(data.getRowCount()).map((num, j) => {

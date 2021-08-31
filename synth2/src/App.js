@@ -67,7 +67,10 @@ function App() {
                 start_global_loop()
             }}>global loop</button>
         </HBox>
-        <PresetsLoader onChange={(preset)=>set_global_state(preset)}/>
+        <PresetsLoader onChange={(preset)=>{
+            drum_track.loadPreset(preset)
+            set_global_state(preset)
+        }}/>
         <h3>{global_state.name}</h3>
         <MultiInstrumentSequencerGrid data={drum_track}
                                       onEdit={(synth,name) => set_editing_synth(new SynthWrapper(synth, name))}/>
