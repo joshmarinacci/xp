@@ -230,6 +230,9 @@ export class MultiInstrumentSequence extends GenericSequence {
     getRowCount() {
         return this.synths.length
     }
+    getRowSynth(row) {
+        return this.synths[row]
+    }
     playNote(row, col) {
         let synth = this.synths[row]
         let cell = this.getCell(row,col)

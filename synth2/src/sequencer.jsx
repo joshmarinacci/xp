@@ -53,7 +53,10 @@ function InstrumentSelector({availableInstruments,data}) {
         })}
     </select>
 }
-function SequenceGrid({data}) {
+function TestHeader({data,row}) {
+    return <div>{data.getRowName(row)}</div>
+}
+function SequenceGrid({data, header, onEdit}) {
     const [step, setStep] = useState(data.getCurrentStep())
     const [stepCount, setStepCount] = useState(data.getStepCount())
     let stepSize = '40px'
@@ -80,9 +83,12 @@ function SequenceGrid({data}) {
             data.off('data', cb)
         }
     })
+    let Header = header
+    if(!Header) Header = TestHeader
     let rows = range(data.getRowCount()).map((num, j) => {
         return <>
-            <div className={'header'} key={'header' + num}>{data.getRowName(j)}</div>
+            {/*<div className={'header'} key={'header' + num}>{data.getRowName(j)}</div>*/}
+            <Header className={'header'} key={'header'+num} data={data} row={num} onEdit={onEdit}/>
             {range(data.getStepCount()).map((col) => {
                 return <StepCell key={"step" + col} row={j} col={col} data={data}
                                  active_step={step}/>
@@ -132,7 +138,7 @@ export function SingleInstrumentSequencerGrid({data, onEdit, availableInstrument
             <MuteButton instrument={data}/>
             <VolumeSlider volumeNode={data.volume}/>
         </HBox>
-        <SequenceGrid data={data}/>
+        <SequenceGrid data={data} onEdit={onEdit}/>
         <HBox>
             <InstrumentSelector
                 availableInstruments={availableInstruments}
@@ -153,6 +159,11 @@ function PresetsLoader({onChange}) {
     </select>
 }
 
+function SimpleHeader({data,row, onEdit}) {
+    return <div>{row} {data.getRowName(row)} <button onClick={()=>{
+        onEdit(data.getRowSynth(row).synth)
+    }}>edit</button></div>
+}
 export function MultiInstrumentSequencerGrid({data,onEdit}) {
     return <div className={'sequencer'}>
         <HBox>
@@ -161,7 +172,7 @@ export function MultiInstrumentSequencerGrid({data,onEdit}) {
                 data.loadPreset(preset)
             }}/>
         </HBox>
-        <SequenceGrid data={data}/>
+        <SequenceGrid data={data} header={SimpleHeader} onEdit={onEdit}/>
         <HBox>
             <label>{data.default_duration}</label>
         </HBox>
