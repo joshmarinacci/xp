@@ -54,7 +54,7 @@ function SequenceGrid({data}) {
     let rowSize = '40px'
     let style = {
         display: "grid",
-        gridTemplateColumns: `5rem repeat(${data.getStepCount()},${stepSize})`,
+        gridTemplateColumns: `10rem repeat(${data.getStepCount()},${stepSize})`,
         gridTemplateRows: `repeat(${data.getRowCount()}, ${rowSize})`
     }
     useEffect(() => {
@@ -80,9 +80,29 @@ function SequenceGrid({data}) {
         {rows}
     </div>
 }
-export function SingleInstrumentSequencerGrid({data, step, onEdit, availableInstruments}) {
+
+function MuteButton({instrument}) {
+    const [mute, set_mute] = useState(instrument.isMute())
+    useEffect(()=>{
+        let cb = () => {
+            set_mute(instrument.isMute())
+        }
+        instrument.on("mute",cb)
+        return () => {
+            instrument.off("mute",cb)
+        }
+    })
+    return <button onClick={()=>{
+        instrument.toggleMute()
+    }}>{instrument.isMute()?"unmute":"mute"}</button>
+}
+
+export function SingleInstrumentSequencerGrid({data, onEdit, availableInstruments}) {
     return <div className={'sequencer'}>
-        <h4>{data.name}</h4>
+        <HBox>
+            <h4>{data.name}</h4>
+            <MuteButton instrument={data}/>
+        </HBox>
         <SequenceGrid data={data}/>
         <HBox>
             <InstrumentSelector
@@ -94,7 +114,7 @@ export function SingleInstrumentSequencerGrid({data, step, onEdit, availableInst
         </HBox>
     </div>
 }
-export function MultiInstrumentSequencerGrid({data,onEdit,step}) {
+export function MultiInstrumentSequencerGrid({data,onEdit}) {
     return <div className={'sequencer'}>
         <h4>{data.name}</h4>
         <SequenceGrid data={data}/>

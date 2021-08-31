@@ -1,5 +1,5 @@
 import {range} from './comps.jsx'
-import {Loop, now} from 'tone'
+import {Loop, now, Volume} from 'tone'
 import {generateUniqueID} from 'web-vitals/dist/modules/lib/generateUniqueID.js'
 
 class Wrapper {
@@ -145,10 +145,13 @@ class GenericSequence extends EventSource {
     }
 }
 export class SingleInstrumentSequence extends GenericSequence {
-    constructor(name, instrumentName, synth, notes, default_duration, stepCount) {
+    constructor(name, instrumentName, instrument, notes, default_duration, stepCount) {
         super(name,stepCount)
         this.instrumentName = instrumentName
-        this.synth = synth
+        this.synth = instrument
+        this.volume = new Volume(0)
+        this.synth.connect(this.volume)
+        this.volume.toDestination()
         this.notes = notes
         this.default_duration = default_duration
         this.steps = this.notes.map((n, j) => {
@@ -190,12 +193,20 @@ export class SingleInstrumentSequence extends GenericSequence {
     }
     setInstrument(key,value) {
         this.instrumentName = key
+        this.synth.disconnect(this.volume)
         this.synth = value
+        this.synth.connect(this.volume)
         this.fire("change",{})
-        console.log("set instrument to",this.instrumentName,this.synth)
     }
     getSynth() {
         return this.synth
+    }
+    isMute() {
+        return this.volume.mute
+    }
+    toggleMute() {
+        this.volume.mute = !this.volume.mute
+        this.fire("mute",this.volume.mute)
     }
 }
 
@@ -219,7 +230,7 @@ export class MultiInstrumentSequence extends GenericSequence {
         return "multi"
     }
     getRowName(row) {
-        return this.synths.name
+        return this.synths[row].name
     }
     getRowCount() {
         return this.synths.length

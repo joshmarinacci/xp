@@ -158,16 +158,16 @@ export function MakeInstruments() {
             oscillator:{
                 type:"amsine",
             },
-        }).toDestination(),
+        }),
         'simple-square': new MonoSynth({
             oscillator:{
                 type:"amsquare",
             },
-        }).toDestination(),
+        }),
         'simple-sawtooth': new MonoSynth({
             oscillator:{
                 type:"amsawtooth",
             },
-        }).toDestination(),
+        }),
     }
 }
