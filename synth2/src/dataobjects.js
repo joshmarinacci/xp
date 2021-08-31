@@ -111,6 +111,7 @@ class GenericSequence extends EventSource {
         super()
         this.name = name
         this.stepCount = stepCount
+        this.currentStep = 0
     }
     getStepCount() {
         return this.stepCount
@@ -129,9 +130,18 @@ class GenericSequence extends EventSource {
         let count = 0
         return new Loop((time)=>{
             let step = count % this.stepCount
+            this.setCurrentStep(step)
             this.playColumn(step)
             count++
         },'4n').start(0)
+    }
+
+    setCurrentStep(step) {
+        this.currentStep = step
+        this.fire("step",this.currentStep)
+    }
+    getCurrentStep() {
+        return this.currentStep
     }
 }
 export class SingleInstrumentSequence extends GenericSequence {
@@ -183,6 +193,9 @@ export class SingleInstrumentSequence extends GenericSequence {
         this.synth = value
         this.fire("change",{})
         console.log("set instrument to",this.instrumentName,this.synth)
+    }
+    getSynth() {
+        return this.synth
     }
 }
 

@@ -1,6 +1,5 @@
 import {useEffect, useState} from 'react'
 import {cls2str, HBox, range} from './comps.jsx'
-import {Loop} from 'tone'
 import "./sequencer.css"
 
 function StepCell({row, col, data, active_step}) {
@@ -28,7 +27,6 @@ function StepCell({row, col, data, active_step}) {
     }
     }>{data.getCell(row,col).dur}</div>
 }
-
 function InstrumentSelector({availableInstruments,data}) {
     const [name,sname] = useState(data.getInstrumentName())
     useEffect(() => {
@@ -50,11 +48,8 @@ function InstrumentSelector({availableInstruments,data}) {
         })}
     </select>
 }
-
-export function SequencerGrid2({data, onEdit, availableInstruments}) {
-    const [playing, set_playing] = useState(false)
-    const [loop, set_loop] = useState(null)
-    const [step, set_step] = useState(0)
+function SequenceGrid({data}) {
+    const [step, setStep] = useState(data.getCurrentStep())
     let stepSize = '40px'
     let rowSize = '40px'
     let style = {
@@ -62,49 +57,49 @@ export function SequencerGrid2({data, onEdit, availableInstruments}) {
         gridTemplateColumns: `5rem repeat(${data.getStepCount()},${stepSize})`,
         gridTemplateRows: `repeat(${data.getRowCount()}, ${rowSize})`
     }
-
-    function edit_synth() {
-        onEdit(data)
-    }
-
-    function toggle_sequencer() {
-        if (playing) {
-            set_playing(false)
-            loop.stop()
-        } else {
-            set_playing(true)
-            let count = 0
-            set_loop(new Loop((time) => {
-                let step = count % data.stepCount
-                set_step(step)
-                data.playColumn(step)
-                count++
-            }, '4n').start())
+    useEffect(() => {
+        console.log("rebuilding ")
+        const hand = (step) => {
+            setStep(step)
         }
-    }
-
+        data.on("step",hand)
+        return () => {
+            data.off("step",hand)
+        }
+    })
     let rows = range(data.getRowCount()).map((num, j) => {
         return <>
             <div className={'header'} key={'header' + num}>{data.getRowName(j)}</div>
-            {range(data.stepCount).map((col) => {
+            {range(data.getStepCount()).map((col) => {
                 return <StepCell key={"step" + col} row={j} col={col} data={data}
                                  active_step={step}/>
             })}
         </>
     })
+    return <div style={style} className={'grid'}>
+        {rows}
+    </div>
+}
+export function SingleInstrumentSequencerGrid({data, step, onEdit, availableInstruments}) {
     return <div className={'sequencer'}>
         <h4>{data.name}</h4>
-        <div style={style} className={'grid'}>
-        {rows}
-        </div>
+        <SequenceGrid data={data}/>
         <HBox>
-            {/*<InstrumentSelector*/}
-            {/*    availableInstruments={availableInstruments}*/}
-            {/*    data={data}*/}
-            {/*/>*/}
-            <button onClick={toggle_sequencer}>{playing ? "pause" : "play"}</button>
-            <button onClick={edit_synth}>edit</button>
-            {/*<label>{data.synth.name}</label><label>{data.default_duration}</label>*/}
+            <InstrumentSelector
+                availableInstruments={availableInstruments}
+                data={data}
+            />
+            <button onClick={()=>onEdit(data.getSynth())}>edit</button>
+            <label>{data.default_duration}</label>
+        </HBox>
+    </div>
+}
+export function MultiInstrumentSequencerGrid({data,onEdit,step}) {
+    return <div className={'sequencer'}>
+        <h4>{data.name}</h4>
+        <SequenceGrid data={data}/>
+        <HBox>
+            <label>{data.default_duration}</label>
         </HBox>
     </div>
 }

@@ -3,7 +3,7 @@ import {useState} from 'react'
 import {SynthEditor} from './editors.jsx'
 import {BPMControl, HBox, PlayPauseButton, SequencerGrid} from './comps.jsx'
 
-import {SequencerGrid2} from './sequencer.jsx'
+import {MultiInstrumentSequencerGrid, SingleInstrumentSequencerGrid} from './sequencer.jsx'
 import {SingleInstrumentSequence, MultiInstrumentSequence, SynthWrapper} from './dataobjects.js'
 import {MakeInstruments, MakePercussionInstruments, STATES} from './presets.js'
 
@@ -53,6 +53,7 @@ function start_global_loop() {
     }
 }
 
+
 function App() {
     const [global_state, set_global_state] = useState(STATES['clear8'])
     const [editing_synth, set_editing_synth] = useState(null)
@@ -68,18 +69,15 @@ function App() {
         </HBox>
         <PresetsLoader onChange={(preset)=>set_global_state(preset)}/>
         <h3>{global_state.name}</h3>
-        <SequencerGrid2
-            data={drum_track}
+        <MultiInstrumentSequencerGrid data={drum_track}
+                                      onEdit={(synth,name) => set_editing_synth(new SynthWrapper(synth, name))}/>
+        <SingleInstrumentSequencerGrid data={bass_steps}
+                                       onEdit={(synth,name) => set_editing_synth(new SynthWrapper(synth, name))}
+                                       availableInstruments={INSTRUMENTS}
         />
-        <SequencerGrid2
-            data={bass_steps}
-            onEdit={data => set_editing_synth(new SynthWrapper(data.synth, data.name))}
-            availableInstruments={INSTRUMENTS}
-        />
-        <SequencerGrid2
-            data={lead_steps}
-            onEdit={data => set_editing_synth(new SynthWrapper(data.synth, data.name))}
-            availableInstruments={INSTRUMENTS}
+        <SingleInstrumentSequencerGrid data={lead_steps}
+                                       onEdit={(synth,name) => set_editing_synth(new SynthWrapper(synth, name))}
+                                       availableInstruments={INSTRUMENTS}
         />
         <div>
             <h3>current synth</h3>
