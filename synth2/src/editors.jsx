@@ -105,11 +105,46 @@ export function EnvelopeEditor({envelope}) {
         {extras}
     </div>
 }
+
+function HumanHertz({value}) {
+    if(value > 1000) return <b>{(value/1000).toFixed(1)}Khz</b>
+    return <b>{value.toFixed(0)}hz</b>
+}
+
+function PropNonLinearSlider({prop, obj, min, max, name}) {
+    const [value, set_value] = useState(()=> obj.get_value(prop))
+    let fac = 10
+
+
+    function getBaseLog(x, y) {
+        return Math.log(y) / Math.log(x);
+    }
+    const toLocal = (v) => {
+        return getBaseLog(fac,v+1)*100
+    }
+    const fromLocal = (v) => {
+        return Math.pow(fac,v/100)-1
+    }
+
+    return <>
+        <label>{name?name:prop}</label>
+        <input className={"tslider"}
+               type={"range"} min={toLocal(min)} max={toLocal(max)} value={toLocal(value)}
+               onChange={(e)=>{
+                   let v = fromLocal(parseFloat(e.target.value))
+                   obj.set_value(name,v)
+                   set_value(v)
+               }}
+        />
+        <HumanHertz value={value}/>
+    </>
+}
+
 export function FilterEditor({filter}) {
     return <div className={"prop-grid"}>
         <label>Filter</label> <b>{filter.get_value('name')}</b>
         <PropSelect obj={filter} prop={"type"} values={FILTER_TYPES}/>
-        <PropSlider name={"frequency"} min={0} max={20000} obj={filter} prop={"frequency"}/>
+        <PropNonLinearSlider name={"frequency"} min={1} max={20000} obj={filter} prop={"frequency"}/>
         <PropSlider name={"Q"} min={0} max={100} obj={filter} prop={"Q"}/>
         <PropSlider name={"detune"} min={0} max={100} obj={filter} prop={"detune"}/>
         <PropSlider name={"gain"} min={0} max={100} obj={filter} prop={"gain"}/>
