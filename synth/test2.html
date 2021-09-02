@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<button id="start">plays</button>
+
+<script src="../synth2/node_modules/tone/build/Tone.js"></script>
+<script type="module">
+    // import {
+    //     MonoSynth, OmniOscillator, Filter, AmplitudeEnvelope,
+    //     Sequence, start, Transport
+    // } from "../synth2/node_modules/tone/build/Tone.js"
+
+    const $ = (sel) => document.querySelector(sel)
+    const on = (el, type, cb) => el.addEventListener(type,cb)
+
+    // let synth = new Tone.MonoSynth()
+    /*
+    let osc = new Tone.OmniOscillator({type:"sine"})
+    let filter = new Tone.Filter({
+        type:'lowpass',
+        frequency:"2000hz"
+    });
+    let amp_env = new Tone.AmplitudeEnvelope();
+    // synth.toDestination()
+    osc.chain(filter,amp_env).toDestination()
+
+    let notes = ["C4","D4","E4"]
+    let part = new Tone.Sequence((time,note)=>{
+        console.log("note",note,time)
+
+        let atime = time
+        let rtime = time+0.1
+        //attack
+        osc.frequency.setValueAtTime(note,atime)
+        // osc.triggerAttackRelease(note,'8n',time)
+        amp_env.triggerAttack(atime,1)
+        osc.start(atime)
+
+
+        //release
+        amp_env.triggerRelease(rtime)
+        osc.stop(rtime + amp_env.release)
+
+    },notes,'4n')
+    */
+
+
+    let synth = new Tone.Synth({type:'sawtooth'})
+
+    // let amp_env = new Tone.AmplitudeEnvelope({
+    //     attack: 0.1,
+    //     decay: 0.2,
+    //     sustain: 1.0,
+    //     release: 0.8
+    // })//.toDestination()
+    // const osc = new Tone.Oscillator({type:"sawtooth"}).connect(amp_env).start();
+    const filter = new Tone.Filter(20000, "lowpass")//.toDestination();
+    synth.connect(filter)
+    // amp_env.connect(filter)
+    filter.toDestination()
+
+
+    let notes = ["C4","D4","E4"]
+    let part = new Tone.Sequence((time,note)=>{
+        // osc.frequency.setValueAtTime(note,time)
+        // amp_env.triggerAttackRelease('8t',time)
+        // console.log("note",note,time)
+        synth.triggerAttackRelease(note,'8n',time)
+    },notes,'4n')
+    // console.log(synth)
+    // synth.connect(filter)
+    filter.frequency.rampTo(1, 10);
+
+    on($("#start"),'click',()=>{
+        Tone.start().then(()=>{
+            console.log('started')
+            Tone.Transport.start()
+            part.start()
+
+            // const filter = new Tone.Filter(1500, "lowpass").toDestination();
+            // filter.frequency.rampTo(20000, 10);
+            // const noise = new Tone.Noise().connect(filter).start();
+        })
+    })
+</script>
+</body>
+</html>
