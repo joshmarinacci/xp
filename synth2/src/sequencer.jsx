@@ -54,7 +54,7 @@ function InstrumentSelector({availableInstruments,data}) {
     </select>
 }
 function TestHeader({data,row}) {
-    return <div>{data.getRowName(row)}</div>
+    return <div className={'header'}>{data.getRowName(row)}</div>
 }
 function SequenceGrid({data, header, onEdit}) {
     const [step, setStep] = useState(data.getCurrentStep())
