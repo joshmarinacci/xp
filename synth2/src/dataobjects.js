@@ -244,6 +244,13 @@ export class MultiInstrumentSequence extends GenericSequence {
     getRowSynth(row) {
         return this.synths[row]
     }
+    toggleRowMute(row) {
+        this.getRowSynth(row).synth.volume.mute = !this.getRowSynth(row).synth.volume.mute
+        this.fire("mute",this.getRowSynth(row).synth.volume.mute)
+    }
+    isRowMute(row) {
+        return this.getRowSynth(row).synth.volume.mute
+    }
     playNote(row, col) {
         let synth = this.synths[row]
         let cell = this.getCell(row,col)

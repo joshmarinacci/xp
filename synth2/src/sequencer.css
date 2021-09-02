@@ -9,6 +9,16 @@
     grid-gap: 1px;
 }
 
+.sequencer .grid .instrument-header {
+    border: 0px solid red;
+    font-size: 75%;
+}
+
+.instrument-header .name {
+    font-weight: bold;
+    min-width: 8em;
+}
+
 .sequencer .grid .header {
     background-color: darkgoldenrod;
     color: white;

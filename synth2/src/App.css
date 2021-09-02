@@ -69,3 +69,24 @@ h3 {
     border: 1px solid red;
     background-color: #592b0c;
 }
+
+
+.hbox.volume {
+    /*border: 5px solid green;*/
+    font-size: inherit;
+}
+.hbox.volume input[type=range] {
+    max-width: 8em;
+    font-size: 100%;
+}
+
+.mute-toggle {
+    background-color: goldenrod;
+    border: 1px solid #666;
+    border-radius: 0.5rem;
+    width: 2rem;
+    height: 1.5rem;
+}
+.mute-toggle.mute {
+    background-color: red;
+}

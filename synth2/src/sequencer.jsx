@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react'
-import {cls2str, HBox, range} from './comps.jsx'
+import {cls2str, HBox, range, Spacer} from './comps.jsx'
 import "./sequencer.css"
 import {STATES} from './presets.js'
 
@@ -63,7 +63,7 @@ function SequenceGrid({data, header, onEdit}) {
     let rowSize = '40px'
     let style = {
         display: "grid",
-        gridTemplateColumns: `10rem repeat(${stepCount},${stepSize})`,
+        gridTemplateColumns: `20rem repeat(${stepCount},${stepSize})`,
         gridTemplateRows: `repeat(${data.getRowCount()}, ${rowSize})`
     }
     useEffect(() => {
@@ -116,10 +116,22 @@ function MuteButton({instrument}) {
     }}>{instrument.isMute()?"unmute":"mute"}</button>
 }
 
-function VolumeSlider({volumeNode}) {
+function RowMuteButton({data, row}) {
+    const [mute, set_mute] = useState(data.isRowMute(row))
+    useEffect(()=>{
+        let cb = () => set_mute(data.isRowMute(row))
+        data.on("mute",cb)
+        return () => {
+            data.off("mute",cb)
+        }
+    })
+    return <button className={"mute-toggle "+(mute?"mute":"")} onClick={()=>data.toggleRowMute(row)}>{mute?"x":"V"}</button>
+}
+
+function VolumeSlider({volumeNode, label="volume"}) {
     const [val, set_val] = useState(volumeNode.volume.value)
-    return <HBox>
-        <label>volume</label>
+    return <div className={'hbox volume'}>
+        <label>{label}</label>
         <input type={'range'} min={-20} max={20} value={val}
                onChange={(e)=>{
                    let val = parseFloat(e.target.value)
@@ -128,7 +140,7 @@ function VolumeSlider({volumeNode}) {
                }}
         />
         <label>{val.toFixed(1)}</label>
-    </HBox>
+    </div>
 }
 
 export function SingleInstrumentSequencerGrid({data, onEdit, availableInstruments}) {
@@ -159,10 +171,14 @@ function PresetsLoader({onChange}) {
     </select>
 }
 
-function SimpleHeader({data,row, onEdit}) {
-    return <div>{row} {data.getRowName(row)} <button onClick={()=>{
-        onEdit(data.getRowSynth(row).synth)
-    }}>edit</button></div>
+function SingleInstrumentHeader({data,row, onEdit}) {
+    return <div className={'hbox instrument-header header'}>
+        <b className={'name'}>{data.getRowName(row)}</b>
+        <RowMuteButton data={data} row={row}/>
+        <VolumeSlider label={""} volumeNode={data.getRowSynth(row).synth}/>
+        <Spacer/>
+        <button onClick={()=>onEdit(data.getRowSynth(row).synth)}>edit</button>
+    </div>
 }
 export function MultiInstrumentSequencerGrid({data,onEdit}) {
     return <div className={'sequencer'}>
@@ -172,7 +188,7 @@ export function MultiInstrumentSequencerGrid({data,onEdit}) {
                 data.loadPreset(preset)
             }}/>
         </HBox>
-        <SequenceGrid data={data} header={SimpleHeader} onEdit={onEdit}/>
+        <SequenceGrid data={data} header={SingleInstrumentHeader} onEdit={onEdit}/>
         <HBox>
             <label>{data.default_duration}</label>
         </HBox>
