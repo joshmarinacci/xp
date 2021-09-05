@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        canvas {
+            border: 1px solid black;
+        }
+        .hbox {
+            display: flex;
+            flex-direction: row;
+        }
+        .vbox {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="vbox">
+    <div class="hbox">
+
+        <button id="left">left</button>
+        <button id="right">right</button>
+        <button id="up">up</button>
+        <button id="down">down</button>
+        <button id="zoomin">zoom in</button>
+        <button id="zoomout">zoom out</button>
+    </div>
+    <canvas id="output" width="500" height="500"></canvas>
+</div>
+
+<script type="module">
+    const $ = (sel) => document.querySelector(sel)
+    const on = (el, type, cb) => el.addEventListener(type, cb)
+
+
+    const range = (count) => {
+        let arr = new Array(count)
+        for (let i = 0; i < count; i++) {
+            arr[i] = i
+        }
+        return arr
+    }
+
+    function lerp(t, min, max) {
+        return ((max - min) * t) + min
+    }
+
+    let palette = null
+    function make_palettes() {
+        let PALETTES = {
+        }
+        PALETTES['green-blue'] = range(256).map(i => {
+            let t = i / 255
+            let hue = lerp(t, 60, 220)
+            return `hsl(${hue.toFixed(0)},100%,50%)`
+        })
+        PALETTES['rainbow'] = range(256).map(i => {
+            let t = i/255
+            let hue = lerp(t, 0,360)
+            let sat = lerp(t,0,100).toFixed(0)
+            let lit = lerp(t,20,80).toFixed(0)
+            return `hsl(${hue.toFixed(0)},${sat}%,${lit}%)`
+        })
+
+        PALETTES['red-to-black'] = range(256).map(i => `rgb(${i},${0},${0})`)
+        PALETTES['black-to-red'] = range(256).map(i => `rgb(${255-i},${0},${0})`)
+        PALETTES['black-and-white'] = range(256).map(i => `rgb(${i},${i},${i})`)
+        PALETTES['white-and-black'] = range(256).map(i => `rgb(${255-i},${255-i},${255-i})`)
+
+        let select = document.createElement('select')
+        Object.keys(PALETTES).forEach(name => {
+            let option = document.createElement('option')
+            option.setAttribute('value',name)
+            option.innerText = name
+            select.appendChild(option)
+        })
+        on(select,'change',(e) => {
+            console.log("it changed",e.target.value)
+            palette = PALETTES[e.target.value]
+            repaint()
+        })
+        document.body.appendChild(select)
+
+
+        return PALETTES
+    }
+    let PALETTES = make_palettes()
+    palette = PALETTES['green-blue']
+
+    function calc_pixel(x, y) {
+        // let x = count%width;
+        // let y = Math.floor(count/width)
+        // for (var x = 0; x < 200; x++) {
+        //     for (var y = 0; y < 200; y++) {
+        let i = 0
+        const cx = x// / (width / 4)
+        const cy = y// / (width / 4)
+        let zx = 0
+        let zy = 0
+        do {
+            let xt = zx * zy
+            zx = zx * zx - zy * zy + cx
+            zy = 2 * xt + cy
+            i++
+        }
+        while (i < 255 && (zx * zx + zy * zy) < 4)
+        i = 255 - i
+        // let h = i.toString(16);
+        // buffer[count*4+0] = i
+        // buffer[count*4+1] = i
+        // buffer[count*4+2] = i
+        // buffer[count*4+3] = 255
+        // console.log(i)
+        // let color_hex =  '#' + h + h + h
+        return palette[i]
+        // return color_hex
+        // app.send(GRAPHICS.MAKE_DrawPixel({x:x, y:y, color: color_hex, window:app.win_id}))
+    }
+
+    let xoff = 0
+    let yoff = 0
+    let scale = 1
+    let zoom = 1
+    let step = 0.1
+
+    function setZoom(newZoom) {
+        zoom = newZoom
+        scale = Math.pow(2, zoom)
+        step = 0.125 / scale
+        repaint()
+    }
+
+    function remap(val, min, max, MIN, MAX) {
+        let t = (val - min) / (max - min)
+        return ((MAX - MIN) * t) + MIN
+    }
+
+    function repaint() {
+        let s = 1
+        let realw = 1 / scale
+        let realh = 1 / scale
+        let can = $("#output")
+        let w = can.width / s
+        let h = can.height / s
+        let c = can.getContext('2d')
+        const toReal = (x, y) => {
+            let px = remap(x, 0, w, 0 - xoff, realw - xoff)
+            let py = remap(y, 0, h, 0 - yoff, realh - yoff)
+            return {x: px, y: py}
+        }
+        const toScreen = (px, py) => {
+            return {
+                x: remap(px, 0 - xoff, realw - xoff, 0, w),
+                y: remap(py, 0 - yoff, realh - yoff, 0, h)
+            }
+        }
+        // console.log("drawing", `zoom=${zoom} xy${xoff},${yoff} step=${step}`, scale, `pixels ${w}x${h}`, `real ${realw}x${realh}`)
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                let pt = toReal(x, y)
+                c.fillStyle = calc_pixel(pt.x,pt.y)
+                c.fillRect(x * s, y * s, s, s)
+            }
+        }
+        c.fillStyle = 'black'
+        let origin = toScreen(0, 0)
+        console.log("origin", origin)
+        c.fillRect(origin.x * s, 0, 1, can.height)
+        c.fillRect(0, origin.y * s, can.width, 1)
+
+        c.stroke = 'black'
+        c.strokeRect(can.width / 2 - 5, can.height / 2 - 5, 10, 10)
+    }
+
+
+    function setXoff(newXoff) {
+        xoff = newXoff
+        repaint()
+    }
+
+    function setYoff(newYoff) {
+        yoff = newYoff
+        repaint()
+    }
+
+    setZoom(-1)
+    on($("#left"), 'click', () => setXoff(xoff + step))
+    on($("#right"), 'click', () => setXoff(xoff - step))
+    on($("#up"), 'click', () => setYoff(yoff + step))
+    on($("#down"), 'click', () => setYoff(yoff - step))
+    on($("#zoomin"), "click", () => setZoom(zoom + 0.5))
+    on($("#zoomout"), "click", () => setZoom(zoom - 0.5))
+
+    repaint()
+
+</script>
+
+</body>
+</html>
