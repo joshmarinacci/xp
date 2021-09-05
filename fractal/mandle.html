@@ -21,7 +21,7 @@
 <body>
 
 <div class="vbox">
-    <div class="hbox">
+    <div class="hbox" id="controls">
 
         <button id="left">left</button>
         <button id="right">right</button>
@@ -61,8 +61,8 @@
         })
         PALETTES['rainbow'] = range(256).map(i => {
             let t = i/255
-            let hue = lerp(t, 0,360)
-            let sat = lerp(t,0,100).toFixed(0)
+            let hue = lerp(t, 360,0)
+            let sat = lerp(t,50,100).toFixed(0)
             let lit = lerp(t,20,80).toFixed(0)
             return `hsl(${hue.toFixed(0)},${sat}%,${lit}%)`
         })
@@ -84,9 +84,7 @@
             palette = PALETTES[e.target.value]
             repaint()
         })
-        document.body.appendChild(select)
-
-
+        $("#controls").appendChild(select)
         return PALETTES
     }
     let PALETTES = make_palettes()
@@ -159,17 +157,35 @@
                 y: remap(py, 0 - yoff, realh - yoff, 0, h)
             }
         }
-        // console.log("drawing", `zoom=${zoom} xy${xoff},${yoff} step=${step}`, scale, `pixels ${w}x${h}`, `real ${realw}x${realh}`)
-        for (let y = 0; y < h; y++) {
+
+        async function calc_row(y) {
+            let vals = new Array(w)
             for (let x = 0; x < w; x++) {
                 let pt = toReal(x, y)
-                c.fillStyle = calc_pixel(pt.x,pt.y)
-                c.fillRect(x * s, y * s, s, s)
+                vals[x] = calc_pixel(pt.x,pt.y)
+                // c.fillStyle = calc_pixel(pt.x,pt.y)
+                // c.fillRect(x * s, y * s, s, s)
             }
+            return vals
         }
+        // console.log("drawing", `zoom=${zoom} xy${xoff},${yoff} step=${step}`, scale, `pixels ${w}x${h}`, `real ${realw}x${realh}`)
+
+        let proms = []
+        for (let y = 0; y < h; y++) {
+            let yy = y
+            proms.push(calc_row(yy))
+        }
+        Promise.all(proms).then((data)=>{
+            data.forEach((row,y) => {
+                row.forEach((color,x) => {
+                    c.fillStyle = color
+                    c.fillRect(x*s,y*s,s,s)
+                })
+
+            })
+        })
         c.fillStyle = 'black'
         let origin = toScreen(0, 0)
-        console.log("origin", origin)
         c.fillRect(origin.x * s, 0, 1, can.height)
         c.fillRect(0, origin.y * s, can.width, 1)
 
