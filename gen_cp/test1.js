@@ -2,7 +2,7 @@ import {promises as fs} from "fs"
 
 let code = [
     { type:'init_var',  name:'running', value:false },
-    { type:'event_handler', event:'touch', code:[
+    { type:'event_handler', event:'button', code:[
             { type:'toggle_var', name:'running'}
         ]},
     {
@@ -37,6 +37,11 @@ let LIBS = {
         deps:[{from:'adafruit_hid.keyboard','import':"Keyboard"},
             {from:'adafruit_hid.keycode', 'import':'Keycode'},],
         inits:['keyboard = Keyboard(usb_hid.devices)']
+    },
+    "button":{
+        deps:[
+            {from:'digitalio', import:['DigitalInOut', 'Pull']}
+        ]
     }
 }
 
@@ -100,9 +105,7 @@ function process_string_block(strings, ctx) {
 
 async function generate_code(code) {
     let ctx = {
-        deps:[
-            'time','board','usb_hid',
-        ],
+        deps:['time','board','usb_hid'],
         inits:[ ],
         whiles:[ ]
     }
@@ -126,6 +129,22 @@ async function generate_code(code) {
                     'touch_state = False',
                     'print("Touch false")'],ctx)
                 // ctx.whiles.push(`if touch_state:`)
+                add_all(process_block(line.code,ctx),ctx.whiles)
+                return
+            }
+            if(line.event === 'button') {
+                add_all(LIBS.button.deps,ctx.deps)
+                ctx.inits.push(`button = DigitalInOut(board.SWITCH)`)
+                ctx.inits.push(`button.switch_to_input(pull=Pull.DOWN)`)
+                ctx.inits.push('button_state = False')
+                ctx.whiles.push('if button.value and not button_state:')
+                process_string_block([
+                    'button_state = True',
+                    'print("button true")'],ctx)
+                ctx.whiles.push('if not button.value and button_state:')
+                process_string_block([
+                    'button_state = False',
+                    'print("button false")'],ctx)
                 add_all(process_block(line.code,ctx),ctx.whiles)
                 return
             }
