@@ -23,19 +23,27 @@ const add_all = (src,dst) => {
 let VAR_COUNT = 0
 
 let LIBS = {
+    'time':{
+        deps:['time'],
+        inits:[],
+    },
     "touch":{
         deps:["touchio"],
         inits:[]
     },
     "mouse":{
-        deps:[{from:'adafruit_hid.mouse','import':"Mouse"}, ],
+        deps:[
+            {from:'adafruit_hid.mouse','import':"Mouse"},
+            'usb_hid'],
         inits:[
             'mouse = Mouse(usb_hid.devices)',
         ]
     },
     "keyboard":{
-        deps:[{from:'adafruit_hid.keyboard','import':"Keyboard"},
-            {from:'adafruit_hid.keycode', 'import':'Keycode'},],
+        deps:[
+            {from:'adafruit_hid.keyboard','import':"Keyboard"},
+            {from:'adafruit_hid.keycode', 'import':'Keycode'},
+            'usb_hid'],
         inits:['keyboard = Keyboard(usb_hid.devices)']
     },
     "button":{
@@ -51,6 +59,7 @@ function process_block(code,ctx) {
         if(line.type === 'call') {
             if(line.name === 'wait') {
                 VAR_COUNT++
+                add_all(LIBS.time.deps,ctx.deps)
                 ctx.inits.push(`timeout${VAR_COUNT} = time.monotonic()`)
                 block.push("now = time.monotonic()")
                 block.push(`if now > timeout${VAR_COUNT} + ${line.args[0]}:`)
@@ -105,7 +114,7 @@ function process_string_block(strings, ctx) {
 
 async function generate_code(code) {
     let ctx = {
-        deps:['time','board','usb_hid'],
+        deps:['board'],
         inits:[ ],
         whiles:[ ]
     }
