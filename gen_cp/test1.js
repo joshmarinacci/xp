@@ -7,10 +7,9 @@ let code = [
         ]},
     {
         type:'logic_handler', condition:'running', code:[
-            { type: 'call', name:'key_type', args:['E']},
-            { type: 'call', name:'wait',  args:[1]},
-            { type: 'call', name:'mouse_click',  args:['left']},
-            { type: 'call', name:'wait',  args:[5]},
+            //wait 1 then key_type('E')
+            { type: 'call', name:'wait',  args:[1], then:[{ type: 'call', name:'key_type', args:['E']}]},
+            { type: 'call', name:'wait',  args:[5], then:[{type: 'call', name:'mouse_click',  args:['left']}]},
         ]
     }
 ]
@@ -18,13 +17,23 @@ const log = (...args) => console.log(...args)
 const comment = (...args) => `#${[...args].join(" ")}`
 const indent = (arr) => arr.map(v => "    " + v)
 
+const add_all = (src,dst) => {
+    src.forEach(el => dst.push(el))
+}
+let VAR_COUNT = 0
 function process_block(code,ctx) {
     let block = []
     code.forEach(line => {
-        console.log("line is",line)
         if(line.type === 'call') {
             if(line.name === 'wait') {
-                block.push(`time.sleep(${line.args.join(",")})`)
+                VAR_COUNT++
+                ctx.inits.push(`timeout${VAR_COUNT} = time.monotonic()`)
+                block.push("now = time.monotonic()")
+                block.push(`if now > timeout${VAR_COUNT} + ${line.args[0]}:`)
+                block.push(`    timeout${VAR_COUNT} = now`)
+                block.push(`    print("doing ${VAR_COUNT}")`)
+                add_all(process_block(line.then,ctx),block)
+                // block.push(`    time.sleep(${line.args.join(",")})`)
                 return
             }
             if(line.name === 'key_type') {
@@ -41,9 +50,11 @@ function process_block(code,ctx) {
         }
         if(line.type === 'toggle_var') {
             block.push(`${line.name} = not ${line.name}`)
+            block.push(`print("set ${line.name} to ",${line.name})`)
         }
     })
-    ctx.whiles = ctx.whiles.concat(indent(block))
+    //ctx.whiles = ctx.whiles.concat(indent(block))
+    return indent(block)
 }
 
 function render_imports(deps) {
@@ -61,10 +72,16 @@ function literalToPython(value) {
     return value
 }
 
+
+function process_string_block(strings, ctx) {
+    let block = strings
+    ctx.whiles = ctx.whiles.concat(indent(block))
+}
+
 async function generate_code(code) {
     let ctx = {
         deps:[
-            'time','board','neopixel','touchio','usb_hid','adafruit_hid',
+            'time','board','neopixel','usb_hid','adafruit_hid',
             {from:'adafruit_hid.mouse','import':"Mouse"},
             {from:'adafruit_hid.keyboard','import':"Keyboard"},
             {from:'adafruit_hid.keycode', 'import':'Keycode'},
@@ -85,23 +102,30 @@ async function generate_code(code) {
         }
         if(line.type === 'event_handler') {
             if(line.event === 'touch') {
+                ctx.deps.push('touchio')
                 ctx.inits.push(`touch = touchio.TouchIn(board.TOUCH)`)
                 ctx.inits.push(`touch_state = False`)
                 ctx.whiles.push('if touch.value and not touch_state:')
-                ctx.whiles.push(indent(['touch_state = True']))
+                process_string_block([
+                    'touch_state = True',
+                    'print("Touch true")'],ctx)
                 ctx.whiles.push('if not touch.value and touch_state:')
-                ctx.whiles.push(indent(['touch_state = False']))
-                ctx.whiles.push(`if touch_state:`)
-                process_block(line.code,ctx)
+                process_string_block([
+                    'touch_state = False',
+                    'print("Touch false")'],ctx)
+                // ctx.whiles.push(`if touch_state:`)
+                add_all(process_block(line.code,ctx),ctx.whiles)
                 return
             }
         }
         if(line.type === 'logic_handler') {
             ctx.whiles.push(`if ${line.condition}:`)
-            process_block(line.code,ctx)
+            // ctx.whiles.push(`    print("running")`)
+            add_all(process_block(line.code,ctx),ctx.whiles)
         }
         log(line)
     })
+    ctx.whiles.push("time.sleep(0.1)")
     return [
         render_imports(ctx.deps),
         ctx.inits.join("\n"),
