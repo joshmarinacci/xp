@@ -23,13 +23,20 @@ const add_all = (src,dst) => {
 let VAR_COUNT = 0
 
 let LIBS = {
+    'board':{
+        deps:['board'],
+        inits:[],
+    },
     'time':{
         deps:['time'],
         inits:[],
     },
     "touch":{
         deps:["touchio"],
-        inits:[]
+        inits:[
+            `touch = touchio.TouchIn(board.TOUCH)`,
+            `touch_state = False`,
+        ]
     },
     "mouse":{
         deps:[
@@ -59,7 +66,7 @@ function process_block(code,ctx) {
         if(line.type === 'call') {
             if(line.name === 'wait') {
                 VAR_COUNT++
-                add_all(LIBS.time.deps,ctx.deps)
+                ctx.addLib(LIBS.time)
                 ctx.inits.push(`timeout${VAR_COUNT} = time.monotonic()`)
                 block.push("now = time.monotonic()")
                 block.push(`if now > timeout${VAR_COUNT} + ${line.args[0]}:`)
@@ -69,15 +76,13 @@ function process_block(code,ctx) {
                 return
             }
             if(line.name === 'key_type') {
-                add_all(LIBS.keyboard.deps,ctx.deps)
-                add_all(LIBS.keyboard.inits,ctx.inits)
+                ctx.addLib(LIBS.keyboard)
                 block.push(`keyboard.press(Keycode.${line.args[0]})`)
                 block.push(`keyboard.release_all()`)
                 return
             }
             if(line.name === 'mouse_click') {
-                add_all(LIBS.mouse.deps,ctx.deps)
-                add_all(LIBS.mouse.inits,ctx.inits)
+                ctx.addLib(LIBS.mouse)
                 block.push(`mouse.click(Mouse.LEFT_BUTTON)`)
                 return
             }
@@ -92,15 +97,6 @@ function process_block(code,ctx) {
     return indent(block)
 }
 
-function render_imports(deps) {
-    let lines = []
-    deps.forEach(dep => {
-        if(typeof dep === 'string') return lines.push("import "+dep)
-        lines.push(`from ${dep.from} import ${dep['import']}`)
-
-    })
-    return lines.join("\n")
-}
 
 function literalToPython(value) {
     if(typeof value === 'boolean') return value?"True":"False"
@@ -112,12 +108,44 @@ function process_string_block(strings, ctx) {
     ctx.whiles = ctx.whiles.concat(indent(block))
 }
 
-async function generate_code(code) {
-    let ctx = {
-        deps:['board'],
-        inits:[ ],
-        whiles:[ ]
+
+class PyFile {
+    constructor() {
+        this.deps = []
+        this.inits = []
+        this.whiles = []
     }
+    addDep(dep) {
+        this.deps.push(dep)
+    }
+    addDeps(deps) {
+        add_all(deps,this.deps)
+    }
+    render_imports() {
+        let singles = {}
+        let imports = []
+        this.deps.forEach(dep => {
+            if(typeof dep === 'string') {
+                singles[dep] = true
+            } else {
+                imports.push(`from ${dep.from} import ${dep['import']}`)
+            }
+        })
+        return [
+            ...Object.keys(singles).map(name => 'import '+name),
+            ...imports
+        ].join("\n")
+    }
+
+    addLib(lib) {
+        if(lib.deps)  this.addDeps(lib.deps)
+        if(lib.inits) add_all(lib.inits,this.inits)
+    }
+}
+
+async function generate_code(code) {
+    let ctx = new PyFile()
+    ctx.addLib(LIBS.board)
     code.forEach(line => {
         if(line.type === 'init_var') {
             //ctx.inits.push(comment("init var"))
@@ -126,9 +154,7 @@ async function generate_code(code) {
         }
         if(line.type === 'event_handler') {
             if(line.event === 'touch') {
-                add_all(LIBS.touch.deps,ctx.deps)
-                ctx.inits.push(`touch = touchio.TouchIn(board.TOUCH)`)
-                ctx.inits.push(`touch_state = False`)
+                ctx.addLib(LIBS.touch)
                 ctx.whiles.push('if touch.value and not touch_state:')
                 process_string_block([
                     'touch_state = True',
@@ -142,7 +168,7 @@ async function generate_code(code) {
                 return
             }
             if(line.event === 'button') {
-                add_all(LIBS.button.deps,ctx.deps)
+                ctx.addLib(LIBS.button)
                 ctx.inits.push(`button = DigitalInOut(board.SWITCH)`)
                 ctx.inits.push(`button.switch_to_input(pull=Pull.DOWN)`)
                 ctx.inits.push('button_state = False')
@@ -167,7 +193,7 @@ async function generate_code(code) {
     })
     ctx.whiles.push("time.sleep(0.1)")
     return [
-        render_imports(ctx.deps),
+        ctx.render_imports(),
         ctx.inits.join("\n"),
         ("while True:\n" +indent(ctx.whiles).join("\n"))
     ].join("\n")
