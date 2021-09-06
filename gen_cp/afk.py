@@ -1,41 +1,22 @@
 import time
 import board
-# import busio
-# import audioio
-# import audiocore
-# import audiomixer
-# #import adafruit_fancyled.adafruit_fancyled as fancy
 import adafruit_trellism4
-# import adafruit_adxl34x
 import usb_hid
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keycode import Keycode
 from adafruit_hid.mouse import Mouse
 import math
+from color_names import *
 
-running = False
 keyboard = Keyboard(usb_hid.devices)
 mouse = Mouse(usb_hid.devices)
-
-
-WHITE = (255,0,255)
-BLACK = (0,0,0)
-AQUA  = (0,75,200)
-RED   = (255,0,0)
-BLUE    = (  0,  0,255)
-GREEN   = (  0,255,  0)
-COLOR = (255,80,0)
-YELLOW = (255,255,0)
-HOTPINK = (255, 105, 180)
-
-#pixels = neopixel.NeoPixel(board.NEOPIXEL, 1)
 trellis = adafruit_trellism4.TrellisM4Express(rotation=90)
 
 
 MODE_RUNNING = False
 MODES = []
 CURRENT_MODE = 0
-def register_mode(mode, name, x,color,data):
+def register_mode(mode, name, x,color,pattern,data):
     global MODES
     MODES.append({
         "mode":mode,
@@ -45,6 +26,7 @@ def register_mode(mode, name, x,color,data):
         "data":data,
         'last_time':0,
         'speed':1,
+        'pattern':pattern,
         'real_speed':math.pow(0.2,1),
     })
 
@@ -60,6 +42,8 @@ def set_mode(new_mode):
 def next_mode():
     global CURRENT_MODE
     set_mode((CURRENT_MODE + 1) % len(MODES))
+
+
 
 def light(yx, color):
     trellis.pixels[yx[0],yx[1]] = color
@@ -93,12 +77,11 @@ def do_mode_3(m):
     time.sleep(0.1)
     light((0,m['x']),BLACK)
 
-register_mode(do_mode_1,"mode1",0,RED,{'speed':1}) # func, name, x, y, color
-register_mode(do_mode_2,"mode2",1,BLUE,{})
-register_mode(do_mode_3,"mode3",2,GREEN,{})
+register_mode(do_mode_1,"mode1",0,RED,'E',{}) # func, name, x, y, color
+register_mode(do_mode_2,"mode2",1,BLUE,'<',{})
+register_mode(do_mode_3,"mode3",2,GREEN,'F',{})
 
-START_BUTTON = (3,7)
-
+START_BUTTON = (3,0)
 
 SPEED_UP_BUTTON = (2,6)
 SPEED_BUTTON = (1,6)
@@ -107,6 +90,56 @@ light(SPEED_BUTTON, YELLOW)
 light(SPEED_DOWN_BUTTON, RED)
 light(SPEED_UP_BUTTON, BLUE)
 last_speed_tick = 0
+
+
+def draw_pattern(data, fg, bg):
+    pairs = [(x,y) for x in range(4) for y in range(5)]
+    for (x,y) in pairs:
+        if data[y][x] == 1:
+            trellis.pixels[x,y+3] = fg
+        else:
+            trellis.pixels[x,y+3] = bg
+
+
+def draw_F():
+    data = [
+        [1,1,1,1],
+        [1,0,0,0],
+        [1,1,1,0],
+        [1,0,0,0],
+        [1,0,0,0]
+    ]
+    draw_pattern(data,RED,BLACK)
+
+def draw_E():
+    data = [
+        [1,1,1,1],
+        [1,0,0,0],
+        [1,1,1,0],
+        [1,0,0,0],
+        [1,1,1,1]
+    ]
+    draw_pattern(data,GREEN,BLACK)
+
+def draw_LEFT():
+    data = [
+        [0,0,1,0],
+        [0,1,0,0],
+        [1,1,1,1],
+        [0,1,0,0],
+        [0,0,1,0]
+    ]
+    draw_pattern(data,GREEN,BLACK)
+
+def draw_mode_pattern():
+    mode = MODES[CURRENT_MODE]
+    if(mode['pattern'] == 'E'):
+        draw_E()
+    if(mode['pattern'] == 'F'):
+        draw_F()
+    if(mode['pattern'] == '<'):
+        draw_LEFT()
+
 
 def update_speed(amt):
     mode = MODES[CURRENT_MODE]
@@ -119,9 +152,9 @@ def blink_speed():
     mode = MODES[CURRENT_MODE]
     now = time.monotonic()
     if now > last_speed_tick + mode['real_speed']:
-        light(SPEED_BUTTON,BLACK)
+        light((0,mode['x']),BLACK)
         time.sleep(0.1)
-        light(SPEED_BUTTON,YELLOW)
+        light((0,mode['x']),mode['color'])
         last_speed_tick = now
 
 def toggle_running():
@@ -171,6 +204,8 @@ while True:
             update_speed(1)
     current_press = pressed
 
+
+    draw_mode_pattern()
 
     # run the current mode
     run_mode()
