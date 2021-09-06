@@ -1,18 +1,5 @@
-//write the code
-//generate the code
-//click 15 times, 0.1 secs each, then wait 60 seconds
-/*
+import {promises as fs} from "fs"
 
-running = false //init var
-on touch //event handler
-    toggle running //set var
-while running //logic handler
-    key type E //function call =>
-    time wait 1, //function call
-    mouse click left, //function call
-    time wait 5 seconds //function call
-
- */
 let code = [
     { type:'init_var',  name:'running', value:false },
     { type:'event_handler', event:'touch', code:[
@@ -53,16 +40,38 @@ function process_block(code,ctx) {
             block.push(`${line.name}(${line.args.join(",")})`)
         }
         if(line.type === 'toggle_var') {
-            block.push(`${line.name} = !${line.name}`)
+            block.push(`${line.name} = not ${line.name}`)
         }
     })
     ctx.whiles = ctx.whiles.concat(indent(block))
 }
+
+function render_imports(deps) {
+    let lines = []
+    deps.forEach(dep => {
+        if(typeof dep === 'string') return lines.push("import "+dep)
+        lines.push(`from ${dep.from} import ${dep['import']}`)
+
+    })
+    return lines.join("\n")
+}
+
+function literalToPython(value) {
+    if(typeof value === 'boolean') return value?"True":"False"
+    return value
+}
+
 async function generate_code(code) {
     let ctx = {
-        deps:['time','board','neopixel','touchio','usb_hid'],
+        deps:[
+            'time','board','neopixel','touchio','usb_hid','adafruit_hid',
+            {from:'adafruit_hid.mouse','import':"Mouse"},
+            {from:'adafruit_hid.keyboard','import':"Keyboard"},
+            {from:'adafruit_hid.keycode', 'import':'Keycode'},
+        ],
         inits:[
-            'mouse = adafruit_hid.mouse.Mouse(usb_hid.devices)'
+            'mouse = Mouse(usb_hid.devices)',
+            'keyboard = Keyboard(usb_hid.devices)'
         ],
         whiles:[
 
@@ -71,7 +80,7 @@ async function generate_code(code) {
     code.forEach(line => {
         if(line.type === 'init_var') {
             //ctx.inits.push(comment("init var"))
-            ctx.inits.push(`${line.name} = ${line.value}`)
+            ctx.inits.push(`${line.name} = ${literalToPython(line.value)}`)
             return
         }
         if(line.type === 'event_handler') {
@@ -94,13 +103,23 @@ async function generate_code(code) {
         log(line)
     })
     return [
-        ctx.deps.map(im => "import "+im).join("\n"),
+        render_imports(ctx.deps),
         ctx.inits.join("\n"),
         ("while True:\n" +indent(ctx.whiles).join("\n"))
     ].join("\n")
 }
 
+async function write_to(output, outpath) {
+    log('writing to',outpath)
+    await fs.writeFile(outpath,output.toString())
+}
 
-generate_code(code).then((v)=>log(v))
+async function doit() {
+    let output = await generate_code(code)
+    let outpath = "/Volumes/CIRCUITPY/code.py"
+    await write_to(output,outpath)
+    log(output)
+}
+doit().then(()=>log("done"))
 
 
