@@ -21,6 +21,25 @@ const add_all = (src,dst) => {
     src.forEach(el => dst.push(el))
 }
 let VAR_COUNT = 0
+
+let LIBS = {
+    "touch":{
+        deps:["touchio"],
+        inits:[]
+    },
+    "mouse":{
+        deps:[{from:'adafruit_hid.mouse','import':"Mouse"}, ],
+        inits:[
+            'mouse = Mouse(usb_hid.devices)',
+        ]
+    },
+    "keyboard":{
+        deps:[{from:'adafruit_hid.keyboard','import':"Keyboard"},
+            {from:'adafruit_hid.keycode', 'import':'Keycode'},],
+        inits:['keyboard = Keyboard(usb_hid.devices)']
+    }
+}
+
 function process_block(code,ctx) {
     let block = []
     code.forEach(line => {
@@ -33,16 +52,18 @@ function process_block(code,ctx) {
                 block.push(`    timeout${VAR_COUNT} = now`)
                 block.push(`    print("doing ${VAR_COUNT}")`)
                 add_all(process_block(line.then,ctx),block)
-                // block.push(`    time.sleep(${line.args.join(",")})`)
                 return
             }
             if(line.name === 'key_type') {
+                add_all(LIBS.keyboard.deps,ctx.deps)
+                add_all(LIBS.keyboard.inits,ctx.inits)
                 block.push(`keyboard.press(Keycode.${line.args[0]})`)
                 block.push(`keyboard.release_all()`)
                 return
             }
             if(line.name === 'mouse_click') {
-                // mouse.click(Mouse.LEFT_BUTTON)
+                add_all(LIBS.mouse.deps,ctx.deps)
+                add_all(LIBS.mouse.inits,ctx.inits)
                 block.push(`mouse.click(Mouse.LEFT_BUTTON)`)
                 return
             }
@@ -72,7 +93,6 @@ function literalToPython(value) {
     return value
 }
 
-
 function process_string_block(strings, ctx) {
     let block = strings
     ctx.whiles = ctx.whiles.concat(indent(block))
@@ -81,18 +101,10 @@ function process_string_block(strings, ctx) {
 async function generate_code(code) {
     let ctx = {
         deps:[
-            'time','board','neopixel','usb_hid','adafruit_hid',
-            {from:'adafruit_hid.mouse','import':"Mouse"},
-            {from:'adafruit_hid.keyboard','import':"Keyboard"},
-            {from:'adafruit_hid.keycode', 'import':'Keycode'},
+            'time','board','usb_hid',
         ],
-        inits:[
-            'mouse = Mouse(usb_hid.devices)',
-            'keyboard = Keyboard(usb_hid.devices)'
-        ],
-        whiles:[
-
-        ]
+        inits:[ ],
+        whiles:[ ]
     }
     code.forEach(line => {
         if(line.type === 'init_var') {
@@ -102,7 +114,7 @@ async function generate_code(code) {
         }
         if(line.type === 'event_handler') {
             if(line.event === 'touch') {
-                ctx.deps.push('touchio')
+                add_all(LIBS.touch.deps,ctx.deps)
                 ctx.inits.push(`touch = touchio.TouchIn(board.TOUCH)`)
                 ctx.inits.push(`touch_state = False`)
                 ctx.whiles.push('if touch.value and not touch_state:')
