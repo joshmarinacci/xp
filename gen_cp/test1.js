@@ -13,6 +13,22 @@ let code = [
         ]
     }
 ]
+let code2 = [
+    /*
+    import modes
+
+    def_mode mode1 {
+        wait(1)
+        key.type(E)
+    }
+    def_mode mode2 {
+        mouse.click(LEFT)
+    }
+    modes = new Modes()
+    on button
+        modes.next()
+   */
+]
 const log = (...args) => console.log(...args)
 const comment = (...args) => `#${[...args].join(" ")}`
 const indent = (arr) => arr.map(v => "    " + v)
