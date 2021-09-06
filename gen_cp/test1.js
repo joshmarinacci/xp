@@ -141,6 +141,22 @@ class PyFile {
         if(lib.deps)  this.addDeps(lib.deps)
         if(lib.inits) add_all(lib.inits,this.inits)
     }
+
+    render_inits() {
+        return this.inits.join("\n")
+    }
+
+    render_whiles() {
+        return "while True:\n" +indent(this.whiles).join("\n")
+    }
+
+    render() {
+        return [
+            this.render_imports(),
+            this.render_inits(),
+            this.render_whiles(),
+        ].join("\n")
+    }
 }
 
 async function generate_code(code) {
@@ -192,11 +208,7 @@ async function generate_code(code) {
         log(line)
     })
     ctx.whiles.push("time.sleep(0.1)")
-    return [
-        ctx.render_imports(),
-        ctx.inits.join("\n"),
-        ("while True:\n" +indent(ctx.whiles).join("\n"))
-    ].join("\n")
+    return ctx.render()
 }
 
 async function write_to(output, outpath) {
