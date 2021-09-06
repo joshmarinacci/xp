@@ -43,6 +43,9 @@ def register_mode(mode, name, x,color,data):
         "color":color,
         "x":x,
         "data":data,
+        'last_time':0,
+        'speed':1,
+        'real_speed':math.pow(0.2,1),
     })
 
 def get_mode():
@@ -66,66 +69,37 @@ def scale(color, amt):
 
 
 # press the E key once every speed seconds
-last_mode_1 = 0
-def do_mode_1(m,speed):
-    global trellis
-    global last_mode_1
-    global MODE_RUNNING
-    now = time.monotonic()
-    if now > last_mode_1 + speed:
-        print("doing mode 1")
-        keyboard.press(Keycode.E)
-        keyboard.release_all()
-        light((0,m['x']),m['color'])
-        time.sleep(0.1)
-        light((0,m['x']),BLACK)
-        last_mode_1 = now
+def do_mode_1(m):
+    print("doing mode 1")
+    keyboard.press(Keycode.E)
+    keyboard.release_all()
+    light((0,m['x']),m['color'])
+    time.sleep(0.1)
+    light((0,m['x']),BLACK)
 
 # press click the left mouse button once every SPEED seconds
-last_mode_2 = 0
-def do_mode_2(m,speed):
-    global trellis
-    global last_mode_2
-    global MODE_RUNNING
-    now = time.monotonic()
-    if now > last_mode_2 + speed:
-        print("doing mode 2")
-        mouse.click(Mouse.LEFT_BUTTON)
-        light((0,m['x']),m['color'])
-        time.sleep(0.1)
-        light((0,m['x']),BLACK)
-        last_mode_2 = now
+def do_mode_2(m):
+    print("doing mode 2")
+    mouse.click(Mouse.LEFT_BUTTON)
+    light((0,m['x']),m['color'])
+    time.sleep(0.1)
+    light((0,m['x']),BLACK)
 
-last_mode_3 = 0
-def do_mode_3(m,speed):
-    print("doing 3")
-    global trellis
-    global last_mode_3
-    global MODE_RUNNING
-    now = time.monotonic()
-    if now > last_mode_3 + speed:
-        print("doing mode 1")
-        keyboard.press(Keycode.F)
-        keyboard.release_all()
-        light((0,m['x']),m['color'])
-        time.sleep(0.1)
-        light((0,m['x']),BLACK)
-        last_mode_3 = now
+def do_mode_3(m):
+    print("doing mode 3")
+    keyboard.press(Keycode.F)
+    keyboard.release_all()
+    light((0,m['x']),m['color'])
+    time.sleep(0.1)
+    light((0,m['x']),BLACK)
 
 register_mode(do_mode_1,"mode1",0,RED,{'speed':1}) # func, name, x, y, color
 register_mode(do_mode_2,"mode2",1,BLUE,{})
 register_mode(do_mode_3,"mode3",2,GREEN,{})
 
-#    next_mode()
-#    get_mode()['mode']()
-#    time.sleep(0.1)
-
 START_BUTTON = (3,7)
 
 
-speed = 1
-real_speed = math.pow(0.1,speed)
-real_speed = 1.0
 SPEED_UP_BUTTON = (2,6)
 SPEED_BUTTON = (1,6)
 SPEED_DOWN_BUTTON = (0,6)
@@ -135,22 +109,20 @@ light(SPEED_UP_BUTTON, BLUE)
 last_speed_tick = 0
 
 def update_speed(amt):
-    global speed
-    global real_speed
-    speed += amt
-    real_speed = math.pow(0.2,speed)
-    print("set speed to",speed, real_speed)
+    mode = MODES[CURRENT_MODE]
+    mode['speed'] += amt
+    mode['real_speed'] = math.pow(0.2,mode['speed'])
+    print("set speed to",mode['speed'], mode['real_speed'])
 
 def blink_speed():
     global last_speed_tick
-    global real_speed
+    mode = MODES[CURRENT_MODE]
     now = time.monotonic()
-    if now > last_speed_tick + real_speed:
+    if now > last_speed_tick + mode['real_speed']:
         light(SPEED_BUTTON,BLACK)
         time.sleep(0.1)
         light(SPEED_BUTTON,YELLOW)
         last_speed_tick = now
-
 
 def toggle_running():
     global MODE_RUNNING
@@ -159,6 +131,14 @@ def toggle_running():
         light(START_BUTTON, GREEN)
     else:
         light(START_BUTTON, BLUE)
+
+def run_mode():
+    mode = MODES[CURRENT_MODE]
+    if MODE_RUNNING:
+        now = time.monotonic()
+        if now > (mode['last_time'] + mode['real_speed']):
+            mode['last_time'] = now
+            mode['mode'](mode)
 
 
 light(START_BUTTON, BLUE)
@@ -193,15 +173,12 @@ while True:
 
 
     # run the current mode
-    mode = MODES[CURRENT_MODE]
-    if MODE_RUNNING:
-        mode['mode'](mode,real_speed)
+    run_mode()
 
     #blink the speed button
     blink_speed()
 
-
     # sleep
-    time.sleep(0.1)
+    # time.sleep(0.1)
 
 
