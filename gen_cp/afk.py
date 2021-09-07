@@ -26,7 +26,7 @@ def register_mode(mode, name, x,color,pattern,data):
         "x":x,
         "data":data,
         'last_time':0,
-        'speed':1,
+        'speed':3,
         'pattern':pattern,
         'real_speed':math.pow(0.2,1),
     })
@@ -59,34 +59,48 @@ def do_mode_1(m):
     print("doing mode 1")
     keyboard.press(Keycode.E)
     keyboard.release_all()
-    light((0,m['x']),m['color'])
-    time.sleep(0.1)
-    light((0,m['x']),BLACK)
+    #light((0,m['x']),m['color'])
+    #time.sleep(0.1)
+    #light((0,m['x']),BLACK)
 
 # press click the left mouse button once every SPEED seconds
 def do_mode_2(m):
     print("doing mode 2")
     mouse.click(Mouse.LEFT_BUTTON)
-    light((0,m['x']),m['color'])
-    time.sleep(0.1)
-    light((0,m['x']),BLACK)
+    # light((0,m['x']),m['color'])
+    # time.sleep(0.1)
+    # light((0,m['x']),BLACK)
 
 def do_mode_3(m):
     print("doing mode 3")
     keyboard.press(Keycode.F)
     keyboard.release_all()
-    light((0,m['x']),m['color'])
-    time.sleep(0.1)
-    light((0,m['x']),BLACK)
+    # light((0,m['x']),m['color'])
+    # time.sleep(0.1)
+    # light((0,m['x']),BLACK)
+
+def do_mode_4(m):
+    print("doing mode 3")
+    keyboard.press(Keycode.Q)
+    keyboard.release_all()
+    # light((0,m['x']),m['color'])
+    # time.sleep(0.1)
+    # light((0,m['x']),BLACK)
+
 
 register_mode(do_mode_1,"mode1",0,RED,'E',{}) # func, name, x, y, color
 register_mode(do_mode_2,"mode2",1,BLUE,'<',{})
 register_mode(do_mode_3,"mode3",2,GREEN,'F',{})
+register_mode(do_mode_4,"mode4",3,YELLOW,'Q',{})
 
-START_BUTTON = (3,5)
+START_BUTTON = (3,6)
 
 
 SPEEDS = [
+    #1000th second
+    ["0.001",0.001,RED,BLACK],
+    #100th second
+    ["0.01",0.01,RED,BLACK],
     # 10th second
     ["0.1",0.1,RED,BLACK],
     # half second
@@ -142,6 +156,13 @@ def update_speed(amt):
     mode['real_speed'] = info[1]
     print("set speed to",mode['speed'], mode['real_speed'])
 
+def show_speed():
+    mode = MODES[CURRENT_MODE]
+    speed = mode['speed']
+    info = SPEEDS[speed]
+    draw_number(info[0],info[2],info[3])
+
+
 def blink_speed():
     global last_speed_tick
     mode = MODES[CURRENT_MODE]
@@ -158,7 +179,7 @@ def toggle_running():
     if MODE_RUNNING:
         light(START_BUTTON, GREEN)
     else:
-        light(START_BUTTON, BLUE)
+        light(START_BUTTON, PURPLE)
 
 def run_mode():
     mode = MODES[CURRENT_MODE]
@@ -169,7 +190,7 @@ def run_mode():
             mode['mode'](mode)
 
 
-light(START_BUTTON, BLUE)
+light(START_BUTTON, PURPLE)
 current_press = set()
 CURRENT_MODE = 0
 
@@ -197,6 +218,9 @@ while True:
             update_speed(-1)
         if down == SPEED_UP_BUTTON:
             update_speed(1)
+        if down == SPEED_BUTTON:
+            show_speed()
+
     current_press = pressed
 
 
