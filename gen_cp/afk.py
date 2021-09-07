@@ -63,7 +63,12 @@ def do_mode_1(m):
 
 # press click the left mouse button once every SPEED seconds
 def do_mode_2(m):
-    mouse.click(Mouse.LEFT_BUTTON)
+    #    mouse.click(Mouse.LEFT_BUTTON)
+    print("pressing left")
+    mouse.press(Mouse.LEFT_BUTTON)
+    time.sleep(1.0)
+    mouse.release_all()
+    print("releasing left")
     # light((0,m['x']),m['color'])
     # time.sleep(0.1)
     # light((0,m['x']),BLACK)
