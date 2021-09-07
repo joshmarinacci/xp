@@ -12,7 +12,7 @@ let DRUM_SYNTHS = MakePercussionInstruments()
 let drum_track = new MultiInstrumentSequence("drum track",
     DRUM_SYNTHS,
     '16n',
-    8
+    16
 )
 
 let INSTRUMENTS = MakeInstruments();

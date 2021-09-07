@@ -148,7 +148,7 @@ class GenericSequence extends EventSource {
             this.setCurrentStep(step)
             this.playColumn(step)
             count++
-        },'4n').start(0)
+        },'16n').start(0)
     }
 
     setCurrentStep(step) {

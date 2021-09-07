@@ -138,9 +138,9 @@ export function MakePercussionInstruments() {
     // const simple_def = makeDef(new Synth().toDestination(),
     //     'simple', '8n', "C4")
     const kick_def = makeDef(kickSynth, "kick", "16n", "C1")
-    const open_hat_def = makeDef(openHiHat, "Open Hat", "4n", "C2")
-    const closed_hat_def = makeDef(closedHiHat, "Closed Hat", "4n", "C2")
-    const clap_def = makeDef(clap_synth, "Clap", "4n", "C2")
+    const open_hat_def = makeDef(openHiHat, "Open Hat", "16n", "C2")
+    const closed_hat_def = makeDef(closedHiHat, "Closed Hat", "16n", "C2")
+    const clap_def = makeDef(clap_synth, "Clap", "16n", "C2")
     let synths = [
         open_hat_def,
         closed_hat_def,
