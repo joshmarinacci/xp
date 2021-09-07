@@ -178,6 +178,7 @@ def toggle_running():
         light(START_BUTTON, GREEN)
     else:
         light(START_BUTTON, PURPLE)
+    MODES[CURRENT_MODE]['last_time'] = time.monotonic()
 
 def run_mode():
     mode = MODES[CURRENT_MODE]
@@ -199,7 +200,23 @@ def draw_mode_buttons():
         else:
             trellis.pixels[m['x'],7] = scale(m['color'],0.1)
 
-draw_mode_buttons()
+def draw_time_left():
+    mode = MODES[CURRENT_MODE]
+    now = time.monotonic()
+    before = mode['last_time']
+    speed = mode['real_speed']
+    elapsed = now - before
+    left = speed - elapsed
+    # print("total",speed,"current",left,elapsed,elapsed/speed)
+    t = elapsed/speed
+    for i in range(0,20):
+        # print('lighting',t,math.floor(4*t))
+        color = YELLOW
+        if i > math.floor(20*t):
+            color = BLACK
+        x = i%4
+        y = math.floor(i/4)
+        light((x,y),color)
 
 while True:
     now = time.monotonic()
@@ -229,5 +246,6 @@ while True:
         blink_speed()
     else:
         run_mode()
+        draw_time_left()
 
 
