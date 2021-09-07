@@ -7,10 +7,11 @@ from adafruit_hid.keycode import Keycode
 from adafruit_hid.mouse import Mouse
 import math
 from color_names import *
+from patterns import NUM_PATTERNS
 
 keyboard = Keyboard(usb_hid.devices)
 mouse = Mouse(usb_hid.devices)
-trellis = adafruit_trellism4.TrellisM4Express(rotation=90)
+trellis = adafruit_trellism4.TrellisM4Express(rotation=270)
 
 
 MODE_RUNNING = False
@@ -37,6 +38,7 @@ def set_mode(new_mode):
     global CURRENT_MODE
     CURRENT_MODE = new_mode % len(MODES)
     print("switching to mode ", get_mode()["name"])
+    draw_mode_pattern()
     MODE_RUNNING = False
 
 def next_mode():
@@ -81,11 +83,27 @@ register_mode(do_mode_1,"mode1",0,RED,'E',{}) # func, name, x, y, color
 register_mode(do_mode_2,"mode2",1,BLUE,'<',{})
 register_mode(do_mode_3,"mode3",2,GREEN,'F',{})
 
-START_BUTTON = (3,0)
+START_BUTTON = (3,5)
 
-SPEED_UP_BUTTON = (2,6)
-SPEED_BUTTON = (1,6)
-SPEED_DOWN_BUTTON = (0,6)
+
+SPEEDS = [
+    # 10th second
+    ["0.1",0.1,RED,BLACK],
+    # half second
+    ["0.5",0.5,RED,BLACK],
+    # one second
+    [1,1.0, GREEN,BLACK],
+    # five seconds
+    [5,5.0, GREEN,BLACK],
+    # 10 seconds
+    ["10",10.0,GREEN,BLACK],
+    # 1 minute
+    ["1m",60.0,HOTPINK,BLACK],
+    ["5m",5*60.0,HOTPINK,BLACK],
+]
+SPEED_UP_BUTTON   = (0,5)
+SPEED_BUTTON      = (1,5)
+SPEED_DOWN_BUTTON = (2,5)
 light(SPEED_BUTTON, YELLOW)
 light(SPEED_DOWN_BUTTON, RED)
 light(SPEED_UP_BUTTON, BLUE)
@@ -96,55 +114,32 @@ def draw_pattern(data, fg, bg):
     pairs = [(x,y) for x in range(4) for y in range(5)]
     for (x,y) in pairs:
         if data[y][x] == 1:
-            trellis.pixels[x,y+3] = fg
+            trellis.pixels[x,y+0] = fg
         else:
-            trellis.pixels[x,y+3] = bg
+            trellis.pixels[x,y+0] = bg
 
-
-def draw_F():
-    data = [
-        [1,1,1,1],
-        [1,0,0,0],
-        [1,1,1,0],
-        [1,0,0,0],
-        [1,0,0,0]
-    ]
-    draw_pattern(data,RED,BLACK)
-
-def draw_E():
-    data = [
-        [1,1,1,1],
-        [1,0,0,0],
-        [1,1,1,0],
-        [1,0,0,0],
-        [1,1,1,1]
-    ]
-    draw_pattern(data,GREEN,BLACK)
-
-def draw_LEFT():
-    data = [
-        [0,0,1,0],
-        [0,1,0,0],
-        [1,1,1,1],
-        [0,1,0,0],
-        [0,0,1,0]
-    ]
-    draw_pattern(data,GREEN,BLACK)
 
 def draw_mode_pattern():
     mode = MODES[CURRENT_MODE]
-    if(mode['pattern'] == 'E'):
-        draw_E()
-    if(mode['pattern'] == 'F'):
-        draw_F()
-    if(mode['pattern'] == '<'):
-        draw_LEFT()
+    draw_pattern(NUM_PATTERNS[mode['pattern']],YELLOW,BLACK)
 
+def draw_number(num,fg,bg):
+    print("drawing",num,fg,bg)
+    draw_pattern(NUM_PATTERNS[num],fg,bg)
 
 def update_speed(amt):
     mode = MODES[CURRENT_MODE]
-    mode['speed'] += amt
-    mode['real_speed'] = math.pow(0.2,mode['speed'])
+    speed = mode['speed']
+    speed += amt
+    if speed <0:
+        speed = 0
+    if speed > len(SPEEDS)-1:
+        speed = len(SPEEDS)-1
+    mode['speed'] = speed
+    #    draw_number(mode['speed'])
+    info = SPEEDS[speed]
+    draw_number(info[0],info[2],info[3])
+    mode['real_speed'] = info[1]
     print("set speed to",mode['speed'], mode['real_speed'])
 
 def blink_speed():
@@ -152,9 +147,9 @@ def blink_speed():
     mode = MODES[CURRENT_MODE]
     now = time.monotonic()
     if now > last_speed_tick + mode['real_speed']:
-        light((0,mode['x']),BLACK)
+        light((mode['x'],7),BLACK)
         time.sleep(0.1)
-        light((0,mode['x']),mode['color'])
+        light((mode['x'],7),mode['color'])
         last_speed_tick = now
 
 def toggle_running():
@@ -183,18 +178,18 @@ while True:
     # draw the mode selector buttons
     for m in MODES:
         if m == MODES[CURRENT_MODE]:
-            trellis.pixels[0,m['x']] = scale(m['color'],1.0)
+            trellis.pixels[m['x'],7] = scale(m['color'],1.0)
         else:
-            trellis.pixels[0,m['x']] = scale(m['color'],0.1)
+            trellis.pixels[m['x'],7] = scale(m['color'],0.1)
 
     # handle the keyboard
     pressed = set(trellis.pressed_keys)
     for down in pressed - current_press:
         print("down is",down)
         # use bottom row to switch modes
-        if down[0] == 0:
-            if down[1] < len(MODES):
-                set_mode(down[1])
+        if down[1] == 7:
+            if down[0] < len(MODES):
+                set_mode(down[0])
 
         if down == START_BUTTON:
             toggle_running()
@@ -204,8 +199,6 @@ while True:
             update_speed(1)
     current_press = pressed
 
-
-    draw_mode_pattern()
 
     # run the current mode
     run_mode()
