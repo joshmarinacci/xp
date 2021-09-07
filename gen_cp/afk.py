@@ -17,13 +17,15 @@ trellis = adafruit_trellism4.TrellisM4Express(rotation=270)
 MODE_RUNNING = False
 MODES = []
 CURRENT_MODE = 0
-def register_mode(mode, name, x,color,pattern,data):
+def register_mode(mode, name, xy,color,pattern,data):
     global MODES
     MODES.append({
         "mode":mode,
         "name":name,
         "color":color,
-        "x":x,
+        "x":xy[0],
+        "y":xy[1],
+        "xy":xy,
         "data":data,
         'last_time':0,
         'speed':3,
@@ -87,11 +89,16 @@ def do_mode_4(m):
     # time.sleep(0.1)
     # light((0,m['x']),BLACK)
 
+def do_mode_5(m):
+    keyboard.press(Keycode.SPACE)
+    keyboard.release_all()
 
-register_mode(do_mode_1,"mode1",0,RED,'E',{}) # func, name, x, y, color
-register_mode(do_mode_2,"mode2",1,BLUE,'<',{})
-register_mode(do_mode_3,"mode3",2,GREEN,'F',{})
-register_mode(do_mode_4,"mode4",3,YELLOW,'Q',{})
+
+register_mode(do_mode_1,"mode1",(0,7),RED,'E',{}) # func, name, x, y, color
+register_mode(do_mode_2,"mode2",(1,7),BLUE,'<',{})
+register_mode(do_mode_3,"mode3",(2,7),GREEN,'F',{})
+register_mode(do_mode_4,"mode4",(3,7),YELLOW,'Q',{})
+register_mode(do_mode_5,"mode5",(0,6),ORANGE,'Q',{})
 
 START_BUTTON = (3,6)
 
@@ -134,14 +141,14 @@ def draw_pattern(data, fg, bg):
 
 
 def draw_mode_pattern():
-    mode = MODES[CURRENT_MODE]
+    mode = get_mode()
     draw_pattern(NUM_PATTERNS[mode['pattern']],YELLOW,BLACK)
 
 def draw_number(num,fg,bg):
     draw_pattern(NUM_PATTERNS[num],fg,bg)
 
 def update_speed(amt):
-    mode = MODES[CURRENT_MODE]
+    mode = get_mode()
     speed = mode['speed']
     speed += amt
     if speed <0:
@@ -163,12 +170,12 @@ def show_speed():
 
 def blink_speed():
     global last_speed_tick
-    mode = MODES[CURRENT_MODE]
+    mode = get_mode()
     now = time.monotonic()
     if now > last_speed_tick + mode['real_speed']:
-        light((mode['x'],7),BLACK)
+        light(mode['xy'],BLACK)
         time.sleep(0.1)
-        light((mode['x'],7),mode['color'])
+        light(mode['xy'],mode['color'])
         last_speed_tick = now
 
 def toggle_running():
@@ -191,14 +198,15 @@ def run_mode():
 
 light(START_BUTTON, PURPLE)
 current_press = set()
-CURRENT_MODE = 0
+set_mode(0)
+
 
 def draw_mode_buttons():
     for m in MODES:
         if m == MODES[CURRENT_MODE]:
-            trellis.pixels[m['x'],7] = scale(m['color'],1.0)
+            light(m['xy'], scale(m['color'],1.0))
         else:
-            trellis.pixels[m['x'],7] = scale(m['color'],0.1)
+            light(m['xy'], scale(m['color'],0.1))
 
 def draw_time_left():
     mode = MODES[CURRENT_MODE]
@@ -218,6 +226,8 @@ def draw_time_left():
         y = math.floor(i/4)
         light((x,y),color)
 
+draw_mode_buttons()
+
 while True:
     now = time.monotonic()
     # draw the mode selector buttons
@@ -226,9 +236,9 @@ while True:
     pressed = set(trellis.pressed_keys)
     for down in pressed - current_press:
         # use bottom row to switch modes
-        if down[1] == 7:
-            if down[0] < len(MODES):
-                set_mode(down[0])
+        for i in range(len(MODES)):
+            if down == MODES[i]['xy']:
+                set_mode(i)
                 draw_mode_buttons()
 
         if down == START_BUTTON:
