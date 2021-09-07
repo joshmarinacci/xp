@@ -37,7 +37,6 @@ def get_mode():
 def set_mode(new_mode):
     global CURRENT_MODE
     CURRENT_MODE = new_mode % len(MODES)
-    print("switching to mode ", get_mode()["name"])
     draw_mode_pattern()
     MODE_RUNNING = False
 
@@ -56,7 +55,6 @@ def scale(color, amt):
 
 # press the E key once every speed seconds
 def do_mode_1(m):
-    print("doing mode 1")
     keyboard.press(Keycode.E)
     keyboard.release_all()
     #light((0,m['x']),m['color'])
@@ -65,14 +63,12 @@ def do_mode_1(m):
 
 # press click the left mouse button once every SPEED seconds
 def do_mode_2(m):
-    print("doing mode 2")
     mouse.click(Mouse.LEFT_BUTTON)
     # light((0,m['x']),m['color'])
     # time.sleep(0.1)
     # light((0,m['x']),BLACK)
 
 def do_mode_3(m):
-    print("doing mode 3")
     keyboard.press(Keycode.F)
     keyboard.release_all()
     # light((0,m['x']),m['color'])
@@ -80,7 +76,6 @@ def do_mode_3(m):
     # light((0,m['x']),BLACK)
 
 def do_mode_4(m):
-    print("doing mode 3")
     keyboard.press(Keycode.Q)
     keyboard.release_all()
     # light((0,m['x']),m['color'])
@@ -138,7 +133,6 @@ def draw_mode_pattern():
     draw_pattern(NUM_PATTERNS[mode['pattern']],YELLOW,BLACK)
 
 def draw_number(num,fg,bg):
-    print("drawing",num,fg,bg)
     draw_pattern(NUM_PATTERNS[num],fg,bg)
 
 def update_speed(amt):
@@ -154,7 +148,6 @@ def update_speed(amt):
     info = SPEEDS[speed]
     draw_number(info[0],info[2],info[3])
     mode['real_speed'] = info[1]
-    print("set speed to",mode['speed'], mode['real_speed'])
 
 def show_speed():
     mode = MODES[CURRENT_MODE]
@@ -194,23 +187,27 @@ light(START_BUTTON, PURPLE)
 current_press = set()
 CURRENT_MODE = 0
 
-while True:
-    now = time.monotonic()
-    # draw the mode selector buttons
+def draw_mode_buttons():
     for m in MODES:
         if m == MODES[CURRENT_MODE]:
             trellis.pixels[m['x'],7] = scale(m['color'],1.0)
         else:
             trellis.pixels[m['x'],7] = scale(m['color'],0.1)
 
+draw_mode_buttons()
+
+while True:
+    now = time.monotonic()
+    # draw the mode selector buttons
+
     # handle the keyboard
     pressed = set(trellis.pressed_keys)
     for down in pressed - current_press:
-        print("down is",down)
         # use bottom row to switch modes
         if down[1] == 7:
             if down[0] < len(MODES):
                 set_mode(down[0])
+                draw_mode_buttons()
 
         if down == START_BUTTON:
             toggle_running()
@@ -220,17 +217,12 @@ while True:
             update_speed(1)
         if down == SPEED_BUTTON:
             show_speed()
-
     current_press = pressed
 
 
-    # run the current mode
-    run_mode()
-
-    #blink the speed button
-    blink_speed()
-
-    # sleep
-    # time.sleep(0.1)
+    if not MODE_RUNNING:
+        blink_speed()
+    else:
+        run_mode()
 
 
