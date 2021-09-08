@@ -281,16 +281,16 @@ function setupRandomWalk(BG) {
             y: randi(0, 1),
             vx: randf(-0.1,0.1),
             vy: randf(0.5,1.5),
-            color: grayscale[randi(0,256)],
+            color: rainbow[randi(0,256)],
         }
         r.dots.push(dot)
     })
     BG.fillRect(0,0,WIDTH,HEIGHT, BLACK)
 }
-function drawRandomWalk(BG) {
+function drawRandomWalk(BG, clear=false) {
     let r = RANDOM
     //move the dots randomly in a direction
-    BG.fillRect(0,0,WIDTH,HEIGHT, BLACK)
+    if(clear) BG.fillRect(0,0,WIDTH,HEIGHT, BLACK)
 
     r.dots.forEach(dot => {
         dot.x += dot.vx
@@ -306,5 +306,5 @@ function drawRandomWalk(BG) {
 }
 
 
-setupRandomWalk(BG)
+setupRandomWalk(BG,true)
 setInterval(()=>drawRandomWalk(BG),100)
