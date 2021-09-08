@@ -74,6 +74,8 @@ function wrap(v,min,max) {
 function draw_snow(pixels,state) {
     pixels.clear(BLACK)
     let live_count = 0
+
+    //move each flake
     state.snow.forEach(flake => {
         if(flake.alive) live_count++
         if(!flake.alive) return
@@ -82,18 +84,38 @@ function draw_snow(pixels,state) {
         let iy = Math.round(flake.y)
         let ty = Math.round(flake.y+flake.vy)
         if(state.grid.get(ix,ty) > 0 || ty > pixels.height-1) {
+            //if stopped at the top, then kill this flake
             if(iy === 0) {
                 flake.alive = false
+                return
+            }
+            //if stopped but a blank spot to the left, move it left
+            let xxl = wrap(Math.floor(flake.x)-1)
+            if(state.grid.get(xxl,ty)===0) {
+                flake.x = xxl
+                flake.y = wrap(flake.y + flake.vy)
+                return
+            }
+            let xxr = wrap(Math.floor(flake.x)+1)
+            if(state.grid.get(xxr,ty)===0) {
+                flake.x = xxr
+                flake.y = wrap(flake.y + flake.vy)
                 return
             }
             state.grid.set(ix,iy,1)
             flake.y = 0
             flake.x = randi(0,pixels.width)
         } else {
-            flake.y = flake.y + flake.vy
-            pixels.setRGB8(flake.x,flake.y,WHITE)
+            flake.y = wrap(flake.y+flake.vy)
         }
     })
+    //draw the live flakes
+    state.snow.forEach(flake => {
+        if (!flake.alive) return
+        pixels.setRGB8(flake.x,flake.y,WHITE)
+    })
+
+    //draw in the snowbanks
     state.grid.forEach((x,y,v) => {
         if(v === 1) pixels.setRGB8(x,y,GRAY8)
         if(v === 2) pixels.setRGB8(x,y,RED)
