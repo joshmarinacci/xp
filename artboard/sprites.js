@@ -3,8 +3,41 @@ import {BLACK} from './colors.js'
 
 let SPRITES = [
     {
+        name:"flower",
+        url:"./sprites/smb1_items.png",
+        x:0,
+        y:16*2,
+        w:16,
+        h:16,
+        frameCount:4,
+        frameHGap:0,
+        frames:[]
+    },
+    {
+        name:"coin",
+        url:"./sprites/smb1_items.png",
+        x:0,
+        y:16*7,
+        w:16,
+        h:16,
+        frameCount:4,
+        frameHGap:0,
+        frames:[]
+    },
+    {
+        name:"star",
+        url:"./sprites/smb1_items.png",
+        x:0,
+        y:16*3,
+        w:16,
+        h:16,
+        frameCount:4,
+        frameHGap:0,
+        frames:[]
+    },
+    {
         name:"small_mario",
-        url:"./sprites/mario_luigi.png",
+        url:"./sprites/smb1_mario_luigi.png",
         x:11+32,
         y:9,
         w:16,
@@ -15,7 +48,7 @@ let SPRITES = [
     },
     {
         name:"small_swim_mario",
-        url:"./sprites/mario_luigi.png",
+        url:"./sprites/smb1_mario_luigi.png",
         x:140,
         y:9,
         w:16,
@@ -26,7 +59,7 @@ let SPRITES = [
     },
     {
         name:"running_fire_mario",
-        url:"./sprites/mario_luigi.png",
+        url:"./sprites/smb1_mario_luigi.png",
         x:43,
         y:157,
         w:16,
@@ -64,7 +97,7 @@ function loadSprite(BG,sprite) {
                 let ctx = can.getContext('2d')
                 let sx = sprite.x+f*sprite.w
                 ctx.drawImage(image,
-                    sprite.x+(f*(sprite.w+1)),
+                    sprite.x+(f*(sprite.w+sprite.frameHGap)),
                     sprite.y,
                     sprite.w,
                     sprite.h,
@@ -100,7 +133,7 @@ function drawSprite(BG) {
     renderSprite(BG,sprite,state.frame,0,0)
     state.frame = (state.frame + 1)%sprite.frameCount
     count++
-    if(count %10 ===0) {
+    if(count %20 ===0) {
         state.sprite = (state.sprite+1) % state.sprites.length
         state.frame = 0
     }
