@@ -12,6 +12,8 @@ class PixelGrid {
     }
 
     setRGB8(x, y, co){
+        x = Math.floor(x)
+        y = Math.floor(y)
         let c = this.canvas.getContext('2d')
         c.fillStyle = `rgba(${co[0]},${co[1]},${co[2]})`
         c.fillRect(x*SCALE,y*SCALE,SCALE,SCALE)

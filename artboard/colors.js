@@ -1,6 +1,7 @@
 export const RED = [255,0,0]
 export const BLACK = [0,0,0]
 export const WHITE = [255,255,255]
+export const GRAY8 = [0x88,0x88,0x88]
 
 /**
     * Converts an HSL color value to RGB. Conversion formula
