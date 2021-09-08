@@ -1,4 +1,4 @@
-import {BLACK, hslToRgb, RED} from "./colors.js"
+import {BLACK, hslToRgb, RED, WHITE} from "./colors.js"
 let WIDTH = 32
 let HEIGHT = 32
 let SCALE = 15
@@ -48,12 +48,19 @@ function range(v1,v2) {
     if(typeof v2 === 'undefined') {
         return range(0,v1)
     } else {
-        let arr = new Array(v2-v1)
+        let arr = new Array()
         for(let i=v1; i<v2; i++) {
             arr.push(i)
         }
         return arr
     }
+}
+function remap(val, min, max, MIN, MAX) {
+    let t = (val - min) / (max - min)
+    return ((MAX - MIN) * t) + MIN
+}
+function lerp(t, min, max) {
+    return ((max - min) * t) + min
 }
 
 const NUMBER_FONT = {
@@ -213,15 +220,6 @@ function drawMandle(BG) {
         while (i < 255 && (zx * zx + zy * zy) < 4)
         return 255 -i
     }
-    function remap(val, min, max, MIN, MAX) {
-        let t = (val - min) / (max - min)
-        return ((MAX - MIN) * t) + MIN
-    }
-    const toReal = (x, y) => {
-        let px = remap(x, 0, w, 0 - xoff, realw - xoff)
-        let py = remap(y, 0, h, 0 - yoff, realh - yoff)
-        return {x: px, y: py}
-    }
 
     const range = (count) => {
         let arr = new Array(count)
@@ -231,9 +229,6 @@ function drawMandle(BG) {
         return arr
     }
 
-    function lerp(t, min, max) {
-        return ((max - min) * t) + min
-    }
 
     let rainbow = range(256).map(i => {
         let t = i/255
@@ -255,4 +250,61 @@ function drawMandle(BG) {
 }
 
 // setInterval(()=>drawMandle(BG),1*1000)
-drawMandle(BG)
+// drawMandle(BG)
+
+let RANDOM = {}
+
+function randi(min, max) {
+    return Math.floor(remap(Math.random(),0,1,min,max))
+}
+function randf(min, max) {
+    return remap(Math.random(),0,1,min,max)
+}
+
+function setupRandomWalk(BG) {
+    let rainbow = range(256).map(i => {
+        let t = i/255
+        let hue = lerp(t, 0.2,0.9)
+        let sat = lerp(t,.8,0.99)
+        let lit = lerp(t,.5,.5)
+        return hslToRgb(hue,sat,lit)
+    })
+    let grayscale = range(256).map(i => {
+        let v = remap(i, 0,256, 100,200)
+        return [v,v,v]
+    })
+    let r  = RANDOM
+    r.dots = []
+    range(20).forEach(i => {
+        let dot = {
+            x: randi(0, WIDTH),
+            y: randi(0, 1),
+            vx: randf(-0.1,0.1),
+            vy: randf(0.5,1.5),
+            color: grayscale[randi(0,256)],
+        }
+        r.dots.push(dot)
+    })
+    BG.fillRect(0,0,WIDTH,HEIGHT, BLACK)
+}
+function drawRandomWalk(BG) {
+    let r = RANDOM
+    //move the dots randomly in a direction
+    BG.fillRect(0,0,WIDTH,HEIGHT, BLACK)
+
+    r.dots.forEach(dot => {
+        dot.x += dot.vx
+        dot.y += dot.vy
+        if(dot.x < 0) dot.x = WIDTH-1
+        if(dot.y < 0) dot.y = HEIGHT-1
+        if(dot.x >= WIDTH) dot.x = 0
+        if(dot.y >= HEIGHT) dot.y = 0
+    })
+    r.dots.forEach(dot => {
+        BG.setRGB8(Math.floor(dot.x),Math.floor(dot.y),dot.color)
+    })
+}
+
+
+setupRandomWalk(BG)
+setInterval(()=>drawRandomWalk(BG),100)
