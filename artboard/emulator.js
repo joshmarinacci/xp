@@ -188,49 +188,4 @@ function drawTime(bg) {
     })
 }
 // setInterval(()=> drawTime(BG),1*1000)
-function drawMandle(BG) {
-    function calc_pixel(cx, cy) {
-        let i = 0
-        let zx = 0
-        let zy = 0
-        do {
-            let xt = zx * zy
-            zx = zx * zx - zy * zy + cx
-            zy = 2 * xt + cy
-            i++
-        }
-        while (i < 255 && (zx * zx + zy * zy) < 4)
-        return 255 -i
-    }
-
-    const range = (count) => {
-        let arr = new Array(count)
-        for (let i = 0; i < count; i++) {
-            arr[i] = i
-        }
-        return arr
-    }
-
-
-    let rainbow = range(256).map(i => {
-        let t = i/255
-        let hue = lerp(t, 0.2,0.9)
-        let sat = lerp(t,.8,1)
-        let lit = lerp(t,.5,.5)
-        return hslToRgb(hue,sat,lit)
-        // return `hsl(${hue.toFixed(0)},${sat}%,${lit}%)`
-    })
-    console.log(rainbow)
-
-    BG.forRect(0,0,WIDTH,HEIGHT,(x,y,i,j)=>{
-        let xx = remap(x,0,WIDTH, -0.35,-0.15)
-        let yy = remap(y,0,HEIGHT, -0.8,-0.6)
-        let index = calc_pixel(xx,yy)
-        BG.setRGB8(x,y,rainbow[index])
-    })
-
-}
-
-// setInterval(()=>drawMandle(BG),1*1000)
-// drawMandle(BG)
 
