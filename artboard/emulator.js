@@ -4,8 +4,11 @@ let HEIGHT = 32
 let SCALE = 15
 
 class PixelGrid {
-    constructor(canvas) {
+    constructor(canvas, width,height,scale) {
         this.canvas = canvas
+        this.width = width
+        this.height = height
+        this.scale = scale
     }
 
     setRGB8(x, y, co){
@@ -42,25 +45,6 @@ class PixelGrid {
             this.setRGB8(x,y,color)
         })
     }
-}
-
-function range(v1,v2) {
-    if(typeof v2 === 'undefined') {
-        return range(0,v1)
-    } else {
-        let arr = new Array()
-        for(let i=v1; i<v2; i++) {
-            arr.push(i)
-        }
-        return arr
-    }
-}
-function remap(val, min, max, MIN, MAX) {
-    let t = (val - min) / (max - min)
-    return ((MAX - MIN) * t) + MIN
-}
-function lerp(t, min, max) {
-    return ((max - min) * t) + min
 }
 
 const NUMBER_FONT = {
@@ -159,7 +143,6 @@ const NUMBER_FONT = {
     }
 }
 
-
 function num_to_double_digits(hours) {
     let chars = []
     if(hours < 10) {
@@ -177,9 +160,8 @@ export function setup() {
     canvas.width = WIDTH*SCALE
     canvas.height = HEIGHT*SCALE
     document.body.appendChild(canvas)
-    return new PixelGrid(canvas)
+    return new PixelGrid(canvas,WIDTH,HEIGHT,SCALE)
 }
-let BG = setup()
 function drawTime(bg) {
     let now = new Date()
     let chars = []
@@ -252,59 +234,3 @@ function drawMandle(BG) {
 // setInterval(()=>drawMandle(BG),1*1000)
 // drawMandle(BG)
 
-let RANDOM = {}
-
-function randi(min, max) {
-    return Math.floor(remap(Math.random(),0,1,min,max))
-}
-function randf(min, max) {
-    return remap(Math.random(),0,1,min,max)
-}
-
-function setupRandomWalk(BG) {
-    let rainbow = range(256).map(i => {
-        let t = i/255
-        let hue = lerp(t, 0.2,0.9)
-        let sat = lerp(t,.8,0.99)
-        let lit = lerp(t,.5,.5)
-        return hslToRgb(hue,sat,lit)
-    })
-    let grayscale = range(256).map(i => {
-        let v = remap(i, 0,256, 100,200)
-        return [v,v,v]
-    })
-    let r  = RANDOM
-    r.dots = []
-    range(20).forEach(i => {
-        let dot = {
-            x: randi(0, WIDTH),
-            y: randi(0, 1),
-            vx: randf(-0.1,0.1),
-            vy: randf(0.5,1.5),
-            color: rainbow[randi(0,256)],
-        }
-        r.dots.push(dot)
-    })
-    BG.fillRect(0,0,WIDTH,HEIGHT, BLACK)
-}
-function drawRandomWalk(BG, clear=false) {
-    let r = RANDOM
-    //move the dots randomly in a direction
-    if(clear) BG.fillRect(0,0,WIDTH,HEIGHT, BLACK)
-
-    r.dots.forEach(dot => {
-        dot.x += dot.vx
-        dot.y += dot.vy
-        if(dot.x < 0) dot.x = WIDTH-1
-        if(dot.y < 0) dot.y = HEIGHT-1
-        if(dot.x >= WIDTH) dot.x = 0
-        if(dot.y >= HEIGHT) dot.y = 0
-    })
-    r.dots.forEach(dot => {
-        BG.setRGB8(Math.floor(dot.x),Math.floor(dot.y),dot.color)
-    })
-}
-
-
-setupRandomWalk(BG,true)
-setInterval(()=>drawRandomWalk(BG),100)
