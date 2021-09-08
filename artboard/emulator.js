@@ -45,6 +45,9 @@ class PixelGrid {
             this.setRGB8(x,y,color)
         })
     }
+    clear(color) {
+        this.fillRect(0,0,this.width,this.height,color)
+    }
 }
 
 
