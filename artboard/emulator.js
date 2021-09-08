@@ -1,3 +1,4 @@
+import {BLACK, RED} from "./colors.js"
 let WIDTH = 32
 let HEIGHT = 32
 let SCALE = 15
@@ -151,9 +152,6 @@ const NUMBER_FONT = {
     }
 }
 
-const RED = [255,0,0]
-const BLACK = [0,0,0]
-const WHITE = [255,255,255]
 
 function num_to_double_digits(hours) {
     let chars = []
@@ -172,42 +170,34 @@ export function setup() {
     canvas.width = WIDTH*SCALE
     canvas.height = HEIGHT*SCALE
     document.body.appendChild(canvas)
-
-    let bg = new PixelGrid(canvas)
-    // bg.setRGB8(0,0, 0,255,0)
-    // range(0,16).map(i => {
-    //     bg.setRGB8(i,0,255,0,0)
-    // })
-    // bg.forRect(5,5,10,10,(x,y)=>{
-    //     bg.setRGB8(x,y,0,0,255)
-    // })
-
-    function drawTime() {
-        let now = new Date()
-        let chars = []
-        chars = [
-            ...num_to_double_digits(now.getHours()),
-            ':',
-            ...num_to_double_digits(now.getMinutes()),
-            ':',
-            ...num_to_double_digits(now.getSeconds()),
-        ]
-        let x = 0;
-        let y = 10
-        bg.fillRect(0,0,32,32,BLACK)
-        x += 2
-        y += 3
-        chars.forEach(ch => {
-            let g = NUMBER_FONT[ch]
-            bg.drawGlyph(x,y,g,RED)
-            x += (g.w + 1)
-            if (x > 30) {
-                x = 0
-                y += 6
-            }
-        })
-    }
-    drawTime()
-    setInterval(drawTime,1*1000)
+    return new PixelGrid(canvas)
 }
-setup()
+let BG = setup()
+function drawTime(bg) {
+    let now = new Date()
+    let chars = []
+    chars = [
+        ...num_to_double_digits(now.getHours()),
+        ':',
+        ...num_to_double_digits(now.getMinutes()),
+        ':',
+        ...num_to_double_digits(now.getSeconds()),
+    ]
+    let x = 0;
+    let y = 10
+    bg.fillRect(0,0,32,32,BLACK)
+    x += 2
+    y += 3
+    chars.forEach(ch => {
+        let g = NUMBER_FONT[ch]
+        bg.drawGlyph(x,y,g,RED)
+        x += (g.w + 1)
+        if (x > 30) {
+            x = 0
+            y += 6
+        }
+    })
+}
+setInterval(()=>{
+    drawTime(BG)
+},1*1000)
