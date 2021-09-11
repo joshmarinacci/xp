@@ -47,6 +47,16 @@ class PixelGrid {
             this.setRGB8(x,y,color)
         })
     }
+    strokeRect(x,y,w,h,color) {
+        for(let i=x; i<x+w; i++) {
+            this.setRGB8(i,y,color)
+            this.setRGB8(i,y+h,color)
+        }
+        for(let j=y; j<y+h; j++) {
+            this.setRGB8(x,j,color)
+            this.setRGB8(x+w,j,color)
+        }
+    }
     clear(color) {
         this.fillRect(0,0,this.width,this.height,color)
     }
