@@ -71,7 +71,7 @@ def setupSnow():
             "x":random.randrange(0,SCREEN_WIDTH),
             "y":random.randrange(0,floor(SCREEN_HEIGHT/2)),
             "vx":random.uniform(-0.1,0.1),
-            "vy":random.uniform(0.5,1),
+            "vy":random.uniform(0.2,1.5),
             "alive":True,
         })
     resetSnow()
@@ -126,4 +126,4 @@ def drawSnow():
         if live_count <= FLAKE_COUNT/4:
             resetSnow()
         # print("live",live_count)
-        yield 0.1
+        yield 0.2

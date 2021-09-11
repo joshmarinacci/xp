@@ -16,8 +16,8 @@ g = displayio.Group()
 tm = TaskMaster()
 
 # setup the random walk
-g.append(setupRandomWalk())
-tm.register('randomwalk',drawRandomWalk())
+# g.append(setupRandomWalk())
+# tm.register('randomwalk',drawRandomWalk())
 
 g.append(setupSnow())
 tm.register('snow',drawSnow())
