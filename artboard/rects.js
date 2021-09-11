@@ -1,5 +1,5 @@
 import {setup} from './emulator.js'
-import {lerp, randf, randi, range} from './util.js'
+import {lerp, randf, randi, range, remap} from './util.js'
 import {BLACK, hslToRgb, RED} from './colors.js'
 
 
@@ -10,7 +10,7 @@ let BG = setup()
 //     [0,255,0],
 //     [0,0,255]
 // ]
-const COLORS = range(20).map(() => hslToRgb(randf(0, 1), 0.5, 0.5))
+const HUES = range(20).map(() => randf(0.2, 0.5))
 
 function pick(COLORS) {
     return COLORS[Math.floor(Math.random() * COLORS.length)]
@@ -25,6 +25,8 @@ class Rect {
         this.x2 = floor(x2)
         this.y2 = floor(y2)
         this.color = color
+        this.phase = randf(0,1)
+        this.frequency = randf(0.2,1.5)
     }
     width() {
         return this.x2-this.x1
@@ -38,21 +40,21 @@ class Rect {
             new Rect(
                 this.x1, this.y1,
                 lerp(amount, this.x1, this.x2), this.y2,
-                pick(COLORS)),
+                pick(HUES)),
             new Rect(
                 lerp(amount, this.x1, this.x2), this.y1,
                 this.x2, this.y2,
-                pick(COLORS))
+                pick(HUES))
         ]
         if (dir === 'v') return [
             new Rect(
                 this.x1, this.y1,
                 this.x2, lerp(amount, this.y1, this.y2),
-                pick(COLORS)),
+                pick(HUES)),
             new Rect(
                 this.x1, lerp(amount, this.y1, this.y2),
                 this.x2, this.y2,
-                pick(COLORS))
+                pick(HUES))
         ]
     }
 }
@@ -79,22 +81,37 @@ function setupRects(screen) {
         0,
         screen.width-1,
         screen.height-1, RED
-    ),   2)
+    ),   4)
 }
 
 setupRects(BG, true)
 
-function drawRect(screen, rect) {
+function drawRect(screen, rect,sat,lit) {
     //fill the rect
-    screen.fillRect(rect.x1,rect.y1, rect.width(),rect.height(),rect.color)
+    screen.fillRect(rect.x1,rect.y1, rect.width(),rect.height(),
+        hslToRgb(rect.color,sat,lit)
+    )
     //draw the borders
     screen.strokeRect(rect.x1,rect.y1,rect.width(),rect.height(),BLACK)
 }
 
+let count = 0
+let slowness = 200
 function drawRects(screen) {
-    rects.forEach(rect => {
-        drawRect(screen, rect)
+    count++
+    rects.forEach(rect =>  {
+        // let t = ((count+randi(10,50)) % slowness)/slowness
+        let t = remap(Math.sin(count/100*(0.5+rect.frequency) + rect.phase), -1,1,0,1)
+        // let t = ((count+rect.phase) % slowness)/slowness
+        if(t < 0.5) {
+            t = t/2
+        } else {
+            t = 1-t
+        }
+        let sat = lerp(t,0.2,0.8)
+        let lit = lerp(t,0.2,1.0)
+        drawRect(screen, rect, sat, lit)
     })
 }
 
-setInterval(() => drawRects(BG), 1000)
+setInterval(() => drawRects(BG), 10)
