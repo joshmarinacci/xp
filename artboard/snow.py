@@ -4,10 +4,10 @@ import math
 from math import floor
 
 class Grid:
-    def __init__(self, w,h):
+    def __init__(self, w,h,colors):
         self.w = w
         self.h = h
-        self.bitmap = displayio.Bitmap(SCREEN_WIDTH,SCREEN_HEIGHT,16)
+        self.bitmap = displayio.Bitmap(SCREEN_WIDTH,SCREEN_HEIGHT,colors)
         self.fill(0)
     def fill(self, value):
         # self.data = []
@@ -25,19 +25,19 @@ class Grid:
         return x + y * self.w
 
 BLACK = 0
-RED = 1
-GREEN = 2
-BLUE = 3
-WHITE = 7
+GROUND = 1
+BANK = 2
+SNOW = 3
+COLOR_COUNT = 4
+
 SCREEN_WIDTH = 32
 SCREEN_HEIGHT = 32
-COLOR_COUNT = 10
 FLAKE_COUNT = 50
 
 snow = []
 bitmap = 0
 
-grid = Grid(SCREEN_WIDTH,SCREEN_HEIGHT)
+grid = Grid(SCREEN_WIDTH,SCREEN_HEIGHT,COLOR_COUNT)
 grid.fill(0)
 
 def resetSnow():
@@ -50,9 +50,9 @@ def resetSnow():
     right = random.randrange(half, SCREEN_WIDTH)
     top = random.randrange(half, SCREEN_HEIGHT-2)
     for n in range(left,right):
-        grid.set(n,top,RED)
+        grid.set(n,top,GROUND)
     for n in range(0,SCREEN_WIDTH):
-        grid.set(n,SCREEN_HEIGHT-1,RED)
+        grid.set(n,SCREEN_HEIGHT-1,GROUND)
 
 def setupSnow():
     global bitmap
@@ -60,15 +60,10 @@ def setupSnow():
     bitmap = displayio.Bitmap(SCREEN_WIDTH,SCREEN_HEIGHT,COLOR_COUNT)
     palette = displayio.Palette(COLOR_COUNT)
     palette[BLACK] = 0x000000
-    palette[RED] = 0xFF0000
-    palette[GREEN] = 0x00FF00
-    palette[BLUE] = 0x0000FF
-    palette[4] = 0xFFFF00
-    palette[5] = 0x00FFFF
-    palette[6] = 0xFF00FF
-    palette[WHITE] = 0xFFFFFF
-    palette[8] = 0x880000
-    palette[9] = 0x008800
+    palette[GROUND] = 0x444400
+    palette[BANK] = 0x444488
+    palette[SNOW] = 0xFFFFFF
+
 
 
     for i in range(FLAKE_COUNT):
@@ -113,24 +108,19 @@ def drawSnow():
                     if val > 0:
                         if oy == 0:
                             flake['alive'] = False
-                        grid.set(ox,oy,BLUE) 
+                        grid.set(ox,oy,BANK) 
                         flake['y'] = 0
                         flake['x'] = random.randrange(0,SCREEN_WIDTH)
 
 
         # draw the snowbanks and boundaries
         bitmap.blit(0,0, grid.bitmap)
-        # for x in range(0,grid.w):
-        #     for y in range(0,grid.h):
-        #         v = grid.get(x,y)
-        #         if v >  BLACK:
-        #             bitmap[x,y] = v
 
         # draw the living flakes
         for flake in snow:
             if not flake['alive']:
                 continue
-            bitmap[floor(flake['x']),floor(flake['y'])] = WHITE
+            bitmap[floor(flake['x']),floor(flake['y'])] = SNOW
 
 
         if live_count <= FLAKE_COUNT/4:
