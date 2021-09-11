@@ -10,7 +10,7 @@ from gamesprites import setupSprites, drawSprites, stopSprites
 from adafruit_debouncer import Debouncer
 
 # how often to change modes automatically (in seconds)
-MODE_CYCLE_TIME = 30
+MODE_CYCLE_TIME = 1*60 # 1 minute
 matrixportal = MatrixPortal(status_neopixel=board.NEOPIXEL, debug=True)
 display = matrixportal.display
 g1 = displayio.Group()
@@ -39,8 +39,8 @@ def updateLabel(g):
     while True:
         now = time.monotonic()
 #         bitmap[0,0] = 2
-        print("g1 layers", len(g1))
-        print("g2 layers", len(g2))
+#         print("g1 layers", len(g1))
+#         print("g2 layers", len(g2))
         yield(1)
 
 def stopLabel(g):
