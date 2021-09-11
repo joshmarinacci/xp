@@ -4,9 +4,9 @@ import math
 
 
 RANDOM = {}
-SCREEN_WIDTH = 32
+SCREEN_WIDTH = 64
 SCREEN_HEIGHT = 32
-def setupRandomWalk():
+def setupRandomWalk(g):
     COLOR_COUNT = 10
     bitmap = displayio.Bitmap(SCREEN_WIDTH,SCREEN_HEIGHT,COLOR_COUNT)
     palette = displayio.Palette(COLOR_COUNT)
@@ -34,9 +34,9 @@ def setupRandomWalk():
     bitmap_tile = displayio.TileGrid(bitmap,pixel_shader=palette)
     RANDOM['bitmap'] = bitmap
     bitmap.fill(0)
-    return bitmap_tile
+    g.append(bitmap_tile)
 
-def drawRandomWalk():
+def drawRandomWalk(g):
     bitmap = RANDOM['bitmap']
     while True:
         #bitmap.fill(0)

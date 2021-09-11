@@ -1,13 +1,12 @@
 import time
-import math
 import board
-import random
+from adafruit_matrixportal.matrixportal import MatrixPortal
+import displayio
+
 from tasks import TaskMaster
 from randomwalk import setupRandomWalk, drawRandomWalk
 from snow import setupSnow, drawSnow
-
-from adafruit_matrixportal.matrixportal import MatrixPortal
-import displayio
+from gamesprites import setupSprites, drawSprites
 
 matrixportal = MatrixPortal(status_neopixel=board.NEOPIXEL, debug=True)
 display = matrixportal.display
@@ -16,12 +15,14 @@ g = displayio.Group()
 tm = TaskMaster()
 
 # setup the random walk
-# g.append(setupRandomWalk())
-# tm.register('randomwalk',drawRandomWalk())
+# setupRandomWalk(g)
+# tm.register('randomwalk',drawRandomWalk(g))
 
-g.append(setupSnow())
-tm.register('snow',drawSnow())
+setupSnow(g)
+tm.register('snow',drawSnow(g))
 
+# setupSprites(g)
+# tm.register('sprites',drawSprites(g))
 
 
 while True:

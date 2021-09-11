@@ -54,7 +54,7 @@ def resetSnow():
     for n in range(0,SCREEN_WIDTH):
         grid.set(n,SCREEN_HEIGHT-1,GROUND)
 
-def setupSnow():
+def setupSnow(g):
     global bitmap
     print("setting up snow")
     bitmap = displayio.Bitmap(SCREEN_WIDTH,SCREEN_HEIGHT,COLOR_COUNT)
@@ -76,7 +76,7 @@ def setupSnow():
         })
     resetSnow()
     bitmap_tile = displayio.TileGrid(bitmap,pixel_shader=palette)
-    return bitmap_tile
+    g.append(bitmap_tile)
 
 def wrap(val, min, max):
     if val < min:
@@ -85,7 +85,7 @@ def wrap(val, min, max):
         return min
     return val
 
-def drawSnow():
+def drawSnow(g):
     while True:
         # bitmap.fill(BLACK)
         live_count = 0
