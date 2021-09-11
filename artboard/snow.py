@@ -36,6 +36,7 @@ FLAKE_COUNT = 25
 
 snow = []
 bitmap = 0
+bitmap_tile = 0
 
 grid = Grid(SCREEN_WIDTH,SCREEN_HEIGHT,COLOR_COUNT)
 grid.fill(0)
@@ -56,6 +57,7 @@ def resetSnow():
 
 def setupSnow(g):
     global bitmap
+    global bitmap_tile
     print("setting up snow")
     bitmap = displayio.Bitmap(SCREEN_WIDTH,SCREEN_HEIGHT,COLOR_COUNT)
     palette = displayio.Palette(COLOR_COUNT)
@@ -108,7 +110,7 @@ def drawSnow(g):
                     if val > 0:
                         if oy == 0:
                             flake['alive'] = False
-                        grid.set(ox,oy,BANK) 
+                        grid.set(ox,oy,BANK)
                         flake['y'] = 0
                         flake['x'] = random.randrange(0,SCREEN_WIDTH)
 
@@ -127,3 +129,7 @@ def drawSnow(g):
             resetSnow()
         # print("live",live_count)
         yield 0.2
+def stopSnow(g):
+    global bitmap_tile
+    print("stopping the snow here")
+    g.remove(bitmap_tile)

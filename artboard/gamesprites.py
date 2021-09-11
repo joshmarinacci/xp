@@ -5,7 +5,7 @@ import adafruit_imageload
 
 def foo():
     print("foin")
-    
+
 # print("importing sprites")
 # SCREEN_WIDTH = 64
 # SCREEN_HEIGHT = 32
@@ -73,7 +73,6 @@ CURRENT_SPRITE = 5
 
 def setupSprites(g):
     for sprite in SPRITES:
-        print("sprite",sprite)
         image, palette = adafruit_imageload.load(
             sprite["url"], bitmap=displayio.Bitmap, palette=displayio.Palette
         )
@@ -96,5 +95,14 @@ def drawSprites(g):
         g.remove(sprite['tile_grid'])
         CURRENT_SPRITE = (CURRENT_SPRITE + 1) % len(SPRITES)
 
+
+def stopSprites(g):
+    global CURRENT_SPRITE
+    global SPRITES
+    print("stopping the sprites")
+    sprite = SPRITES[CURRENT_SPRITE]
+    g.remove(sprite['tile_grid'])
+    for sprite in SPRITES:
+        sprite['tile_grid'] = 0
 
 

@@ -6,7 +6,10 @@ import math
 RANDOM = {}
 SCREEN_WIDTH = 64
 SCREEN_HEIGHT = 32
+bitmap_tile = 0
+
 def setupRandomWalk(g):
+    global bitmap_tile
     COLOR_COUNT = 10
     bitmap = displayio.Bitmap(SCREEN_WIDTH,SCREEN_HEIGHT,COLOR_COUNT)
     palette = displayio.Palette(COLOR_COUNT)
@@ -56,3 +59,8 @@ def drawRandomWalk(g):
             y = math.floor(dot['y'])
             bitmap[x,y] = dot['color']
         yield 0.1
+
+def stopRandomWalk(g):
+    global bitmap_tile
+    print("stopping the random walk")
+    g.remove(bitmap_tile)
