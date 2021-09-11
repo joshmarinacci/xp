@@ -30,9 +30,9 @@ BANK = 2
 SNOW = 3
 COLOR_COUNT = 4
 
-SCREEN_WIDTH = 32
+SCREEN_WIDTH = 64
 SCREEN_HEIGHT = 32
-FLAKE_COUNT = 50
+FLAKE_COUNT = 25
 
 snow = []
 bitmap = 0
@@ -45,10 +45,10 @@ def resetSnow():
         flake['alive'] = True
         flake['y'] = 0
     grid.fill(BLACK)
-    half = math.floor(SCREEN_WIDTH/2)
+    half = floor(SCREEN_WIDTH/2)
     left = random.randrange(0,half)
     right = random.randrange(half, SCREEN_WIDTH)
-    top = random.randrange(half, SCREEN_HEIGHT-2)
+    top = random.randrange(floor(SCREEN_HEIGHT/2), SCREEN_HEIGHT-2)
     for n in range(left,right):
         grid.set(n,top,GROUND)
     for n in range(0,SCREEN_WIDTH):
@@ -69,7 +69,7 @@ def setupSnow():
     for i in range(FLAKE_COUNT):
         snow.append({
             "x":random.randrange(0,SCREEN_WIDTH),
-            "y":random.randrange(0,math.floor(SCREEN_HEIGHT/2)),
+            "y":random.randrange(0,floor(SCREEN_HEIGHT/2)),
             "vx":random.uniform(-0.1,0.1),
             "vy":random.uniform(0.5,1),
             "alive":True,
