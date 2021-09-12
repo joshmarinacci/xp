@@ -10,7 +10,7 @@ from gamesprites import setupSprites, drawSprites, stopSprites
 from adafruit_debouncer import Debouncer
 
 # how often to change modes automatically (in seconds)
-MODE_CYCLE_TIME = 1*60 # 1 minute
+MODE_CYCLE_TIME = 5*60 # 1 minute
 matrixportal = MatrixPortal(status_neopixel=board.NEOPIXEL, debug=True)
 display = matrixportal.display
 g1 = displayio.Group()

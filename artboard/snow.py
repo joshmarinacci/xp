@@ -37,6 +37,7 @@ FLAKE_COUNT = 25
 snow = []
 bitmap = 0
 bitmap_tile = 0
+palette = 0
 
 grid = Grid(SCREEN_WIDTH,SCREEN_HEIGHT,COLOR_COUNT)
 grid.fill(0)
@@ -58,6 +59,7 @@ def resetSnow():
 def setupSnow(g):
     global bitmap
     global bitmap_tile
+    global palette
     print("setting up snow")
     bitmap = displayio.Bitmap(SCREEN_WIDTH,SCREEN_HEIGHT,COLOR_COUNT)
     palette = displayio.Palette(COLOR_COUNT)
@@ -131,5 +133,10 @@ def drawSnow(g):
         yield 0.2
 def stopSnow(g):
     global bitmap_tile
+    global bitmap
+    global bitmap_tile
     print("stopping the snow here")
     g.remove(bitmap_tile)
+    bitmap_tile = 0
+    bitmap = 0
+    palette = 0
