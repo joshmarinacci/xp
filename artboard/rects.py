@@ -102,8 +102,41 @@ def drawRects(g):
     global RECTS
     global count
     for r in RECTS:
-        r.shape = roundrect.RoundRect(r.x1,r.y1,r.width,r.height,1,
-            fill=0xFF0000)
+        # fix rects outside the screen in case of bugs
+#         if r.x2 >= SCREEN_WIDTH:
+#             r.width -= 1
+#         if r.y2 >= SCREEN_HEIGHT:
+#             r.height -= 1
+        # inset rects to add a 1px black border
+        if r.width > 1:
+            r.width -= 1
+        if r.height > 1:
+            r.height -= 1
+        # create round rects
+#         r.x1 = 0
+#         r.y1 = 0
+#         r.width = 64
+#         r.height = 32
+#         r.x1 = 1
+#         r.y1 = 20
+#         r.width = 41
+#         r.height = 4
+        if r.height < 2:
+            r.height = 2
+        if r.width < 2:
+            r.width = 2
+        print("making",r.x1,r.y1,r.width,r.height)
+# making 0 29 41 2
+
+        r.shape = roundrect.RoundRect(
+            r.x1,r.y1,
+            r.width,
+            r.height,
+            2, # corner radius
+            fill=0xFF0000,
+            outline=0x0000FF,
+            stroke=0
+            )
         g.append(r.shape)
     while True:
         count = count+1
@@ -114,8 +147,8 @@ def drawRects(g):
                 t = t/2
             else:
                 t = 1-t
-            sat = lerp(t,0.2,0.8)
-            lit = lerp(t,0.3,1.0)
+            sat = lerp(t,0.7,0.8)
+            lit = lerp(t,0.1,1.0)
             r.shape.fill = fancy.CHSV(r.hue, sat, lit).pack()
         yield 0.05
 
