@@ -7,6 +7,7 @@ from tasks import TaskMaster
 from randomwalk import setupRandomWalk, drawRandomWalk, stopRandomWalk
 from snow import setupSnow, drawSnow, stopSnow
 from gamesprites import setupSprites, drawSprites, stopSprites
+from rects import setupRects, drawRects, stopRects
 from adafruit_debouncer import Debouncer
 
 # how often to change modes automatically (in seconds)
@@ -18,6 +19,7 @@ g2 = displayio.Group()
 
 
 tm = TaskMaster()
+tm.register("rects",setupRects, drawRects, stopRects, False)
 tm.register("drips",setupRandomWalk, drawRandomWalk, stopRandomWalk, False)
 tm.register('snow',setupSnow, drawSnow, stopSnow, False)
 tm.register("sprites",setupSprites, drawSprites, stopSprites, False)
@@ -35,13 +37,16 @@ def setupLabel(g):
 #     bitmap.fill(1)
 #     g.append(bitmap_tile)
 
+
+begin_time = time.monotonic()
 def updateLabel(g):
     while True:
         now = time.monotonic()
+        print("runtime",now-begin_time)
 #         bitmap[0,0] = 2
 #         print("g1 layers", len(g1))
 #         print("g2 layers", len(g2))
-        yield(1)
+        yield(10)
 
 def stopLabel(g):
     print("stopping the label")
