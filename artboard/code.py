@@ -14,7 +14,7 @@ from adafruit_debouncer import Debouncer
 MODE_CYCLE_TIME = 5*60 # 1 minute
 matrixportal = MatrixPortal(
     default_bg=0xFF00FF,
-    status_neopixel=board.NEOPIXEL, bit_depth=4,
+    status_neopixel=board.NEOPIXEL, bit_depth=6,
     debug=True)
 print("matrix portal initialized",
     matrixportal.display.width,"x",matrixportal.display.height)
