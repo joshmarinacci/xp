@@ -138,41 +138,41 @@ function line(str) {
     return `${tab()}${str}\n`
 }
 
-function make_button_clicked(ast, out, after) {
+function make_button_clicked(ast, out) {
     let name = `task_${Math.floor(Math.random()*100000)}`
-    out(line(`def ${name}():`))
+    out.line(`def ${name}():`)
     indent()
-    out(line("global button"))
-    out(line("global button_state"))
-    out(line("if button.value and not button_state:"))
+    out.line("global button")
+    out.line("global button_state")
+    out.line("if button.value and not button_state:")
     indent()
-    out(line("button_state = True"))
+    out.line("button_state = True")
     outdent()
-    out(line("if not button.value and button_state:"))
+    out.line("if not button.value and button_state:")
     indent()
-    out(line("button_state = False"))
-    out(line("print('butotn pressed')"))
-    out(`${ast.block.contents.map(make_function).join("")}`)
+    out.line("button_state = False")
+    out.line("print('button pressed')")
+    out.line(`${ast.block.contents.map(make_function).join("")}`)
     outdent()
     outdent()
-    after(line(`${name}()`))
+    out.after(line(`${name}()`))
 }
 
 function make_forever(ast, out, after) {
     let name = `task_${Math.floor(Math.random()*100000)}`
-    out(line(`def ${name}():`))
+    out.line(`def ${name}():`)
     indent()
-    out(line("while True:"))
+    out.line("while True:")
     indent()
-    out(`${ast.block.contents.map(make_function).join("")}`)
+    out.line(`${ast.block.contents.map(make_function).join("")}`)
     outdent()
     outdent()
-    out(line(`tm.register('${name}',${name},False)`))
-    out(line(""))
+    out.line(`tm.register('${name}',${name},False)`)
+    out.line("")
 }
 
 function make_on_block(ast,out,after) {
-    console.log("generating for block",ast)
+    // console.log("generating for block",ast)
     if(ast.kind === 'button_clicked') return make_button_clicked(ast,out,after)
     if(ast.kind === 'forever') return make_forever(ast,out,after)
 }
@@ -188,49 +188,54 @@ function generate(str,out,after) {
     generate_python(ast,out,after)
 }
 
-async function doGenerate() {
-    let output = []
-    let afterput = []
-    function out(str) {
-        output.push(str)
+class Output {
+    constructor() {
+        this._before = []
+        this._during = []
+        this._after = []
     }
-    function after(str) {
-        afterput.push(str)
-    }
-    let prelude = await fs.promises.readFile("prelude.py")
-    out(prelude.toString())
+    during(str) { this._during.push(str) }
+    before(str) { this._before.push(str) }
+    after(str)  { this._after.push(str)  }
+    line(str) { this.during(str)}
 
+    dump() {
+        console.log("output",this._before,this._during, this._after)
+    }
+}
+
+async function doGenerate() {
+    const output = new Output()
     generate(`
 on button_clicked do {
     print("button clicked")
+    mode_running = not mode_running
 }
-`,out,after)
+on forever do {
+    if mode_running {
+        print("pressing E")
+    }
+}
+`,output)
     /*
-on forever do {
-    print("pressing E")
-    keyboard_press('E')
-    wait(1)
-    keyboard_releaseAll()
-    print("waiting 60")
-    wait(60)
-}
-
-on forever do {
-    print("doing second")
-    mouse_press('left')
-    print("waiting 30")
-    wait(30)
-    mouse_releaseAll()
-}
-
+        keyboard_press('E')
+        wait(1)
+        keyboard_releaseAll()
+        print("waiting 60")
+        wait(60)
      */
+    console.log('generated',output._before.join(""))
+    output.dump()
+    let prelude = await fs.promises.readFile("prelude.py")
     let postlude = await fs.promises.readFile("postlude.py")
-    out(postlude.toString())
-    console.log(output.join(""))
     await fs.promises.writeFile("code.py",
-        output.join("") +
-        afterput.map(s => "    "+s).join(""))
+        prelude.toString()
+        + output._before.join("")
+        + output._during.join("")
+        + output._after.join("")
+        + postlude.toString()
+    )
 }
 
-// run_tests()
-doGenerate()
+run_tests()
+// doGenerate()
