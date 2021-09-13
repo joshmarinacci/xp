@@ -15,10 +15,6 @@ keyboard = Keyboard(usb_hid.devices)
 #     keyboard.press(Keycode.E)
 #     keyboard.release_all()
 
-button = DigitalInOut(board.SWITCH)
-button.switch_to_input(pull=Pull.DOWN)
-button_state = False
-
 def mouse_press(name):
     mouse.click(Mouse.LEFT_BUTTON)
 
