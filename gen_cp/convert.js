@@ -1,75 +1,26 @@
-import ohm from 'ohm-js'
 import fs from 'fs'
+import {setupParser} from './parser.js'
 
-let grammar = ohm.grammar(`
-easy {
-    Exp = Cond | File | OnBlock | Block | FuncallExp | Negation | Assignment | BooleanLiteral | ident | number | string | comment
-    File = OnBlock+
-    Block = "{" Exp* "}"
-    OnBlock = "on" OnKeyword "do" Block
-    OnKeyword = "forever" | "button_clicked" | "start"
-    ident  (an identifier)
-        = letter (letter | digit | under)*
-    number  (a number)
-        = digit+ "." digit+ --float
-        | digit+ --int
-    under = "_"
-    q = "\\'"
-    qq = "\\""
-    comment = "#" toEOL
-    toEOL = (~"\\n" any)* "\\n" 
-    
-    string (text string)
-        = q (~q any)* q
-        | qq (~qq any)* qq
-    Negation = "not" Exp
-    Assignment = ident "=" Exp
-    BooleanLiteral = "true" | "false"
-    Cond = "if" Exp Block
-    FuncallExp = ident "(" ListOf<Exp,","> ")"
-}   
-`)
-
-
-let semantics = grammar.createSemantics()
-
-semantics.addOperation('toPython', {
-    number_int:(a) => parseInt(a.sourceString),
-    number_float:(a,b,c) => parseFloat(a.sourceString+b.sourceString+c.sourceString),
-    string:(a,str,c)=>`"${str.sourceString}"`,
-    ident:(a,b) => a.sourceString + b.sourceString,
-
-    FuncallExp:(name,b,args,d) => ({type:"funcall", name:name.toPython(), args:args.asIteration().children.map(arg => arg.toPython())}),
-    Block:(a,contents,d) => ({type:'block',contents:contents.toPython()}),
-    OnBlock:(a,kind,c,block) => ({type:'on',kind:kind.toPython(), block:block.toPython()}),
-    Negation:(not,exp) => ({type:'expression', operator:'not', expression:exp.toPython() }),
-    Assignment:(name,e,exp) => ({ type:'assignment', name:name.toPython(), expression:exp.toPython()}),
-    BooleanLiteral:(name) => {
-        if(name.sourceString === 'false') return ({type:'boolean', value:false})
-        if(name.sourceString === 'true') return ({type:'boolean', value:true})
-    },
-    Cond:(a,exp,block) =>  ({ type:'conditional', expression:exp.toPython(), block:block.toPython()}),
-
-    _iter:(children) => children.map(c => c.toPython()),
-    _terminal:function() { return this.sourceString },
-    comment:(h,comment) => ({type:'comment', comment:comment.sourceString}),
-})
-
+const readFile = fs.promises.readFile
+const writeFile = fs.promises.writeFile
 function log(...args) {
     console.log(...args)
 }
 
+let parser;
+
 function test(str) {
     log("parsing",str)
-    let res = grammar.match(str,)
+    let res = parser.grammar.match(str,)
     if(!res.succeeded()) {
         log('failed',res)
     }
     // log("succeeded")
-    log(semantics(res).toPython())
+    log(parser.semantics(res).toPython())
 }
 
-function run_tests() {
+async function run_tests() {
+    parser = await setupParser()
     test(`1`)
     test(`0.1`)
     test(`45`)
@@ -142,8 +93,6 @@ on start do {
     // `)
 }
 
-// run_tests()
-
 let indent_level = 0
 function indent() {
     indent_level++
@@ -158,16 +107,15 @@ function tab() {
     }
     return str
 }
+
 function make_function_call(ast,out) {
     if(ast.name === 'wait') return out.line(`yield ${ast.args[0]}`)
     out.line(`${ast.name}(${ast.args.join(",")})`)
 }
-
 function make_identifier_reference(exp,out) {
     out.add_variable_reference(exp)
     return exp
 }
-
 function make_conditional(exp,out) {
     out.line(`if ${make_expression(exp.expression,out)}:`)
     indent()
@@ -178,7 +126,6 @@ function make_assignment(exp,out) {
     out.line(exp.name + " = " + make_expression(exp.expression,out))
     out.add_variable_reference(exp.name)
 }
-
 function make_expression(exp,out) {
     if(typeof exp === 'string') return make_identifier_reference(exp,out)
     if(exp.type === 'funcall') return make_function_call(exp,out)
@@ -188,7 +135,6 @@ function make_expression(exp,out) {
     if(exp.type === 'boolean') return exp.value?"True":"False"
     console.log(`UNKNOWN EXPRESSION ${JSON.stringify(exp)}`)
 }
-
 
 function make_button_clicked(ast, out) {
     let name = `event_${Math.floor(Math.random()*100000)}`
@@ -213,7 +159,6 @@ function make_button_clicked(ast, out) {
     out.loop(`${name}()`)
     outdent()
 }
-
 function make_forever(ast, out) {
     let name = `loop_${Math.floor(Math.random()*100000)}`
     out.start_function(name)
@@ -225,7 +170,6 @@ function make_forever(ast, out) {
     out.end_function()
     out.init(`tm.register('${name}',${name},False)`)
 }
-
 function make_start(ast, out) {
     let name = `start_${Math.floor(Math.random()*100000)}`
     out.start_function(name)
@@ -233,22 +177,19 @@ function make_start(ast, out) {
     out.end_function(name)
     out.init(`${name}()`)
 }
-
 function make_on_block(ast,out) {
     if(ast.kind === 'button_clicked') return make_button_clicked(ast,out)
     if(ast.kind === 'forever') return make_forever(ast,out)
     if(ast.kind === 'start') return make_start(ast,out)
     out.error(`unknown on block kind "${ast.kind}"`)
 }
-
 function generate_python(ast,out,after) {
     ast.forEach(task => make_on_block(task,out,after))
 }
-
-function generate(str,out,after) {
-    let res = grammar.match(str)
+function generate(parser, str, out, after) {
+    let res = parser.grammar.match(str)
     if(!res.succeeded()) return log('failed',res)
-    let ast = semantics(res).toPython()
+    let ast = parser.semantics(res).toPython()
     generate_python(ast,out,after)
 }
 
@@ -319,43 +260,17 @@ class Output {
     }
 }
 
-const SRC = `
-on start do {
-    mode_running = false
-}
-on button_clicked do {
-    mode_running = not mode_running
-    print("mode running",mode_running)
-}
-on forever do {
-    if mode_running {
-        print("pressing E")
-        keyboard_press('E')
-        set_led(RED)
-        
-        wait(0.3)
-        set_led(BLACK)
-        wait(0.3)
-        set_led(RED)
-        wait(0.3)
-        set_led(BLACK)
-        wait(0.3)
-        
-        keyboard_releaseAll()
-        print("waiting")
-        wait(60)
-    }
-}
-`
 async function doGenerate() {
+    parser = await setupParser()
     const output = new Output()
-    generate(SRC,output)
+    let SRC = await readFile("demo1.key")
+    generate(parser,SRC.toString(),output)
     // console.log('generated',output._before.join(""))
-    let prelude = await fs.promises.readFile("prelude.py")
-    let postlude = await fs.promises.readFile("postlude.py")
+    let prelude = await readFile("prelude.py")
+    let postlude = await readFile("postlude.py")
     output.flatten_functions()
     // output.dump()
-    await fs.promises.writeFile("code.py",
+    await writeFile("code.py",
         prelude.toString()
         +"\n\n\n"
         + "\n#global vars\n"

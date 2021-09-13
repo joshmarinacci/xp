@@ -1,0 +1,26 @@
+easy {
+    Exp = Cond | File | OnBlock | Block | FuncallExp | Negation | Assignment | BooleanLiteral | ident | number | string | comment
+    File = OnBlock+
+    Block = "{" Exp* "}"
+    OnBlock = "on" OnKeyword "do" Block
+    OnKeyword = "forever" | "button_clicked" | "start"
+    ident  (an identifier)
+        = letter (letter | digit | under)*
+    number  (a number)
+        = digit+ "." digit+ --float
+        | digit+ --int
+    under = "_"
+    q = "\'"
+    qq = "\""
+    comment = "#" toEOL
+    toEOL = (~"\n" any)* "\n"
+
+    string (text string)
+        = q (~q any)* q
+        | qq (~qq any)* qq
+    Negation = "not" Exp
+    Assignment = ident "=" Exp
+    BooleanLiteral = "true" | "false"
+    Cond = "if" Exp Block
+    FuncallExp = ident "(" ListOf<Exp,","> ")"
+}
