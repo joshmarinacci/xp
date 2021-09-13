@@ -1,0 +1,20 @@
+on button_clicked do {
+    modes_next()
+}
+
+on forever do
+    keyboard_press('E')
+    wait(1)
+    keyboard_releaseAll()
+    wait(60)
+
+on forever do
+    mouse_press('left')
+    wait(5)
+    mouse_releaseAll()
+
+on start do
+    print("starting")
+    #   modes := ring()
+    #   modes.add(
+
