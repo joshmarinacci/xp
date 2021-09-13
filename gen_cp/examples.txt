@@ -1,24 +1,48 @@
+# auto import libs and init when calling mouse_press, mouse_release, etc.
+
+
 on start do {
     mode_running = false
-    ON_COLOR = make_color(255,0,0)
+    ON_COLOR = make_color(red:255 green:0 blue:0)
     OFF_COLOR = make_color(100,50,50)
+    RED = make_color(255,0,0)
+    SPEEDS = table(
+        ["name","value","fg","bg"],
+        [
+            ["0.1",0.1,RED,BLACK],
+            ["0.5",0.5,RED,BLACK],
+            ["1s",1,GREEN,BLACK],
+            ["5s",5,GREEN,BLACK],
+            ["10s",10,GREEN,BLACK],
+            ["1m",60,HOTPINK,BLACK],
+            ["5m",5*60,HOTPINK,BLACK]
+        ]
+    )
+    display = pixels.subset(0,4*5)
+    buttons = pixels.subset(4*5,4*8)
 }
 
-on button_clicked do {
+on button.pressed do {
+    print("button pressed")
+}
+on button.released do {
+    print("button released")
+}
+on button.clicked do {
     mode_running = not mode_running
     print("mode running",mode_running)
 }
 
 on touch_pressed do {
-    modes_next()
+    modes.next()
 }
 
 click_mouse = mode do {
     if mode_running {
         print("clicking mouse")
-        mouse_press("left")
+        mouse.press("left")
         wait(5)
-        mouse_releaseAll()
+        mouse.releaseAll()
         wait(60)
     }
 }
@@ -26,20 +50,51 @@ click_mouse = mode do {
 e_key = mode do {
     if mode_running {
         print("pressing E")
-        keyboard_press('E')
+        keyboard.press('E')
 
-        set_led(ON_COLOR)
-        wait(0.3)
-        set_led(OFF_COLOR)
-        wait(0.3)
-        set_led(ON_COLOR)
-        wait(0.3)
-        set_led(OFF_COLOR)
-        wait(0.3)
+        times 5 do {
+            set_led(ON_COLOR)
+            wait(0.1)
+            set_led(OFF_COLOR)
+            wait(0.1)
+        }
 
-        keyboard_releaseAll()
+        keyboard.releaseAll()
         print("waiting")
         wait(60)
     }
 }
 
+
+on button_clicked(button) do {
+    if button == (0,0) do {
+        set_mode(e_key)
+    }
+    if button == (0,1) do {
+        set_mode(click_mouse)
+    }
+}
+
+on button_clicked(0,0) do set_mode(e_key)
+on button_clicked(4,7) do running <= not running
+on button_clicked(3,7) do {
+    speed+1 => speed
+    display(SPEED_SYMBOLS(speed))
+}
+on button_clicked(4,7) do speed-1 => speed
+
+fun display(symbol) do {
+    speed = SPEEDS[current_speed]
+    set_pixels_glyph(speed.glyph, speed.fg, speed.bg)
+    wait 1
+    set_pixels_glyph(EMPTY,BLACK,BLACK)
+}
+
+on while(running) do {
+    // show the current time in the display area
+    now - start_time => elapsed
+    total = 8
+    count = floor(elapsed/total)
+    set_pixels_span(0,count,YELLOW)
+    set_pixels_span(count,total,BLACK)
+}
