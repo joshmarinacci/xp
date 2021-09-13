@@ -1,20 +1,45 @@
+on start do {
+    mode_running = false
+    ON_COLOR = make_color(255,0,0)
+    OFF_COLOR = make_color(100,50,50)
+}
+
 on button_clicked do {
+    mode_running = not mode_running
+    print("mode running",mode_running)
+}
+
+on touch_pressed do {
     modes_next()
 }
 
-on forever do
-    keyboard_press('E')
-    wait(1)
-    keyboard_releaseAll()
-    wait(60)
+click_mouse = mode do {
+    if mode_running {
+        print("clicking mouse")
+        mouse_press("left")
+        wait(5)
+        mouse_releaseAll()
+        wait(60)
+    }
+}
 
-on forever do
-    mouse_press('left')
-    wait(5)
-    mouse_releaseAll()
+e_key = mode do {
+    if mode_running {
+        print("pressing E")
+        keyboard_press('E')
 
-on start do
-    print("starting")
-    #   modes := ring()
-    #   modes.add(
+        set_led(ON_COLOR)
+        wait(0.3)
+        set_led(OFF_COLOR)
+        wait(0.3)
+        set_led(ON_COLOR)
+        wait(0.3)
+        set_led(OFF_COLOR)
+        wait(0.3)
+
+        keyboard_releaseAll()
+        print("waiting")
+        wait(60)
+    }
+}
 

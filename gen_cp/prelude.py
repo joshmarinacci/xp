@@ -14,6 +14,7 @@ from color_names import WHITE, BLACK, RED
 mouse = Mouse(usb_hid.devices)
 keyboard = Keyboard(usb_hid.devices)
 pixels = neopixel.NeoPixel(board.NEOPIXEL, 1)
+tm = TaskMaster()
 
 def mouse_press(name):
     mouse.click(Mouse.LEFT_BUTTON)
@@ -27,4 +28,6 @@ def keyboard_releaseAll():
 def set_led(color):
     pixels.fill(color)
 
-tm = TaskMaster()
+def modes_next():
+    tm.nextMode()
+
