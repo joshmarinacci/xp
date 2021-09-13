@@ -138,7 +138,27 @@ function line(str) {
     return `${tab()}${str}\n`
 }
 
-function make_on_block(ast,out) {
+function make_button_clicked(ast, out, after) {
+    let name = `task_${Math.floor(Math.random()*100000)}`
+    out(line(`def ${name}():`))
+    indent()
+    out(line("global button"))
+    out(line("global button_state"))
+    out(line("if button.value and not button_state:"))
+    indent()
+    out(line("button_state = True"))
+    outdent()
+    out(line("if not button.value and button_state:"))
+    indent()
+    out(line("button_state = False"))
+    out(line("print('butotn pressed')"))
+    out(`${ast.block.contents.map(make_function).join("")}`)
+    outdent()
+    outdent()
+    after(line(`${name}()`))
+}
+
+function make_forever(ast, out, after) {
     let name = `task_${Math.floor(Math.random()*100000)}`
     out(line(`def ${name}():`))
     indent()
@@ -151,28 +171,41 @@ function make_on_block(ast,out) {
     out(line(""))
 }
 
-function generate_python(ast,out) {
-    ast.forEach(task => make_on_block(task,out))
+function make_on_block(ast,out,after) {
+    console.log("generating for block",ast)
+    if(ast.kind === 'button_clicked') return make_button_clicked(ast,out,after)
+    if(ast.kind === 'forever') return make_forever(ast,out,after)
 }
 
-function generate(str,out) {
+function generate_python(ast,out,after) {
+    ast.forEach(task => make_on_block(task,out,after))
+}
+
+function generate(str,out,after) {
     let res = grammar.match(str)
     if(!res.succeeded()) return log('failed',res)
     let ast = semantics(res).toPython()
-    generate_python(ast,out)
+    generate_python(ast,out,after)
 }
 
 async function doGenerate() {
     let output = []
+    let afterput = []
     function out(str) {
-        // console.log("outputting",...args)
         output.push(str)
-        // output += [...args].join("\n")
+    }
+    function after(str) {
+        afterput.push(str)
     }
     let prelude = await fs.promises.readFile("prelude.py")
     out(prelude.toString())
 
     generate(`
+on button_clicked do {
+    print("button clicked")
+}
+`,out,after)
+    /*
 on forever do {
     print("pressing E")
     keyboard_press('E')
@@ -189,11 +222,14 @@ on forever do {
     wait(30)
     mouse_releaseAll()
 }
-`,out)
+
+     */
     let postlude = await fs.promises.readFile("postlude.py")
     out(postlude.toString())
     console.log(output.join(""))
-    await fs.promises.writeFile("code.py",output.join(""))
+    await fs.promises.writeFile("code.py",
+        output.join("") +
+        afterput.map(s => "    "+s).join(""))
 }
 
 // run_tests()

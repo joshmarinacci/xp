@@ -25,6 +25,9 @@ class TaskMaster:
     def start(self):
         print("starting the taskmaster")
         self.current = 0
+        if len(self.MODES) < 1:
+            print("not starting")
+            return
         self.startMode(self.getCurrentMode())
         for mode in self.AUTOMODES:
             self.startMode(mode)
@@ -60,7 +63,10 @@ class TaskMaster:
             mode['start'] = now
 
     def cycle(self, rate):
-#         print("cycling",rate)
+#         print("cycling",len(self.MODES))
+        if len(self.MODES) < 1:
+#             print("skipping")
+            return
         self.cycleMode(self.getCurrentMode())
         for mode in self.AUTOMODES:
             self.cycleMode(mode)
