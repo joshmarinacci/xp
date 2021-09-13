@@ -11,7 +11,8 @@ easy {
     ident  (an identifier)
         = letter (letter | digit | under)*
     number  (a number)
-        = digit+
+        = digit+ "." digit+ --float
+        | digit+ --int
     under = "_"
     q = "\\'"
     qq = "\\""
@@ -32,7 +33,8 @@ easy {
 let semantics = grammar.createSemantics()
 
 semantics.addOperation('toPython', {
-    number:(a) => parseInt(a.sourceString),
+    number_int:(a) => parseInt(a.sourceString),
+    number_float:(a,b,c) => parseFloat(a.sourceString+b.sourceString+c.sourceString),
     string:(a,b,c)=>`"${b.sourceString}"`,
     FuncallExp:(a,b,c,d) => ({type:"funcall", name:a.toPython(), args:c.asIteration().children.map(x => x.toPython())}),
     Block:(a,c,d) => ({type:'block',contents:c.toPython()}),
@@ -68,6 +70,7 @@ function test(str) {
 
 function run_tests() {
     test(`1`)
+    test(`0.1`)
     test(`45`)
     test(`"foo"`)
     test(`'foo'`)
@@ -331,12 +334,15 @@ on forever do {
         print("pressing E")
         keyboard_press('E')
         set_led(RED)
-        wait(1)
+        
+        wait(0.3)
         set_led(BLACK)
-        wait(1)
+        wait(0.3)
         set_led(RED)
-        wait(1)
+        wait(0.3)
         set_led(BLACK)
+        wait(0.3)
+        
         keyboard_releaseAll()
         print("waiting")
         wait(60)
