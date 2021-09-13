@@ -1,6 +1,7 @@
 # auto import libs and init when calling mouse_press, mouse_release, etc.
 
 
+
 on start do {
     mode_running = false
     ON_COLOR = make_color(red:255 green:0 blue:0)
