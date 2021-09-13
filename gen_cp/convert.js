@@ -3,7 +3,7 @@ import fs from 'fs'
 
 let grammar = ohm.grammar(`
 easy {
-    Exp = Cond | File | OnBlock | Block | FuncallExp | Negation | Assignment | ident | number | string | comment
+    Exp = Cond | File | OnBlock | Block | FuncallExp | Negation | Assignment | BooleanLiteral | ident | number | string | comment
     File = OnBlock+
     Block = "{" Exp* "}"
     OnBlock = "on" OnKeyword "do" Block
@@ -24,6 +24,7 @@ easy {
         | qq (~qq any)* qq
     Negation = "not" Exp
     Assignment = ident "=" Exp
+    BooleanLiteral = "true" | "false"
     Cond = "if" Exp Block
     FuncallExp = ident "(" ListOf<Exp,","> ")"
 }   
@@ -35,23 +36,23 @@ let semantics = grammar.createSemantics()
 semantics.addOperation('toPython', {
     number_int:(a) => parseInt(a.sourceString),
     number_float:(a,b,c) => parseFloat(a.sourceString+b.sourceString+c.sourceString),
-    string:(a,b,c)=>`"${b.sourceString}"`,
-    FuncallExp:(a,b,c,d) => ({type:"funcall", name:a.toPython(), args:c.asIteration().children.map(x => x.toPython())}),
-    Block:(a,c,d) => ({type:'block',contents:c.toPython()}),
-    OnBlock:(a,b,c,d) => ({type:'on',kind:b.toPython(), block:d.toPython()}),
-    Negation:(not,e) => {
-        return {type:'expression', operator:'not', expression:e.toPython() }
-    },
-    Assignment:(a,e,b) => {
-        return { type:'assignment', name:a.toPython(), expression:b.toPython()}
-    },
-    Cond:(a,b,c) => {
-        return { type:'conditional', expression:b.toPython(), block:c.toPython()}
-    },
+    string:(a,str,c)=>`"${str.sourceString}"`,
     ident:(a,b) => a.sourceString + b.sourceString,
+
+    FuncallExp:(name,b,args,d) => ({type:"funcall", name:name.toPython(), args:args.asIteration().children.map(arg => arg.toPython())}),
+    Block:(a,contents,d) => ({type:'block',contents:contents.toPython()}),
+    OnBlock:(a,kind,c,block) => ({type:'on',kind:kind.toPython(), block:block.toPython()}),
+    Negation:(not,exp) => ({type:'expression', operator:'not', expression:exp.toPython() }),
+    Assignment:(name,e,exp) => ({ type:'assignment', name:name.toPython(), expression:exp.toPython()}),
+    BooleanLiteral:(name) => {
+        if(name.sourceString === 'false') return ({type:'boolean', value:false})
+        if(name.sourceString === 'true') return ({type:'boolean', value:true})
+    },
+    Cond:(a,exp,block) =>  ({ type:'conditional', expression:exp.toPython(), block:block.toPython()}),
+
     _iter:(children) => children.map(c => c.toPython()),
     _terminal:function() { return this.sourceString },
-    comment:(h,a) => ({type:'comment', comment:a.sourceString}),
+    comment:(h,comment) => ({type:'comment', comment:comment.sourceString}),
 })
 
 function log(...args) {
@@ -173,21 +174,21 @@ function make_conditional(exp,out) {
     exp.block.contents.forEach(exp => make_expression(exp,out))
     outdent()
 }
+function make_assignment(exp,out) {
+    out.line(exp.name + " = " + make_expression(exp.expression,out))
+    out.add_variable_reference(exp.name)
+}
 
 function make_expression(exp,out) {
-    console.log("expression is ",exp)
     if(typeof exp === 'string') return make_identifier_reference(exp,out)
     if(exp.type === 'funcall') return make_function_call(exp,out)
     if(exp.type === 'assignment') return make_assignment(exp,out)
     if(exp.type === 'expression' && exp.operator === 'not') return "not " + make_expression(exp.expression,out)
     if(exp.type === 'conditional') return make_conditional(exp,out)
-    return "NOOTHING"
+    if(exp.type === 'boolean') return exp.value?"True":"False"
+    console.log(`UNKNOWN EXPRESSION ${JSON.stringify(exp)}`)
 }
 
-function make_assignment(exp,out) {
-    out.line(exp.name + " = " + make_expression(exp.expression,out))
-    out.add_variable_reference(exp.name)
-}
 
 function make_button_clicked(ast, out) {
     let name = `event_${Math.floor(Math.random()*100000)}`
@@ -207,8 +208,8 @@ function make_button_clicked(ast, out) {
     out.line("print('button pressed')")
     ast.block.contents.forEach(exp => make_expression(exp,out))
     outdent()
-    indent()
     out.end_function(name)
+    indent()
     out.loop(`${name}()`)
     outdent()
 }
@@ -226,7 +227,6 @@ function make_forever(ast, out) {
 }
 
 function make_start(ast, out) {
-    console.log('doing a start block',ast)
     let name = `start_${Math.floor(Math.random()*100000)}`
     out.start_function(name)
     ast.block.contents.forEach(exp => make_expression(exp,out))
@@ -286,7 +286,6 @@ class Output {
         this.fun = null
     }
     add_variable_reference(name) {
-        console.log("using the var",name)
         this.fun.vars.push(name)
     }
 
@@ -300,8 +299,8 @@ class Output {
     }
 
     flatten_functions() {
+        let total_vars = {}
         this._funs.forEach(fun => {
-            console.log("fun is",fun)
             this.line(`def ${fun.name}():`)
             indent()
             fun.vars.forEach(_var => {
@@ -313,15 +312,14 @@ class Output {
             outdent()
             this.during("")
             fun.vars.forEach(_var => {
-                this.before(`${_var} = 0`)
+                total_vars[_var] = _var
             })
         })
+        Object.keys(total_vars).forEach(_var => this.before(`${_var} = 0`))
     }
 }
 
-async function doGenerate() {
-    const output = new Output()
-    generate(`
+const SRC = `
 on start do {
     mode_running = false
 }
@@ -348,12 +346,15 @@ on forever do {
         wait(60)
     }
 }
-`,output)
-    console.log('generated',output._before.join(""))
+`
+async function doGenerate() {
+    const output = new Output()
+    generate(SRC,output)
+    // console.log('generated',output._before.join(""))
     let prelude = await fs.promises.readFile("prelude.py")
     let postlude = await fs.promises.readFile("postlude.py")
     output.flatten_functions()
-    output.dump()
+    // output.dump()
     await fs.promises.writeFile("code.py",
         prelude.toString()
         +"\n\n\n"
