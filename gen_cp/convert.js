@@ -216,6 +216,7 @@ function make_forever(ast, out) {
     out.line("while True:")
     indent()
     ast.block.contents.forEach(exp => make_expression(exp,out))
+    out.line("yield 0.01")
     outdent()
     out.end_function()
     out.init(`tm.register('${name}',${name},False)`)
@@ -318,20 +319,28 @@ class Output {
 async function doGenerate() {
     const output = new Output()
     generate(`
+on start do {
+    mode_running = false
+}
 on button_clicked do {
     mode_running = not mode_running
+    print("mode running",mode_running)
 }
 on forever do {
     if mode_running {
         print("pressing E")
         keyboard_press('E')
+        set_led(RED)
         wait(1)
+        set_led(BLACK)
+        wait(1)
+        set_led(RED)
+        wait(1)
+        set_led(BLACK)
         keyboard_releaseAll()
+        print("waiting")
         wait(60)
     }
-}
-on start do {
-    mode_running = false
 }
 `,output)
     console.log('generated',output._before.join(""))
