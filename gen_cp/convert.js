@@ -120,17 +120,22 @@ function make_identifier_reference(exp,out) {
     out.add_variable_reference(exp)
     return exp
 }
-function make_conditional(exp,out) {
-    out.line(`if ${make_expression(exp.expression,out)}:`)
-    indent()
+
+function make_block(exp, out) {
     exp.block.contents.forEach(exp => {
         out.line(make_expression(exp,out))
     })
+}
+
+function make_conditional(exp,out) {
+    out.line(`if ${make_expression(exp.expression,out)}:`)
+    indent()
+    make_block(exp,out)
     outdent()
 }
 function make_assignment(exp,out) {
-    out.line(exp.name + " = " + make_expression(exp.expression,out))
     out.add_variable_reference(exp.name)
+    return(exp.name + " = " + make_expression(exp.expression,out))
 }
 function make_expression(exp,out) {
     if(typeof exp === 'string') return make_identifier_reference(exp,out)
@@ -155,9 +160,7 @@ function make_on_clicked(ast, out) {
     out.line(`if ${ast.scope}.fell:`)
     indent()
     out.line("print('button pressed')")
-    out.line("# start user code")
-    ast.block.contents.forEach(exp => make_expression(exp,out))
-    out.line("# end user code")
+    make_block(ast,out)
     outdent()
     out.line("yield 0.01")
     outdent()
@@ -167,33 +170,14 @@ function make_on_clicked(ast, out) {
 function make_on_pressed(ast, out) {
     debug("making touch pressed")
     let name = `event_${Math.floor(Math.random()*100000)}`
-    // out.init("button = DigitalInOut(board.SWITCH)")
-    // out.init("button.switch_to_input(pull=Pull.DOWN)")
-    // out.init("button_state = False")
     out.start_function(name)
-    // out.add_variable_reference('button')
-    // out.add_variable_reference('button_state')
-    // out.line("if button.value and not button_state:")
-    // indent()
-    // out.line("button_state = True")
-    // outdent()
-    // out.line("if not button.value and button_state:")
-    // indent()
-    // out.line("button_state = False")
     out.line("while True:")
     indent()
     out.line("print('touch touched')")
-    out.line("# start user code")
-    ast.block.contents.forEach(exp => make_expression(exp,out))
-    out.line("# end user code")
+    make_block(ast,out)
     out.line("yield 0.01")
-    // outdent()
     outdent()
     out.end_function(name)
-
-    indent()
-
-    outdent()
     out.init(`tm.register_event('${name}',${name})`)
 }
 function make_forever(ast, out) {
@@ -203,7 +187,7 @@ function make_forever(ast, out) {
     out.line("while True:")
     indent()
     out.line("# start user code")
-    ast.block.contents.forEach(exp => make_expression(exp,out))
+    make_block(ast,out)
     out.line("# end user code")
     out.line("yield 0.01")
     outdent()
@@ -214,9 +198,7 @@ function make_start(ast, out) {
     debug("making start")
     let name = `start_${Math.floor(Math.random()*100000)}`
     out.start_function(name)
-    out.line("# start user code")
-    ast.block.contents.forEach(exp => make_expression(exp,out))
-    out.line("# end user code")
+    make_block(ast,out)
     out.end_function(name)
     out.init(`tm.register_start('${name}',${name})`)
 }
@@ -225,19 +207,12 @@ function make_start(ast, out) {
 function make_mode(ast, out) {
     debug("making mode from",ast)
     let name = `mode_${ast.name}`
-    // out.init("button = DigitalInOut(board.SWITCH)")
-    // out.init("button.switch_to_input(pull=Pull.DOWN)")
-    // out.init("button_state = False")
     out.start_function(name)
     out.line("while True:")
     indent()
-    out.line("# start user code")
-    ast.block.contents.forEach(exp => make_expression(exp,out))
-    out.line("# end user code")
+    make_block(ast,out)
     outdent()
     out.line("yield 0.01")
-    // out.add_variable_reference('button')
-    // out.add_variable_reference('button_state')
     out.end_function(name)
     out.init(`tm.register_mode('${name}',${name})`)
 }
