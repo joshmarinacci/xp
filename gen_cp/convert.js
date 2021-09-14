@@ -29,8 +29,8 @@ async function run_tests() {
     test(`foo(5)`)
     test(`press("E")`)
     test(`keyboard_press('E')`)
-    test(`on forever do { 5 }`)
-    test('{ foo(5) } ')
+    // test(`on forever do { 5 }`)
+    // test('{ foo(5) } ')
     test(`on forever do { print("bob") }`)
     test(`
     on button_clicked do {
@@ -51,13 +51,14 @@ async function run_tests() {
         wait(5)
         mouse_releaseAll()
     }`)
-    test(`#foo
+    test(`
+    #foo
     `)
 
     test(`
 on forever do {
     keyboard_press('E')
-    wait(1)
+    #wait(1)
     keyboard_releaseAll()
     wait(60)
 }
@@ -84,13 +85,13 @@ on start do {
     mode_running = false
 }
     `)
-    // test(`
-    // on start do {
-    //     print("starting")
-    //     #   modes := ring()
-    //     #   modes.add(
-    // }
-    // `)
+    test(`
+    on start do {
+        print("starting")
+        #   modes := ring()
+        #   modes.add(
+    }
+    `)
 }
 
 let indent_level = 0
@@ -133,6 +134,7 @@ function make_expression(exp,out) {
     if(exp.type === 'expression' && exp.operator === 'not') return "not " + make_expression(exp.expression,out)
     if(exp.type === 'conditional') return make_conditional(exp,out)
     if(exp.type === 'boolean') return exp.value?"True":"False"
+    if(exp.type === 'comment') return "# " + exp.comment
     console.log(`UNKNOWN EXPRESSION ${JSON.stringify(exp)}`)
 }
 
@@ -178,7 +180,7 @@ function make_start(ast, out) {
     out.init(`${name}()`)
 }
 function make_on_block(ast,out) {
-    if(ast.kind === 'button_clicked') return make_button_clicked(ast,out)
+    if(ast.kind === 'clicked') return make_button_clicked(ast,out)
     if(ast.kind === 'forever') return make_forever(ast,out)
     if(ast.kind === 'start') return make_start(ast,out)
     out.error(`unknown on block kind "${ast.kind}"`)
@@ -190,6 +192,8 @@ function generate(parser, str, out, after) {
     let res = parser.grammar.match(str)
     if(!res.succeeded()) return log('failed',res)
     let ast = parser.semantics(res).toPython()
+    console.log("ast is",ast)
+    if(ast.type === 'comment') return console.log("just parsed a comment")
     generate_python(ast,out,after)
 }
 
@@ -260,10 +264,10 @@ class Output {
     }
 }
 
-async function doGenerate() {
+async function doGenerate(src_file) {
     parser = await setupParser()
     const output = new Output()
-    let SRC = await readFile("demo1.key")
+    let SRC = await readFile(src_file)
     generate(parser,SRC.toString(),output)
     // console.log('generated',output._before.join(""))
     let prelude = await readFile("prelude.py")
@@ -286,7 +290,9 @@ async function doGenerate() {
         + postlude.toString()+ "\n"
         + output._loop.join("\n")+ "\n"
     )
+    console.log("completd parsing",src_file)
+    console.log("wrote code.py")
 }
 
 // run_tests()
-doGenerate()
+doGenerate("demo1.key")

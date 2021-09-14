@@ -1,9 +1,11 @@
 easy {
-    Exp = Cond | File | OnBlock | Block | FuncallExp | Negation | Assignment | BooleanLiteral | ident | number | string | comment
-    File = OnBlock+
+    Exp = File | OnBlock | Block | Cond | FuncallExp | Negation | Assignment | BooleanLiteral | ident | number | string | comment
+    File = comment* Chunk+ comment*
+    Chunk = OnBlock | ModeBlock | comment
     Block = "{" Exp* "}"
-    OnBlock = "on" OnKeyword "do" Block
-    OnKeyword = "forever" | "button_clicked" | "start"
+    ModeBlock = "mode" ident "do" Block
+    OnBlock = "on" ident ident "do" Block comment*
+    EventScope = "system"
     ident  (an identifier)
         = letter (letter | digit | under)*
     number  (a number)
@@ -12,7 +14,7 @@ easy {
     under = "_"
     q = "\'"
     qq = "\""
-    comment = "#" toEOL
+    comment = space* "#" toEOL
     toEOL = (~"\n" any)* "\n"
 
     string (text string)

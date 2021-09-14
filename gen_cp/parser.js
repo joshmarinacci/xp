@@ -19,10 +19,16 @@ export async function setupParser() {
             args: args.asIteration().children.map(arg => arg.toPython())
         }),
         Block: (a, contents, d) => ({type: 'block', contents: contents.toPython()}),
-        OnBlock: (a, kind, c, block) => ({
+        OnBlock: (a, scope, kind, c, block,_1) => ({
             type: 'on',
+            scope:scope.toPython(),
             kind: kind.toPython(),
             block: block.toPython()
+        }),
+        ModeBlock:(_,name,d,block) => ({
+            type:'mode',
+            name:name.toPython(),
+            block: block.toPython(),
         }),
         Negation: (not, exp) => ({type: 'expression', operator: 'not', expression: exp.toPython()}),
         Assignment: (name, e, exp) => ({
@@ -39,12 +45,15 @@ export async function setupParser() {
             expression: exp.toPython(),
             block: block.toPython()
         }),
+        File:(_c1, blocks, _c2) => {
+            return blocks.toPython()
+        },
 
         _iter: (children) => children.map(c => c.toPython()),
         _terminal: function () {
             return this.sourceString
         },
-        comment: (h, comment) => ({type: 'comment', comment: comment.sourceString}),
+        comment: (pre, h, comment) => ({type: 'comment', comment: comment.sourceString}),
     })
     return {
         grammar:grammar,
