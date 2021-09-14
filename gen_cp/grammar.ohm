@@ -1,5 +1,5 @@
 easy {
-    Exp = File | OnBlock | Block | Cond | FuncallExp | Negation | Assignment | BooleanLiteral | ident | number | string | comment
+    Exp = File | OnBlock | Block | Cond | FuncallExp | Negation | Assignment | BooleanLiteral | List | ident | number | string | comment
     File = comment* Chunk+ comment*
     Chunk = OnBlock | ModeBlock | comment
     Block = "{" Exp* "}"
@@ -25,6 +25,7 @@ easy {
     Negation = "not" Exp
     Assignment = ident "=" Exp
     BooleanLiteral = "true" | "false"
+    List = "[" ListOf<Exp,","> "]"
     Cond = "if" Exp Block
     FuncallExp = ident "(" ListOf<Exp,","> ")"
 }

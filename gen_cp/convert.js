@@ -31,6 +31,24 @@ async function run_tests() {
     test(`foo(5)`)
     test(`press("E")`)
     test(`keyboard_press("E")`)
+
+    test(`[]`) // empty list
+    test(`[1]`) //single element
+    test(`[1,2]`) //two elements
+    test(`[foo,bar]`) //identifier elements
+    test(`[foo(bar)]`) //function call elements
+    test(`foo(bar)`) //function call with ident
+    test(`foo([5])`) //function call with list
+    test(`bar = foo([5])`)
+    test(`bar = foo([1,2,3,4,  5,  7])`)
+    test(`bar = foo([1,2,3,4,
+      5,  7])`)
+test(`
+    heart = make_glyph([1,0,0,1,
+                        1,1,1,1,
+                        1,1,1,1,
+                        0,1,1,0])
+`)
     // test(`on forever do { 5 }`)
     // test('{ foo(5) } ')
     test(`on system forever do { print("bob") }`)
@@ -142,6 +160,12 @@ function make_assignment(exp,out) {
     out.add_variable_reference(exp.name)
     return(exp.name + " = " + make_expression(exp.expression,out))
 }
+
+function make_list_literal(exp, out) {
+    console.log("making a list",exp)
+    return '['+exp.values.map(e => make_expression(e,out)).join(", ")+']'
+}
+
 function make_expression(exp,out) {
     if(typeof exp === 'string') return make_identifier_reference(exp,out)
     if(exp.type === 'funcall') return make_function_call(exp,out)
@@ -150,6 +174,7 @@ function make_expression(exp,out) {
     if(exp.type === 'conditional') return make_conditional(exp,out)
     if(exp.type === 'boolean') return exp.value?"True":"False"
     if(exp.type === 'comment') return "# " + exp.comment
+    if(exp.type === 'list') return make_list_literal(exp,out)
     console.log(`UNKNOWN EXPRESSION ${JSON.stringify(exp)}`)
 }
 

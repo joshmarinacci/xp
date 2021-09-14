@@ -42,6 +42,10 @@ export async function setupParser() {
             if (name.sourceString === 'false') return ({type: 'boolean', value: false})
             if (name.sourceString === 'true') return ({type: 'boolean', value: true})
         },
+        List:(open,content,close) => {
+            // console.log("list",toStr(open),toStr(close), content)
+            return {type:'list', values:content.asIteration().children.map(arg => arg.toPython())}
+        },
         Cond: (a, exp, block) => ({
             type: 'conditional',
             expression: exp.toPython(),
