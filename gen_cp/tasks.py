@@ -3,21 +3,46 @@ import time
 class TaskMaster:
     def __init__(self):
         self.MODES = []
-        self.AUTOMODES = []
+        self.EVENTS = []
+        self.LOOPS = []
+        self.STARTS = []
         self.current = -1
 
-    def register(self, name, runner, auto):
-        mode = {
+    def register_mode(self, name, runner):
+        self.MODES.append({
             "name":name,
             "runner":runner,
             "gen":0,
             "start":time.monotonic(),
             "delay":0,
-        }
-        if auto:
-            self.AUTOMODES.append(mode)
-        else:
-            self.MODES.append(mode)
+        })
+
+    def register_start(self, name, runner):
+        self.STARTS.append({
+            "name":name,
+            "runner":runner,
+            "gen":0,
+            "start":time.monotonic(),
+            "delay":0,
+        })
+
+    def register_loop(self, name, runner):
+        self.LOOPS.append({
+            "name":name,
+            "runner":runner,
+            "gen":0,
+            "start":time.monotonic(),
+            "delay":0,
+        })
+
+    def register_event(self, name, runner):
+        self.EVENTS.append({
+            "name":name,
+            "runner":runner,
+            "gen":0,
+            "start":time.monotonic(),
+            "delay":0,
+        })
 
     def getCurrentMode(self):
         return self.MODES[self.current]
@@ -26,19 +51,29 @@ class TaskMaster:
         print("starting the taskmaster")
         self.current = 0
         if len(self.MODES) < 1:
-            print("not starting")
+            print("not starting. no modes registered?")
             return
+        # only run starts once
+        for start in self.STARTS:
+            start['runner']()
+        # the rest use generators
+        for loop_ in self.LOOPS:
+            loop_['gen'] = loop_['runner']()
+        # don't start modes. they are started on demand
+#         for mode in self.MODES:
+#             mode['gen'] = mode['runner']()
+        for event in self.EVENTS:
+            event['gen'] = event['runner']()
+        # start the current mode
         self.startMode(self.getCurrentMode())
-        for mode in self.AUTOMODES:
-            self.startMode(mode)
 
     def startMode(self, mode):
         print("starting", mode["name"])
         mode['gen'] = mode["runner"]()
 
-#     def stopMode(self, mode, g):
-#         print("stopping", mode["name"])
-#         mode["shutdown"](g)
+    def stopMode(self, mode):
+        print("stopping", mode["name"])
+#         mode["shutdown"]()
 
     def nextMode(self):
         self.stopMode(self.getCurrentMode())
@@ -53,7 +88,6 @@ class TaskMaster:
         self.startMode(self.getCurrentMode())
 
     def cycleMode(self, mode):
-#         print("cycling",mode['name'])
         now = time.monotonic()
         delay = mode['delay']
         start = mode['start']
@@ -62,14 +96,22 @@ class TaskMaster:
             mode['delay'] = next(mode['gen'])
             mode['start'] = now
 
+    def cycleEvent(self, event):
+        next(event['gen'])
+
+    def cycleLoop(self,loop):
+        next(loop['gen'])
+
     def cycle(self, rate):
-#         print("cycling",len(self.MODES))
-        if len(self.MODES) < 1:
-#             print("skipping")
-            return
+        # run event handlers first
+        for event in self.EVENTS:
+            self.cycleEvent(event)
+        # run permanent loops next
+        for loop in self.LOOPS:
+            self.cycleLoop(loop)
+
+        # now cycle the current mode
         self.cycleMode(self.getCurrentMode())
-        for mode in self.AUTOMODES:
-            self.cycleMode(mode)
         time.sleep(rate)
 
 
