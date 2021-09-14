@@ -11,10 +11,10 @@ export async function setupParser() {
     let semantics = grammar.createSemantics()
 
     semantics.addOperation('toPython', {
-        number_int: (a) => parseInt(toStr(a)),
-        number_float: (a, b, c) => parseFloat(toStr(a,b,c)),
-        string: (a, str, c) => `"${toStr(str)}"`,
-        ident: (start, rest,suffix) => toStr(start,rest,suffix),
+        number_int: (a) => ({type:'literal', value:parseInt(toStr(a))}),
+        number_float: (a, b, c) => ({type:'literal', value:parseFloat(toStr(a,b,c))}),
+        string: (a, str, c) => ({type:'literal', value:`"${toStr(str)}"`}),
+        ident: (start, rest,suffix) => ({type:"identifier", name:toStr(start,rest,suffix)}),
         FuncallExp: (name, b, args, d) => ({
             type: "funcall",
             name: name.toPython(),
@@ -23,8 +23,8 @@ export async function setupParser() {
         Block: (a, contents, d) => ({type: 'block', contents: contents.toPython()}),
         OnBlock: (a, scope, kind, c, block,_1) => ({
             type: 'on',
-            scope:scope.toPython(),
-            kind: kind.toPython(),
+            scope:scope.toPython().name,
+            kind: kind.toPython().name,
             block: block.toPython()
         }),
         ModeBlock:(_,name,d,block) => ({

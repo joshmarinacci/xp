@@ -135,9 +135,13 @@ function debug(...args) {
     console.log("DEBUG",...args)
 }
 
-function make_function_call(ast,out) {
-    if(ast.name === 'wait') return (`yield ${ast.args[0]}`)
-    return (`${ast.name}(${ast.args.join(",")})`)
+function make_identifier(id, out) {
+    return id.name
+}
+
+function make_function_call(exp,out) {
+    if(exp.name.name === 'wait') return (`yield ${exp.args[0]}`)
+    return (`${make_identifier(exp.name,out)}(${exp.args.map(e => make_expression(e,out)).join(", ")})`)
 }
 function make_identifier_reference(exp,out) {
     out.add_variable_reference(exp)
@@ -157,17 +161,16 @@ function make_conditional(exp,out) {
     outdent()
 }
 function make_assignment(exp,out) {
-    out.add_variable_reference(exp.name)
-    return(exp.name + " = " + make_expression(exp.expression,out))
+    out.add_variable_reference(make_identifier(exp.name))
+    return(make_identifier(exp.name,out) + " = " + make_expression(exp.expression,out))
 }
 
 function make_list_literal(exp, out) {
-    console.log("making a list",exp)
     return '['+exp.values.map(e => make_expression(e,out)).join(", ")+']'
 }
 
 function make_expression(exp,out) {
-    if(typeof exp === 'string') return make_identifier_reference(exp,out)
+    // if(typeof exp === 'string') return make_identifier_reference(exp,out)
     if(exp.type === 'funcall') return make_function_call(exp,out)
     if(exp.type === 'assignment') return make_assignment(exp,out)
     if(exp.type === 'expression' && exp.operator === 'not') return "not " + make_expression(exp.expression,out)
@@ -175,6 +178,8 @@ function make_expression(exp,out) {
     if(exp.type === 'boolean') return exp.value?"True":"False"
     if(exp.type === 'comment') return "# " + exp.comment
     if(exp.type === 'list') return make_list_literal(exp,out)
+    if(exp.type === 'literal') return exp.value
+    if(exp.type === 'identifier') return exp.name
     console.log(`UNKNOWN EXPRESSION ${JSON.stringify(exp)}`)
 }
 
@@ -253,9 +258,11 @@ function make_chunk(ast,out) {
     if(ast.type === 'on') {
         if (ast.kind === 'pressed') return make_on_pressed(ast, out)
         if (ast.kind === 'clicked') return make_on_clicked(ast, out)
+        if (ast.kind === 'fell') return make_on_clicked(ast, out)
         if (ast.kind === 'forever') return make_forever(ast, out)
         if (ast.kind === 'start') return make_start(ast, out)
     }
+    if(ast.type === 'comment') return ast.comment
     out.error(`unknown on block kind "${ast.kind}"`)
 }
 function generate_python(ast,out,after) {
