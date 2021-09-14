@@ -113,8 +113,8 @@ function debug(...args) {
 }
 
 function make_function_call(ast,out) {
-    if(ast.name === 'wait') return out.line(`yield ${ast.args[0]}`)
-    out.line(`${ast.name}(${ast.args.join(",")})`)
+    if(ast.name === 'wait') return (`yield ${ast.args[0]}`)
+    return (`${ast.name}(${ast.args.join(",")})`)
 }
 function make_identifier_reference(exp,out) {
     out.add_variable_reference(exp)
@@ -123,7 +123,9 @@ function make_identifier_reference(exp,out) {
 function make_conditional(exp,out) {
     out.line(`if ${make_expression(exp.expression,out)}:`)
     indent()
-    exp.block.contents.forEach(exp => make_expression(exp,out))
+    exp.block.contents.forEach(exp => {
+        out.line(make_expression(exp,out))
+    })
     outdent()
 }
 function make_assignment(exp,out) {
@@ -142,24 +144,16 @@ function make_expression(exp,out) {
 }
 
 function make_on_clicked(ast, out) {
-    debug("making button clicked")
+    debug("making button clicked",ast)
     let name = `event_${Math.floor(Math.random()*100000)}`
-    out.init("button = DigitalInOut(board.SWITCH)")
-    out.init("button.switch_to_input(pull=Pull.DOWN)")
-    out.init("button_state = False")
     out.start_function(name)
-    out.add_variable_reference('button')
-    out.add_variable_reference('button_state')
+    out.add_variable_reference(ast.scope)
     out.line("while True:")
     indent()
     out.line("#generated")
-    out.line("if button.value and not button_state:")
+    out.line(`${ast.scope}.update()`)
+    out.line(`if ${ast.scope}.fell:`)
     indent()
-    out.line("button_state = True")
-    outdent()
-    out.line("if not button.value and button_state:")
-    indent()
-    out.line("button_state = False")
     out.line("print('button pressed')")
     out.line("# start user code")
     ast.block.contents.forEach(exp => make_expression(exp,out))
@@ -168,6 +162,7 @@ function make_on_clicked(ast, out) {
     out.line("yield 0.01")
     outdent()
     out.end_function(name)
+    out.init(`tm.register_event('${name}',${name})`)
 }
 function make_on_pressed(ast, out) {
     debug("making touch pressed")
@@ -368,4 +363,4 @@ async function doGenerate(src_file) {
 }
 
 // run_tests()
-doGenerate("demo2.key")
+doGenerate(process.argv[2])

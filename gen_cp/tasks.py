@@ -50,22 +50,21 @@ class TaskMaster:
     def start(self):
         print("starting the taskmaster")
         self.current = 0
-        if len(self.MODES) < 1:
-            print("not starting. no modes registered?")
-            return
         # only run starts once
         for start in self.STARTS:
             start['runner']()
         # the rest use generators
-        for loop_ in self.LOOPS:
-            loop_['gen'] = loop_['runner']()
+        for loop in self.LOOPS:
+            loop['gen'] = loop['runner']()
+            print("initting",loop['gen'])
         # don't start modes. they are started on demand
 #         for mode in self.MODES:
 #             mode['gen'] = mode['runner']()
         for event in self.EVENTS:
             event['gen'] = event['runner']()
         # start the current mode
-        self.startMode(self.getCurrentMode())
+        if len(self.MODES) > 0:
+            self.startMode(self.getCurrentMode())
 
     def startMode(self, mode):
         print("starting", mode["name"])
@@ -96,8 +95,14 @@ class TaskMaster:
             mode['delay'] = next(mode['gen'])
             mode['start'] = now
 
-    def cycleEvent(self, event):
-        next(event['gen'])
+    def cycleThing(self, event):
+        now = time.monotonic()
+        delay = event['delay']
+        start = event['start']
+        diff = now-start
+        if diff > delay:
+            event['delay'] = next(event['gen'])
+            event['start'] = now
 
     def cycleLoop(self,loop):
         next(loop['gen'])
@@ -105,13 +110,15 @@ class TaskMaster:
     def cycle(self, rate):
         # run event handlers first
         for event in self.EVENTS:
-            self.cycleEvent(event)
+            self.cycleThing(event)
         # run permanent loops next
         for loop in self.LOOPS:
-            self.cycleLoop(loop)
+            self.cycleThing(loop)
 
         # now cycle the current mode
-        self.cycleMode(self.getCurrentMode())
+        # start the current mode
+        if len(self.MODES) > 0:
+            self.cycleMode(self.getCurrentMode())
         time.sleep(rate)
 
 

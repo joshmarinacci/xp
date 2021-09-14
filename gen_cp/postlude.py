@@ -7,3 +7,6 @@ while _SYSTEM_running:
     now = time.monotonic()
     if now > start_time + 20:
         _SYSTEM_running = False
+
+
+print("end everything")
