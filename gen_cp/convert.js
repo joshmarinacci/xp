@@ -140,7 +140,7 @@ function make_identifier(id, out) {
 }
 
 function make_function_call(exp,out) {
-    if(exp.name.name === 'wait') return (`yield ${exp.args[0]}`)
+    if(exp.name.name === 'wait') return (`yield ${make_expression(exp.args[0])}`)
     return (`${make_identifier(exp.name,out)}(${exp.args.map(e => make_expression(e,out)).join(", ")})`)
 }
 function make_identifier_reference(exp,out) {
