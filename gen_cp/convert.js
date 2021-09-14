@@ -13,10 +13,12 @@ function test(str) {
     log("parsing",str)
     let res = parser.grammar.match(str,)
     if(!res.succeeded()) {
-        log('failed',res)
+        // log('failed',res)
+        throw new Error("failed")
+    } else {
+        log("succeeded")
+        log(parser.semantics(res).toPython())
     }
-    // log("succeeded")
-    log(parser.semantics(res).toPython())
 }
 
 async function run_tests() {
@@ -28,17 +30,17 @@ async function run_tests() {
     test(`'foo'`)
     test(`foo(5)`)
     test(`press("E")`)
-    test(`keyboard_press('E')`)
+    test(`keyboard_press("E")`)
     // test(`on forever do { 5 }`)
     // test('{ foo(5) } ')
-    test(`on forever do { print("bob") }`)
+    test(`on system forever do { print("bob") }`)
     test(`
-    on button_clicked do {
+    on button clicked do {
         modes_next()
     }
     `)
     test(`
-    on forever do {
+    on system forever do {
         keyboard_press('E')
         wait(1)
         keyboard_releaseAll()
@@ -46,7 +48,7 @@ async function run_tests() {
     }
     `)
 
-    test(`on forever do {
+    test(`on system forever do {
         mouse_press('left')
         wait(5)
         mouse_releaseAll()
@@ -56,42 +58,45 @@ async function run_tests() {
     `)
 
     test(`
-on forever do {
+on system forever do {
     keyboard_press('E')
     #wait(1)
     keyboard_releaseAll()
     wait(60)
 }
-on forever do {
+on system forever do {
     mouse_press('left')
     wait(5)
     mouse_releaseAll()
 }
 `)
     test(`
-on button_clicked do {
+on button clicked do {
     mode_running = not mode_running
 }
     `)
     test(`
-on forever do {
+on system forever do {
     if mode_running {
         print("pressing E")
     }
 }
     `)
     test(`
-on start do {
+on system start do {
     mode_running = false
 }
     `)
     test(`
-    on start do {
+    on system start do {
         print("starting")
         #   modes := ring()
         #   modes.add(
     }
     `)
+
+    // identifiers with dots
+    test(`grid.set(5)`)
 }
 
 let indent_level = 0
@@ -149,7 +154,7 @@ function make_expression(exp,out) {
 }
 
 function make_on_clicked(ast, out) {
-    debug("making button clicked",ast)
+    // debug("making button clicked",ast)
     let name = `event_${Math.floor(Math.random()*100000)}`
     out.start_function(name)
     out.add_variable_reference(ast.scope)
@@ -168,7 +173,7 @@ function make_on_clicked(ast, out) {
     out.init(`tm.register_event('${name}',${name})`)
 }
 function make_on_pressed(ast, out) {
-    debug("making touch pressed")
+    // debug("making touch pressed")
     let name = `event_${Math.floor(Math.random()*100000)}`
     out.start_function(name)
     out.line("while True:")
@@ -181,7 +186,7 @@ function make_on_pressed(ast, out) {
     out.init(`tm.register_event('${name}',${name})`)
 }
 function make_forever(ast, out) {
-    debug("making forever")
+    // debug("making forever")
     let name = `loop_${Math.floor(Math.random()*100000)}`
     out.start_function(name)
     out.line("while True:")
@@ -195,7 +200,7 @@ function make_forever(ast, out) {
     out.init(`tm.register_loop('${name}',${name})`)
 }
 function make_start(ast, out) {
-    debug("making start")
+    // debug("making start")
     let name = `start_${Math.floor(Math.random()*100000)}`
     out.start_function(name)
     make_block(ast,out)
@@ -205,7 +210,7 @@ function make_start(ast, out) {
 
 
 function make_mode(ast, out) {
-    debug("making mode from",ast)
+    // debug("making mode from",ast)
     let name = `mode_${ast.name}`
     out.start_function(name)
     out.line("while True:")

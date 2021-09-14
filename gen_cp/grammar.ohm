@@ -7,7 +7,9 @@ easy {
     OnBlock = "on" ident ident "do" Block comment*
     EventScope = "system"
     ident  (an identifier)
-        = letter (letter | digit | under)*
+        = letter (letter | digit | under)* dot_part?
+    dot_part
+        = "." ident
     number  (a number)
         = digit+ "." digit+ --float
         | digit+ --int

@@ -1,6 +1,9 @@
 import fs from 'fs'
 import ohm from 'ohm-js'
 const readFile = fs.promises.readFile
+const toStr = (...nodes) => {
+    return nodes.map(o => o.sourceString).join("")
+}
 
 export async function setupParser() {
     let grammar_source = await readFile("grammar.ohm")
@@ -8,11 +11,10 @@ export async function setupParser() {
     let semantics = grammar.createSemantics()
 
     semantics.addOperation('toPython', {
-        number_int: (a) => parseInt(a.sourceString),
-        number_float: (a, b, c) => parseFloat(a.sourceString + b.sourceString + c.sourceString),
-        string: (a, str, c) => `"${str.sourceString}"`,
-        ident: (a, b) => a.sourceString + b.sourceString,
-
+        number_int: (a) => parseInt(toStr(a)),
+        number_float: (a, b, c) => parseFloat(toStr(a,b,c)),
+        string: (a, str, c) => `"${toStr(str)}"`,
+        ident: (start, rest,suffix) => toStr(start,rest,suffix),
         FuncallExp: (name, b, args, d) => ({
             type: "funcall",
             name: name.toPython(),
