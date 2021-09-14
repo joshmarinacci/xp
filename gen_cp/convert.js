@@ -108,6 +108,9 @@ function tab() {
     }
     return str
 }
+function debug(...args) {
+    console.log("DEBUG",...args)
+}
 
 function make_function_call(ast,out) {
     if(ast.name === 'wait') return out.line(`yield ${ast.args[0]}`)
@@ -138,7 +141,8 @@ function make_expression(exp,out) {
     console.log(`UNKNOWN EXPRESSION ${JSON.stringify(exp)}`)
 }
 
-function make_button_clicked(ast, out) {
+function make_on_clicked(ast, out) {
+    debug("making button clicked")
     let name = `event_${Math.floor(Math.random()*100000)}`
     out.init("button = DigitalInOut(board.SWITCH)")
     out.init("button.switch_to_input(pull=Pull.DOWN)")
@@ -161,7 +165,35 @@ function make_button_clicked(ast, out) {
     out.loop(`${name}()`)
     outdent()
 }
+function make_on_pressed(ast, out) {
+    debug("making touch pressed")
+    let name = `event_${Math.floor(Math.random()*100000)}`
+    // out.init("button = DigitalInOut(board.SWITCH)")
+    // out.init("button.switch_to_input(pull=Pull.DOWN)")
+    // out.init("button_state = False")
+    out.start_function(name)
+    // out.add_variable_reference('button')
+    // out.add_variable_reference('button_state')
+    // out.line("if button.value and not button_state:")
+    indent()
+    // out.line("button_state = True")
+    // outdent()
+    // out.line("if not button.value and button_state:")
+    // indent()
+    // out.line("button_state = False")
+    out.line("print('button pressed')")
+    ast.block.contents.forEach(exp => make_expression(exp,out))
+    outdent()
+    out.end_function(name)
+
+    indent()
+    // out.loop(`${name}()`)
+
+    outdent()
+    out.init(`tm.register_event('${name}',${name})`)
+}
 function make_forever(ast, out) {
+    debug("making forever")
     let name = `loop_${Math.floor(Math.random()*100000)}`
     out.start_function(name)
     out.line("while True:")
@@ -170,29 +202,51 @@ function make_forever(ast, out) {
     out.line("yield 0.01")
     outdent()
     out.end_function()
-    out.init(`tm.register('${name}',${name},False)`)
+    out.init(`tm.register_loop('${name}',${name})`)
 }
 function make_start(ast, out) {
+    debug("making start")
     let name = `start_${Math.floor(Math.random()*100000)}`
     out.start_function(name)
     ast.block.contents.forEach(exp => make_expression(exp,out))
     out.end_function(name)
-    out.init(`${name}()`)
+    out.init(`tm.register_start('${name}',${name})`)
 }
-function make_on_block(ast,out) {
-    if(ast.kind === 'clicked') return make_button_clicked(ast,out)
-    if(ast.kind === 'forever') return make_forever(ast,out)
-    if(ast.kind === 'start') return make_start(ast,out)
+
+
+function make_mode(ast, out) {
+    debug("making mode from",ast)
+    let name = `mode_${ast.name}`
+    // out.init("button = DigitalInOut(board.SWITCH)")
+    // out.init("button.switch_to_input(pull=Pull.DOWN)")
+    // out.init("button_state = False")
+    out.start_function(name)
+    ast.block.contents.forEach(exp => make_expression(exp,out))
+    // out.add_variable_reference('button')
+    // out.add_variable_reference('button_state')
+    out.end_function(name)
+    out.init(`tm.register_mode('${name}',${name})`)
+}
+
+function make_chunk(ast,out) {
+    // debug("making a chunk from",ast)
+    if(ast.type === 'mode') return make_mode(ast,out)
+    if(ast.type === 'on') {
+        if (ast.kind === 'pressed') return make_on_pressed(ast, out)
+        if (ast.kind === 'clicked') return make_on_clicked(ast, out)
+        if (ast.kind === 'forever') return make_forever(ast, out)
+        if (ast.kind === 'start') return make_start(ast, out)
+    }
     out.error(`unknown on block kind "${ast.kind}"`)
 }
 function generate_python(ast,out,after) {
-    ast.forEach(task => make_on_block(task,out,after))
+    ast.forEach(task => make_chunk(task,out,after))
 }
 function generate(parser, str, out, after) {
     let res = parser.grammar.match(str)
     if(!res.succeeded()) return log('failed',res)
     let ast = parser.semantics(res).toPython()
-    console.log("ast is",ast)
+    // console.log("ast is",ast)
     if(ast.type === 'comment') return console.log("just parsed a comment")
     generate_python(ast,out,after)
 }
@@ -295,4 +349,4 @@ async function doGenerate(src_file) {
 }
 
 // run_tests()
-doGenerate("demo1.key")
+doGenerate("demo2.key")
