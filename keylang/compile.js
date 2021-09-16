@@ -1,6 +1,6 @@
-import fs from "fs"
 import path from "path"
 import {make_grammar_semantics} from './grammar.js'
+import {file_to_string, log, mkdirs, write_to_file} from './util.js'
 // lib file
 // web template
 // generate source
@@ -25,33 +25,13 @@ if(!process.argv[2]) error_and_exit("missing input file")
 
 let src_file = process.argv[2]
 
-function log(...args) {
-    console.info(...args)
-}
-
 // log(process.argv)
 log("compiling",src_file)
-
-async function file_to_string(src_file) {
-    log("reading from",src_file)
-    let raw = await fs.promises.readFile(src_file)
-    return raw.toString()
-}
 
 let TEMPLATE_PATH = "web_template.html"
 let LIB_PATH = "lib.js"
 let OUTDIR = "build"
 let LIB_OUT_NAME = "lib.js"
-
-async function write_to_file(path, data) {
-    log("writing to",path)
-    await fs.promises.writeFile(path,data)
-}
-
-async function mkdirs(dir) {
-    log("making dir",dir)
-    await fs.promises.mkdir(dir,{recursive:true})
-}
 
 async function build(src_file) {
     let src = await file_to_string(src_file)

@@ -13,9 +13,9 @@ export async function make_grammar_semantics() {
     let semantics = grammar.createSemantics()
     semantics.addOperation('ast', {
         _terminal: function () { return this.sourceString },
-        number_int: (a) => ({type:'literal', value:parseInt(toStr(a))}),
-        number_float: (a, b, c) => ({type:'literal', value:parseFloat(toStr(a,b,c))}),
-        string: (a, str, c) => ({type:'literal', value:toStr(str)}),
+        number_int: (a) => ({type:'literal', kind:'integer', value:parseInt(toStr(a))}),
+        number_float: (a, b, c) => ({type:'literal', kind:'float', value:parseFloat(toStr(a,b,c))}),
+        string: (a, str, c) => ({type:'literal', kind:'string', value:toStr(str)}),
         ident: (start, rest,suffix) => ({type:"identifier", name:toStr(start,rest,suffix)}),
         Assignment: (name, e, exp) => ({
             type: 'assignment',
@@ -93,5 +93,16 @@ export function eval_ast(ast,scope) {
 }
 
 export function ast_to_js(ast) {
+    if(ast.type === 'literal') {
+        if(ast.kind === 'integer') return ""+ast.value
+        if(ast.kind === 'float') return ""+ast.value
+        if(ast.kind === 'string') return `"${ast.value}"`
+    }
+    if(ast.type === 'identifier') return ""+ast.name
+    if(ast.type === 'funcall') {
+        let args = ast.args.map(a => ast_to_js(a))
+        return `${ast_to_js(ast.name)}(${args.join(",")})`
+    }
     console.log('converting to js',ast)
+    throw new Error(`unknown AST node ${ast.type}`)
 }
