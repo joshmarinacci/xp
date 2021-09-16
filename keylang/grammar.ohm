@@ -21,5 +21,9 @@ keylang {
 
     FunctionCall = Exp "(" ListOf<Exp,","> ")"
 
-    Exp = Assignment | FunctionCall | Literal | ident
+    Lambda = "(" ListOf<ident,","> ")" "=>" Block
+
+    Block = "{" Exp* "}"
+
+    Exp = Lambda | Assignment | FunctionCall | Literal | ident
 }

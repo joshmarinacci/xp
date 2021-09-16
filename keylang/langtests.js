@@ -176,15 +176,12 @@ async function runtests() {
     }
     test_eval(scope,'List(0,0,0)',new KList(0,0,0))
     test_eval(scope,'range(3)',new KList([0,1,2]))
-    // test_eval(scope,`getPart(range(3),'get')`,new KList().get)
+    test_eval(scope,`getPart(range(3),'get')`,new KList().get)
     test_eval(scope,'part = 3',3)
-    // test_eval(scope,`foo = getPart(range(3),'get')`,new KList().get)
+    test_eval(scope,`foo = getPart(range(3),'get')`,new KList().get)
     test_eval(scope,`getPart(range(3),'get')(1)`,1)
-    // test_eval(scope,`part = getPart(range(3),'get')`,1)
-    // test_eval(scope,`part = getPart(range(3),'get')
-    // part(1)
-    // `,1)
-    // test_eval(scope, `range(3).map(x => add(x,1))`,[1,2,3])
+    test_eval(scope, `(x) => {add(x,1)}`,(x)=>{add(x,1)})
+    test_eval(scope, `range(3).map((x) => {add(x,1)})`,[1,2,3])
     return
     test_eval(scope,`
 function MakeDot() {
