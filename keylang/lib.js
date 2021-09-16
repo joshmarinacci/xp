@@ -4,6 +4,8 @@ export class KList {
         args.forEach(arg => {
             if(Array.isArray(arg)) {
                 this.data.push(...arg)
+            } else {
+                this.data.push(arg)
             }
         })
         this.get = (index)=>this.data[index]
@@ -38,7 +40,7 @@ export const STD_SCOPE = {
             arr[i]= i
         }
         let list = new KList(arr)
-        console.log('testing the list',list.get(1))
+        // console.log('testing the list',list.get(1))
         return list
     },
     add:(a,b) => {

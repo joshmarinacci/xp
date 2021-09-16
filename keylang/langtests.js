@@ -59,6 +59,8 @@ async function runtests() {
         let res = ast_to_js(ast)
         res = `import * as lib from "../lib.js"
         const add = lib.STD_SCOPE.add
+        const List = lib.STD_SCOPE.List
+        const range = lib.STD_SCOPE.range
 export function doit() {
     return ${res}
 }
@@ -119,7 +121,42 @@ doit()
     await test_js(scope,`5`,5)
     await test_js(scope,`'foo'`,"foo")
     await test_js(scope,`add(4,5)`,9)
-
+    await test_js(scope, '4.8',4.8)
+    await test_js(scope, 'List(0,1,2)',new KList(0,1,2))
+    await test_js(scope, 'range(3)',new KList(0,1,2))
+    // await test_js(scope, `palette = List()`, new KList())
+    // await test_js(scope, `black = Color(0,0,0)`, new KColor(0,0,0))
+    // await test_js(scope, `red = Color(1,0,0)`, new KColor(0,0,0))
+    // await test_js(scope, `screen = Rect(0,0,64,32)`, new KRect(0,0,64,32))
+    // {
+    //     await test_js(scope, `
+    //     black = Color(0,0,0)
+    //     red = Color(1,0,0)
+    //     green = Color(0,1,0)
+    //     blue = Color(0,0,1)
+    //     palette = List(black,red,green,blue)
+    //     `, new KList(new KColor(0, 0, 0), new KColor(1, 0, 0), new KColor(0, 1, 0), new KColor(0, 0, 1)))
+    //     await test_js(scope, 'dot = Obj()', new KObj())
+    // }
+    //
+    // {
+    //     let dot = new KObj()
+    //     dot.xv = new KPoint(5, 6)
+    //     dot.v =  new KVector(1,1)
+    //     dot.xy = dot.xy.add(dot.v)
+    //     await test_js(scope, `dot = Obj() dot.xy = Point(5,6) dot.v = Vector(1,1) dot.xy = add(dot.xy + dot.v) dot`, dot)
+    // }
+    //
+    // {
+    //     await test_js(scope, 'screen = Rect(w:64, h:32) screen',new KRect({w:64, h:32}))
+    // }
+    // {
+    //     await test_js(scope, `dots = range(10) => map(()=>MakeDot()) dots.length`, kRange(10).map(()=>{
+    //         let dot = new KObj()
+    //         dot.xv = new KPoint(5, 6)
+    //         dot.v =  new KVector(1,1)
+    //     }).length)
+    // }
 }
 
 
