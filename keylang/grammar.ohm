@@ -1,0 +1,25 @@
+keylang {
+    under = "_"
+    q = "\'"
+    qq = "\""
+
+    number  (a number)
+        = digit+ "." digit+ --float
+        | digit+ --int
+
+    string= q (~q any)* q
+
+    boolean = "true" | "false"
+
+    Literal = number | string | boolean
+
+    ident = letter (letter | digit | under)* dot_part?
+    dot_part = "." ident
+
+
+    Assignment = ident "=" Exp
+
+    FunctionCall = Exp "(" ListOf<Exp,","> ")"
+
+    Exp = Assignment | FunctionCall | Literal | ident
+}
