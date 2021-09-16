@@ -27,8 +27,71 @@ export async function make_grammar_semantics() {
             name: name.ast(),
             args: args.asIteration().children.map(arg => arg.ast())
         }),
+        Lambda:(c1, args, c2, arrow, body) => {
+            return {
+                type:'lambda',
+                args:args.asIteration().children.map(arg => arg.ast()),
+                body:body.ast(),
+            }
+        },
+        Block:(b1, body, b2) => {
+            return {
+                type:'body',
+                body:body.ast(),
+            }
+        }
 
     })
 
     return [grammar,semantics]
+}
+export function eval_ast(ast,scope) {
+    // console.log('ast',JSON.stringify(ast,null,'   '))
+    if(ast.type === 'literal') return ast.value
+    if(ast.type === 'identifier') return ast.name
+    if(ast.type === 'funcall') {
+        // console.log('ast for the fun call is',ast)
+        let name = eval_ast(ast.name,scope)
+        // console.log("fun name is",name, typeof name)
+        let fun = null
+        if(typeof name === 'string') {
+            fun = scope[name]
+        }
+        if(typeof name === 'function') {
+            fun = name
+        }
+        if(!fun) throw new Error(`no function in scope named ${name}`)
+        // console.log('got the fun',fun)
+        // console.log(`args for ${name}() are`, ast.args)
+        let f_args = ast.args.map(arg => eval_ast(arg,scope))
+        // console.log(`evaluated args for ${name} are`,f_args)
+        let ret = fun(...f_args)
+        // console.log(`return of ${name} is`,ret)
+        return ret
+    }
+    if(ast.type === 'assignment') {
+        let name = eval_ast(ast.name,scope)
+        scope[name] = eval_ast(ast.expression,scope)
+        return scope[name]
+    }
+    if(ast.type === 'body') {
+        console.log("body is",ast.body)
+        return ast.body.map(exp => {
+            console.log("body expression",exp)
+            return eval_ast(exp,scope)
+        })
+    }
+    if(ast.type === 'lambda') {
+        console.log('ast',JSON.stringify(ast,null,'   '))
+        console.log("args",ast.args)
+        let f_args = ast.args.map(arg => eval_ast(arg,scope))
+        console.log("fargs",f_args)
+        console.log("body", eval_ast(ast.body,scope))
+        // console.log("lambda ",ast)
+    }
+    throw new Error("eval ast not implemented")
+}
+
+export function ast_to_js(ast) {
+    console.log('converting to js',ast)
 }
