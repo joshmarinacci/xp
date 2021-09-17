@@ -17,13 +17,14 @@ keylang {
     dot_part = "." ident
 
 
-    Assignment = ident "=" Exp
+    Assignment = "let"? ident "=" Exp
 
+    Deref = Exp "." ident
     FunctionCall = Exp "(" ListOf<Exp,","> ")"
 
     Lambda = "(" ListOf<ident,","> ")" "=>" Block
 
     Block = "{" Exp* "}"
 
-    Exp = Lambda | Assignment | FunctionCall | Literal | ident | Block
+    Exp = Lambda | Assignment | Deref | FunctionCall | Literal | ident | Block
 }

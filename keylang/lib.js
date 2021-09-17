@@ -28,12 +28,12 @@ export class KList {
 
 export class KCanvas {
     constructor(x,y,w,h,selector) {
-        this.canvas = document.querySelector(selector)
         this.x = x
         this.y = y
         this.w = w
         this.h = h
         this.scale = 10
+        if(selector) this.canvas = document.querySelector(selector)
     }
     get width() {
         return this.w
@@ -89,15 +89,23 @@ export class KVector {
 }
 export class KRect {
     constructor(x,y,w,h) {
-        this.x = x
-        this.y = y
-        this.w = w
-        this.h = h
+        if(typeof x === 'object') {
+            let opts = x
+            this.x = opts.x || 0
+            this.y = opts.y || 0
+            this.w = opts.w || 0
+            this.h = opts.h || 0
+        } else {
+            this.x = x
+            this.y = y
+            this.w = w
+            this.h = h
+        }
     }
 }
 
 export function add(a,b) {
-    // console.log('adding',a,b)
+    console.log('adding',a,b)
     if(a.data && b.data) {
         let new_data = a.data.map((aa,i) => {
             return aa + b.data[i]
@@ -186,8 +194,12 @@ export const STD_SCOPE = {
         // console.log('testing the list',list.get(1))
         return list
     },
-    add:(a,b) => {
-        return a + b
-    }
+    add:add,
+    Color:(...args) => new KColor(...args),
+    Canvas:(...args) => new KCanvas(...args),
+    Obj:(...args) => new KObj(...args),
+    Point:(...args) => new KPoint(...args),
+    Vector:(...args) => new KVector(...args),
+    Rect:(...args) => new KRect(...args),
 
 }

@@ -1,6 +1,6 @@
 import mocha from "mocha"
 import {ast_to_js, eval_ast, make_grammar, make_grammar_semantics} from './grammar.js'
-import {KList, STD_SCOPE} from './lib.js'
+import {add, KCanvas, KColor, KList, KObj, KPoint, KRect, KVector, STD_SCOPE} from './lib.js'
 import {mkdirs, write_to_file} from './util.js'
 
 
@@ -72,13 +72,19 @@ async function runtests() {
         const add = lib.STD_SCOPE.add
         const List = lib.STD_SCOPE.List
         const range = lib.STD_SCOPE.range
+        const Color = lib.STD_SCOPE.Color
+        const Canvas = lib.STD_SCOPE.Canvas
+        const Obj = lib.STD_SCOPE.Obj
+        const Point = lib.STD_SCOPE.Point
+        const Vector = lib.STD_SCOPE.Vector
+        const Rect   = lib.STD_SCOPE.Rect
 export function doit() {
     ${res}
 }
 //console.log("running the generated module")
 doit()
         `
-        // console.log("generated code", res)
+        console.log("generated code", res)
         let pth = `temp/generated_${Math.floor(Math.random()*10000)}.js`
         await write_to_file(pth, res)
         try {
@@ -110,6 +116,7 @@ doit()
     test_parse('',`foo('bar','baz')`)
     test_parse('',`foo('bar',foo('baz'))`)
     test_parse('',`dot = foo('bar')`)
+    test_parse('','range(10).map()')
 
     //property access
     test_parse('',"GET_PROP(dots,'length')")
@@ -135,39 +142,44 @@ doit()
     await test_js(scope, '4.8',4.8)
     await test_js(scope, 'List(0,1,2)',new KList(0,1,2))
     await test_js(scope, 'range(3)',new KList(0,1,2))
-    await test_js(scope, `{ palette = List() palette }`, new KList())
-    // await test_js(scope, `black = Color(0,0,0)`, new KColor(0,0,0))
-    // await test_js(scope, `red = Color(1,0,0)`, new KColor(0,0,0))
-    // await test_js(scope, `screen = Rect(0,0,64,32)`, new KRect(0,0,64,32))
-    // {
-    //     await test_js(scope, `
-    //     black = Color(0,0,0)
-    //     red = Color(1,0,0)
-    //     green = Color(0,1,0)
-    //     blue = Color(0,0,1)
-    //     palette = List(black,red,green,blue)
-    //     `, new KList(new KColor(0, 0, 0), new KColor(1, 0, 0), new KColor(0, 1, 0), new KColor(0, 0, 1)))
-    //     await test_js(scope, 'dot = Obj()', new KObj())
-    // }
-    //
-    // {
-    //     let dot = new KObj()
-    //     dot.xv = new KPoint(5, 6)
-    //     dot.v =  new KVector(1,1)
-    //     dot.xy = dot.xy.add(dot.v)
-    //     await test_js(scope, `dot = Obj() dot.xy = Point(5,6) dot.v = Vector(1,1) dot.xy = add(dot.xy + dot.v) dot`, dot)
-    // }
-    //
-    // {
-    //     await test_js(scope, 'screen = Rect(w:64, h:32) screen',new KRect({w:64, h:32}))
-    // }
-    // {
-    //     await test_js(scope, `dots = range(10) => map(()=>MakeDot()) dots.length`, kRange(10).map(()=>{
-    //         let dot = new KObj()
-    //         dot.xv = new KPoint(5, 6)
-    //         dot.v =  new KVector(1,1)
-    //     }).length)
-    // }
+    await test_js(scope, `{ let palette = List() palette }`, new KList())
+    await test_js(scope, `{ let black = Color(0,0,0) black }`, new KColor(0,0,0))
+    await test_js(scope, `{ let red = Color(1,0,0) red}`, new KColor(1,0,0))
+    await test_js(scope, `{ let screen = Canvas(0,0,64,32) screen}`, new KCanvas(0,0,64,32))
+    {
+        await test_js(scope, `{
+        let black = Color(0,0,0)
+        let red = Color(1,0,0)
+        let green = Color(0,1,0)
+        let blue = Color(0,0,1)
+        let palette = List(black,red,green,blue)
+        palette
+        }
+        `, new KList(new KColor(0, 0, 0), new KColor(1, 0, 0), new KColor(0, 1, 0), new KColor(0, 0, 1)))
+    }
+    await test_js(scope, '{let dot = Obj() dot}', new KObj())
+    await test_js(scope, '{let dot = Obj() dot.five = 5 dot.five}', 5)
+
+    {
+        let dot = new KObj()
+        dot.xy = new KPoint(5, 6)
+        dot.v =  new KVector(1,1)
+        dot.xy = add(dot.xy,dot.v)
+        await test_js(scope, `{
+            let dot = Obj() 
+            dot.xy = Point(5,6) 
+            dot.v = Vector(1,1) 
+            dot.xy = add(dot.xy , dot.v) 
+            dot}`, dot)
+    }
+
+    {
+        await test_js(scope, '{let screen = Rect(0,0,64,32) screen}',new KRect({w:64, h:32}))
+    }
+    {
+        await test_js(scope, `{range(10).map(()=>{5}).length}`, 10)
+        await test_js(scope, `{let dots = range(20).map( ()=>{Obj()} ) dots.length}`, 20)
+    }
 }
 
 

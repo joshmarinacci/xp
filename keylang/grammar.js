@@ -17,8 +17,9 @@ export async function make_grammar_semantics() {
         number_float: (a, b, c) => ({type:'literal', kind:'float', value:parseFloat(toStr(a,b,c))}),
         string: (a, str, c) => ({type:'literal', kind:'string', value:toStr(str)}),
         ident: (start, rest,suffix) => ({type:"identifier", name:toStr(start,rest,suffix)}),
-        Assignment: (name, e, exp) => ({
+        Assignment: (letp, name, e, exp) => ({
             type: 'assignment',
+            letp:letp.ast(),
             name: name.ast(),
             expression: exp.ast(),
         }),
@@ -27,6 +28,13 @@ export async function make_grammar_semantics() {
             name: name.ast(),
             args: args.asIteration().children.map(arg => arg.ast())
         }),
+        Deref:(before,dot,after) => {
+            return {
+                type:'deref',
+                before:before.ast(),
+                after:after.ast()
+            }
+        },
         Lambda:(c1, args, c2, arrow, body) => {
             return {
                 type:'lambda',
@@ -104,16 +112,34 @@ export function ast_to_js(ast) {
         return `${ast_to_js(ast.name)}(${args.join(",")})`
     }
     if(ast.type === 'assignment') {
-        // console.log("assignment",ast)
+        console.log("assignment",ast)
         let name = ast_to_js(ast.name)
         let value = ast_to_js(ast.expression)
-        return [`let ${name} = ${value}`]
+        if(ast.letp.length === 1) {
+            return [`let ${name} = ${value}`]
+        }  else {
+            return [`${name} = ${value}`]
+        }
     }
     if(ast.type === 'body') {
         // console.log("doing a block",ast)
         let statements = ast.body.map(b => ast_to_js(b)).flat()
         // console.log('statements are',statements)
         return statements
+    }
+    if(ast.type === 'lambda') {
+        console.log("doing labmda",ast)
+        let args = ast.args.map(a => ast_to_js(a)).flat()
+        let body = ast_to_js(ast.body)
+        return `(${args.join(",")}) => { return ${body} }`
+    }
+    if(ast.type === 'deref') {
+        console.log("doing deref",ast)
+        let before = ast_to_js(ast.before)
+        let after = ast_to_js(ast.after)
+        console.log(before,after)
+        return `${before}.${after}`
+
     }
     console.log('converting to js',ast)
     throw new Error(`unknown AST node ${ast.type}`)
