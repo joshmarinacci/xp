@@ -16,6 +16,8 @@ keylang {
     ident = letter (letter | digit | under)* dot_part?
     dot_part = "." ident
 
+    comment = space* "//" toEOL
+    toEOL = (~"\n" any)* "\n"
 
     Assignment = "let"? ident "=" Exp
 
@@ -28,5 +30,5 @@ keylang {
 
     Block = "{" Exp* "}"
 
-    Exp = Return | FunctionDef | Lambda | Assignment | Deref | FunctionCall | Literal | ident | Block
+    Exp = Return | FunctionDef | Lambda | Assignment | Deref | FunctionCall | Literal | ident | Block | comment
 }

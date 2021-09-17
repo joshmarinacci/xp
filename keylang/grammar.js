@@ -17,6 +17,7 @@ export async function make_grammar_semantics() {
         number_float: (n,a, b, c) => ({type:'literal', kind:'float', value:parseFloat(toStr(n,a,b,c))}),
         string: (a, str, c) => ({type:'literal', kind:'string', value:toStr(str)}),
         ident: (start, rest,suffix) => ({type:"identifier", name:toStr(start,rest,suffix)}),
+        comment:(space,symbol,content) => ({type:'comment',content:content.sourceString}),
         Assignment: (letp, name, e, exp) => ({
             type: 'assignment',
             letp:letp.ast(),
@@ -114,6 +115,9 @@ export function eval_ast(ast,scope) {
 }
 
 export function ast_to_js(ast) {
+    if(ast.type === 'comment') {
+        return ""
+    }
     if(ast.type === 'literal') {
         if(ast.kind === 'integer') return ""+ast.value
         if(ast.kind === 'float') return ""+ast.value
