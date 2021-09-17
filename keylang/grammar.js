@@ -13,8 +13,8 @@ export async function make_grammar_semantics() {
     let semantics = grammar.createSemantics()
     semantics.addOperation('ast', {
         _terminal: function () { return this.sourceString },
-        number_int: (a) => ({type:'literal', kind:'integer', value:parseInt(toStr(a))}),
-        number_float: (a, b, c) => ({type:'literal', kind:'float', value:parseFloat(toStr(a,b,c))}),
+        number_int: (n,a) => ({type:'literal', kind:'integer', value:parseInt(toStr(n,a))}),
+        number_float: (n,a, b, c) => ({type:'literal', kind:'float', value:parseFloat(toStr(n,a,b,c))}),
         string: (a, str, c) => ({type:'literal', kind:'string', value:toStr(str)}),
         ident: (start, rest,suffix) => ({type:"identifier", name:toStr(start,rest,suffix)}),
         Assignment: (letp, name, e, exp) => ({
@@ -27,6 +27,12 @@ export async function make_grammar_semantics() {
             type: "funcall",
             name: name.ast(),
             args: args.asIteration().children.map(arg => arg.ast())
+        }),
+        FunctionDef:(fun,name,p1,args,p2,block) => ({
+            type:"fundef",
+            name:name.ast(),
+            args: args.asIteration().children.map(arg => arg.ast()),
+            block:block.ast(),
         }),
         Deref:(before,dot,after) => {
             return {
@@ -41,6 +47,9 @@ export async function make_grammar_semantics() {
                 args:args.asIteration().children.map(arg => arg.ast()),
                 body:body.ast(),
             }
+        },
+        EmptyListOf:() => {
+            return []
         },
         Block:(b1, body, b2) => {
             return {
@@ -112,7 +121,7 @@ export function ast_to_js(ast) {
         return `${ast_to_js(ast.name)}(${args.join(",")})`
     }
     if(ast.type === 'assignment') {
-        console.log("assignment",ast)
+        // console.log("assignment",ast)
         let name = ast_to_js(ast.name)
         let value = ast_to_js(ast.expression)
         if(ast.letp.length === 1) {
@@ -121,6 +130,16 @@ export function ast_to_js(ast) {
             return [`${name} = ${value}`]
         }
     }
+    const INDENT = "    "
+    if(ast.type === 'fundef') {
+        // console.log('function def',ast)
+        let name = ast_to_js(ast.name)
+        return [
+            `function ${name}(){`,
+            ...ast_to_js(ast.block).map(s => INDENT + s),
+            `}`
+        ]
+    }
     if(ast.type === 'body') {
         // console.log("doing a block",ast)
         let statements = ast.body.map(b => ast_to_js(b)).flat()
@@ -128,18 +147,27 @@ export function ast_to_js(ast) {
         return statements
     }
     if(ast.type === 'lambda') {
-        console.log("doing labmda",ast)
+        // console.log("doing labmda",ast)
         let args = ast.args.map(a => ast_to_js(a)).flat()
         let body = ast_to_js(ast.body)
-        return `(${args.join(",")}) => { return ${body} }`
+        let last = ""
+        if(body.length > 1) {
+            last = body.pop()
+        } else {
+            last = body
+            body = []
+        }
+        return `(${args.join(",")}) => {
+            ${body} 
+        return ${last} 
+        }`
     }
     if(ast.type === 'deref') {
-        console.log("doing deref",ast)
+        // console.log("doing deref",ast)
         let before = ast_to_js(ast.before)
         let after = ast_to_js(ast.after)
         console.log(before,after)
         return `${before}.${after}`
-
     }
     console.log('converting to js',ast)
     throw new Error(`unknown AST node ${ast.type}`)

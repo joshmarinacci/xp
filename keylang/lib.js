@@ -24,6 +24,9 @@ export class KList {
         // console.log("calling for each on",this.data)
         this.data.forEach(cb)
     }
+    every(cb) {
+        return this.forEach(cb)
+    }
 }
 
 export class KCanvas {

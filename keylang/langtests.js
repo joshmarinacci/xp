@@ -99,6 +99,7 @@ doit()
     }
 
     test_parse('','4')
+    test_parse('','-4')
     test_parse('','4.8')
     test_parse('',"'foo'")
     test_parse('','true')
@@ -120,6 +121,7 @@ doit()
 
     //property access
     test_parse('',"GET_PROP(dots,'length')")
+    test_parse('','fun foo() { }')
 
     test_eval('','4',4)
     test_eval('','4.8',4.8)
