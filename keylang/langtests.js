@@ -1,36 +1,9 @@
-import mocha from "mocha"
-import {ast_to_js, eval_ast, make_grammar, make_grammar_semantics} from './grammar.js'
+import {ast_to_js, eval_ast, make_grammar_semantics} from './grammar.js'
 import {add, KCanvas, KColor, KList, KObj, KPoint, KRect, KVector, STD_SCOPE} from './lib.js'
-import {mkdirs, write_to_file} from './util.js'
-
+import {checkEqual, mkdirs, write_to_file} from './util.js'
 
 
 const scope = STD_SCOPE
-
-function checkEqual(A, B) {
-    if(typeof A !== typeof B) throw new Error("different types", typeof  A, "not equal", typeof B)
-    // don't compare functions if they already have the same name
-    if(typeof A === 'function') return true
-    // console.log("testing",A,B, A===B)
-    if (A === B) return true
-    if(typeof A === 'object') {
-        console.log("checking",A,B)
-        let a_keys = Object.getOwnPropertyNames(A)
-        let b_keys = Object.getOwnPropertyNames(B)
-        if(a_keys.length !== b_keys.length) throw new Error("different number of keys")
-        for(let i=0; i<a_keys.length; i++) {
-            if(a_keys[i] !== b_keys[i]) throw new Error(`different keys ${a_keys[i]} != ${b_keys[i]}`)
-        }
-        Object.keys(A).forEach((key)=>{
-            // console.log('checking',key,A[key])
-            // console.log('checking',B[key])
-            checkEqual(A[key],B[key])
-        })
-        return true
-    }
-    if( A !== B) throw new Error(`Not equal: ${A} ${B}`)
-    return true
-}
 
 
 async function runtests() {
