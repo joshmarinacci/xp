@@ -120,6 +120,21 @@ export function eval_ast(ast,scope) {
     throw new Error("eval ast not implemented")
 }
 
+const BIN_OPS = {
+    '+':{
+        name:'add',
+    },
+    '-':{
+        name:'subtract',
+    },
+    '*':{
+        name:'multiply',
+    },
+    '/':{
+        name:'divide',
+    },
+}
+
 export function ast_to_js(ast) {
     if(ast.type === 'comment') {
         return ""
@@ -174,6 +189,10 @@ export function ast_to_js(ast) {
         let before = ast_to_js(ast.before)
         let after = ast_to_js(ast.after)
         return `${before}.${after}`
+    }
+    if(ast.type === 'binexp') {
+        let op = BIN_OPS[ast.op]
+        if(op) return `${op.name}(${ast_to_js(ast.exp1)},${ast_to_js(ast.exp2)})`
     }
     if(ast.type === 'return')  return `return ${ast_to_js(ast.exp)}`
     console.log('converting to js',ast)
