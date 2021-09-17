@@ -33,7 +33,7 @@ let LIB_PATH = "lib.js"
 let OUTDIR = "build"
 let LIB_OUT_NAME = "lib.js"
 
-async function build(src_file) {
+export async function build(src_file) {
     let src = await file_to_string(src_file)
     let template = await file_to_string(TEMPLATE_PATH)
     // console.log(template)
