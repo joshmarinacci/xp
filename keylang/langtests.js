@@ -57,12 +57,23 @@ async function runtests() {
         await mkdirs("temp")
         let ast = semantics(result).ast()
         let res = ast_to_js(ast)
+        console.log("initial res is",res)
+        if(Array.isArray(res)) {
+            let last = res[res.length-1]
+            last = 'return '+last
+            // console.log('last is',last)
+            res[res.length-1] = last
+            res = res.join("\n")
+        } else {
+            res = 'return ' + res
+        }
+
         res = `import * as lib from "../lib.js"
         const add = lib.STD_SCOPE.add
         const List = lib.STD_SCOPE.List
         const range = lib.STD_SCOPE.range
 export function doit() {
-    return ${res}
+    ${res}
 }
 //console.log("running the generated module")
 doit()
@@ -124,7 +135,7 @@ doit()
     await test_js(scope, '4.8',4.8)
     await test_js(scope, 'List(0,1,2)',new KList(0,1,2))
     await test_js(scope, 'range(3)',new KList(0,1,2))
-    // await test_js(scope, `palette = List()`, new KList())
+    await test_js(scope, `{ palette = List() palette }`, new KList())
     // await test_js(scope, `black = Color(0,0,0)`, new KColor(0,0,0))
     // await test_js(scope, `red = Color(1,0,0)`, new KColor(0,0,0))
     // await test_js(scope, `screen = Rect(0,0,64,32)`, new KRect(0,0,64,32))

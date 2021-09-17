@@ -25,5 +25,5 @@ keylang {
 
     Block = "{" Exp* "}"
 
-    Exp = Lambda | Assignment | FunctionCall | Literal | ident
+    Exp = Lambda | Assignment | FunctionCall | Literal | ident | Block
 }

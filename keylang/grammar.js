@@ -103,6 +103,18 @@ export function ast_to_js(ast) {
         let args = ast.args.map(a => ast_to_js(a))
         return `${ast_to_js(ast.name)}(${args.join(",")})`
     }
+    if(ast.type === 'assignment') {
+        // console.log("assignment",ast)
+        let name = ast_to_js(ast.name)
+        let value = ast_to_js(ast.expression)
+        return [`let ${name} = ${value}`]
+    }
+    if(ast.type === 'body') {
+        // console.log("doing a block",ast)
+        let statements = ast.body.map(b => ast_to_js(b)).flat()
+        // console.log('statements are',statements)
+        return statements
+    }
     console.log('converting to js',ast)
     throw new Error(`unknown AST node ${ast.type}`)
 }
