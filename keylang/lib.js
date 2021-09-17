@@ -108,7 +108,6 @@ export class KRect {
 }
 
 export function add(a,b) {
-    console.log('adding',a,b)
     if(a.data && b.data) {
         let new_data = a.data.map((aa,i) => {
             return aa + b.data[i]

@@ -24,8 +24,9 @@ keylang {
     FunctionDef  = "fun" ident "(" ListOf<ident,","> ")" Block
 
     Lambda = "(" ListOf<ident,","> ")" "=>" Block
+    Return = "return" Exp
 
     Block = "{" Exp* "}"
 
-    Exp = FunctionDef | Lambda | Assignment | Deref | FunctionCall | Literal | ident | Block
+    Exp = Return | FunctionDef | Lambda | Assignment | Deref | FunctionCall | Literal | ident | Block
 }

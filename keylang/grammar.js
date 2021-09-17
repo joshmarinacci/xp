@@ -28,6 +28,10 @@ export async function make_grammar_semantics() {
             name: name.ast(),
             args: args.asIteration().children.map(arg => arg.ast())
         }),
+        Return:(ret,exp)=> ({
+            type:"return",
+            exp: exp.ast()
+        }),
         FunctionDef:(fun,name,p1,args,p2,block) => ({
             type:"fundef",
             name:name.ast(),
@@ -132,22 +136,16 @@ export function ast_to_js(ast) {
     }
     const INDENT = "    "
     if(ast.type === 'fundef') {
-        // console.log('function def',ast)
-        let name = ast_to_js(ast.name)
         return [
-            `function ${name}(){`,
+            `function ${ast_to_js(ast.name)}(){`,
             ...ast_to_js(ast.block).map(s => INDENT + s),
             `}`
         ]
     }
     if(ast.type === 'body') {
-        // console.log("doing a block",ast)
-        let statements = ast.body.map(b => ast_to_js(b)).flat()
-        // console.log('statements are',statements)
-        return statements
+        return ast.body.map(b => ast_to_js(b)).flat()
     }
     if(ast.type === 'lambda') {
-        // console.log("doing labmda",ast)
         let args = ast.args.map(a => ast_to_js(a)).flat()
         let body = ast_to_js(ast.body)
         let last = ""
@@ -163,12 +161,11 @@ export function ast_to_js(ast) {
         }`
     }
     if(ast.type === 'deref') {
-        // console.log("doing deref",ast)
         let before = ast_to_js(ast.before)
         let after = ast_to_js(ast.after)
-        console.log(before,after)
         return `${before}.${after}`
     }
+    if(ast.type === 'return')  return `return ${ast_to_js(ast.exp)}`
     console.log('converting to js',ast)
     throw new Error(`unknown AST node ${ast.type}`)
 }
