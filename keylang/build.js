@@ -44,7 +44,11 @@ async function compile(src_file,OUTDIR) {
 
         const [grammar, semantics] = await make_grammar_semantics()
         let result = grammar.match(src,'Exp')
-        if(!result.succeeded()) throw new Error("failed parsing")
+        if(!result.succeeded()) {
+            console.log(result.shortMessage)
+            console.log(result.message)
+            error_and_exit("failed parsing")
+        }
         let ast = semantics(result).ast()
         let generated_src = ast_to_js(ast).join("\n")
 
@@ -60,10 +64,10 @@ let screen = new KCanvas(0,0,64,32,"#canvas")
 `
 
         let postlude = `
-setup_drips()
+setup()
 function do_cycle() {
     screen.clear()
-    draw_dots()
+    loop()
     setTimeout(do_cycle,100)
 }
 do_cycle()

@@ -96,6 +96,7 @@ doit()
     test_parse('','-4')
     test_parse('','4.8')
     test_parse('',"'foo'")
+    test_parse('',`"foo"`)
     test_parse('','true')
     test_parse('','false')
 

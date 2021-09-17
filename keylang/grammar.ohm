@@ -7,7 +7,9 @@ keylang {
         = "-"? digit+ "." digit+ --float
         | "-"? digit+ --int
 
-    string= q (~q any)* q
+    string (a plain string with single or double quotes)
+      = q (~q any)*  q
+      | qq(~qq any)* qq
 
     boolean = "true" | "false"
 
