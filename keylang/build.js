@@ -69,7 +69,6 @@ function do_cycle() {
 do_cycle()
 `
         generated_src = prelude + generated_src + postlude
-        console.log("generated",generated_src)
         await write_to_file(path.join(OUTDIR, generated_src_out_name), generated_src)
 }
 
