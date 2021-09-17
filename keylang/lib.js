@@ -116,6 +116,33 @@ export function add(a,b) {
     }
     return a + b
 }
+export function subtract(a,b) {
+    if(a.data && b.data) {
+        let new_data = a.data.map((aa, i) => {
+            return aa - b.data[i]
+        })
+        return new KList(new_data)
+    }
+    return a - b
+}
+export function multiply(a,b) {
+    if(a.data && b.data) {
+        let new_data = a.data.map((aa, i) => {
+            return aa * b.data[i]
+        })
+        return new KList(new_data)
+    }
+    return a * b
+}
+export function divide(a,b) {
+    if(a.data && b.data) {
+        let new_data = a.data.map((aa, i) => {
+            return aa / b.data[i]
+        })
+        return new KList(new_data)
+    }
+    return a / b
+}
 export function choose(list) {
     let n = Math.floor(Math.random()*list.length)
     return list.get(n)
@@ -171,37 +198,23 @@ export function wrap(val, min, max) {
     return val
 }
 export const STD_SCOPE = {
-    List:(...args)=>{
-        // console.log("got the args",...args)
-        return new KList(...args)
-    },
-    getPart:(obj,name) => {
-        // let proto = Object.getPrototypeOf(obj)
-        // console.log("obj",obj,'name',name)
-        // console.log("proto is",proto)
-        // console.log("proto names",Object.getOwnPropertyNames(proto))
-        // console.log("trying index",obj['get'])
-        // console.log('get part returning',name,'from',obj,
-        //     Object.getPrototypeOf(obj)[name])
-        // console.log(Object.getOwnPropertyNames(Object.getPrototypeOf(obj)))
-        // console.log("methods",getMethods(obj))
-        return obj[name]
-    },
+    List:(...args)=> new KList(...args),
+    getPart:(obj,name) => obj[name],
     range:(...args)=> {
         let arr = []
         for(let i=0; i<args[0]; i++) {
             arr[i]= i
         }
-        let list = new KList(arr)
-        // console.log('testing the list',list.get(1))
-        return list
+        return new KList(arr)
     },
-    add:add,
+    add,
+    subtract,
+    divide,
+    multiply,
     Color:(...args) => new KColor(...args),
     Canvas:(...args) => new KCanvas(...args),
     Obj:(...args) => new KObj(...args),
     Point:(...args) => new KPoint(...args),
     Vector:(...args) => new KVector(...args),
     Rect:(...args) => new KRect(...args),
-
 }

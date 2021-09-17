@@ -67,17 +67,11 @@ async function runtests() {
         } else {
             res = 'return ' + res
         }
-
+        let imports = Object.keys(STD_SCOPE).map(key => {
+            return `const ${key} = lib.STD_SCOPE.${key}`
+        }).join("\n")
         res = `import * as lib from "../lib.js"
-        const add = lib.STD_SCOPE.add
-        const List = lib.STD_SCOPE.List
-        const range = lib.STD_SCOPE.range
-        const Color = lib.STD_SCOPE.Color
-        const Canvas = lib.STD_SCOPE.Canvas
-        const Obj = lib.STD_SCOPE.Obj
-        const Point = lib.STD_SCOPE.Point
-        const Vector = lib.STD_SCOPE.Vector
-        const Rect   = lib.STD_SCOPE.Rect
+        ${imports}
 export function doit() {
     ${res}
 }
@@ -181,6 +175,14 @@ doit()
     {
         await test_js(scope, `{range(10).map(()=>{5}).length}`, 10)
         await test_js(scope, `{let dots = range(20).map( ()=>{Obj()} ) dots.length}`, 20)
+    }
+
+    {
+        await test_js(scope, `4+2`,6)
+        await test_js(scope, `List(4,4)+List(2,2)`,new KList(6,6))
+        await test_js(scope, `4-2`,2)
+        await test_js(scope, `4/2`,2)
+        await test_js(scope, `4*2`,8)
     }
 }
 
