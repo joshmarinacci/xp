@@ -19,6 +19,8 @@ keylang {
     comment = space* "//" toEOL
     toEOL = (~"\n" any)* "\n"
 
+    binop = "+" | "-" | "*" | "/"
+    BinExp = Exp binop Exp
     Assignment = "let"? ident "=" Exp
 
     Deref = Exp "." ident
@@ -30,5 +32,5 @@ keylang {
 
     Block = "{" Exp* "}"
 
-    Exp = Return | FunctionDef | Lambda | Assignment | Deref | FunctionCall | Literal | ident | Block | comment
+    Exp = Return | FunctionDef | Lambda | Assignment | Deref | FunctionCall | BinExp | Literal | ident | Block | comment
 }

@@ -33,6 +33,12 @@ export async function make_grammar_semantics() {
             type:"return",
             exp: exp.ast()
         }),
+        BinExp: (exp1, op, exp2) => ({
+            type:"binexp",
+            op:op.sourceString,
+            exp1:exp1.ast(),
+            exp2:exp2.ast(),
+        }),
         FunctionDef:(fun,name,p1,args,p2,block) => ({
             type:"fundef",
             name:name.ast(),
