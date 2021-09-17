@@ -61,12 +61,16 @@ import * as lib from "./lib.js"
 ${imports}
 import {KCanvas} from "./lib.js"
 let screen = new KCanvas(0,0,64,32,"#canvas")
+let system = {
+    time:0
+}
 `
 
         let postlude = `
 setup()
 function do_cycle() {
     screen.clear()
+    system.time = Date.now()
     loop()
     setTimeout(do_cycle,100)
 }

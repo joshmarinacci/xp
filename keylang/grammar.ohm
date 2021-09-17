@@ -21,8 +21,9 @@ keylang {
     comment = space* "//" toEOL
     toEOL = (~"\n" any)* "\n"
 
-    binop = "+" | "-" | "*" | "/"
+    binop = "+" | "-" | "*" | "/" | "<" | ">" | "=="
     BinExp = Exp binop Exp
+    ParenExp = "(" Exp ")"
     Assignment = "let"? ident "=" Exp
 
     Deref = Exp "." ident
@@ -34,5 +35,5 @@ keylang {
 
     Block = "{" Exp* "}"
 
-    Exp = Return | FunctionDef | Lambda | Assignment | Deref | FunctionCall | BinExp | Literal | ident | Block | comment
+    Exp = Return | FunctionDef | Lambda | Assignment | Deref | FunctionCall | ParenExp | BinExp | Literal | ident | Block | comment
 }

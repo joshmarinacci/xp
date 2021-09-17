@@ -27,44 +27,22 @@ export class KList {
     every(cb) {
         return this.forEach(cb)
     }
-}
-
-export class KCanvas {
-    constructor(x,y,w,h,selector) {
-        this.x = x
-        this.y = y
-        this.w = w
-        this.h = h
-        this.scale = 10
-        if(selector) this.canvas = document.querySelector(selector)
-    }
-    get width() {
-        return this.w
-    }
-    get size() {
-        return [this.w,this.h]
-    }
-    setPixel(xy,color) {
-        let ctx = this.canvas.getContext('2d')
-        let x = xy.get(0)
-        let y = xy.get(1)
-        // console.log("drawing at",x,y,color)
-        ctx.fillStyle = color.toCSSColor()
-        // console.log("fillstyle is",color.toCSSColor())
-        ctx.fillRect(
-            Math.floor(x)*this.scale,
-            Math.floor(y)*this.scale,
-            this.scale,
-            this.scale,
-        )
-    }
-
-    clear() {
-        let ctx = this.canvas.getContext('2d')
-        ctx.fillStyle = 'black'
-        ctx.fillRect(0,0,this.canvas.width,this.canvas.height)
+    flatten() {
+        let arr = []
+        this.data.forEach(el => {
+            if(el.data) {
+                let data = el.flatten()
+                data.forEach(d=>{
+                    arr.push(d)
+                })
+            } else {
+                arr.push(el)
+            }
+        })
+        return new KList(arr)
     }
 }
+
 
 export class KColor {
     constructor(r,g,b) {
@@ -105,6 +83,102 @@ export class KRect {
             this.h = h
         }
     }
+    get x1() {
+        return this.x
+    }
+    get x2() {
+        return this.x + this.w
+    }
+    get y1() {
+        return this.y
+    }
+    get y2() {
+        return this.y + this.h
+    }
+    split(dir,amount) {
+        if (dir === 'h') return new KList(
+            new KRect(
+                this.x1, this.y1,
+                lerp(amount, this.x1, this.x2), this.y2,),
+            new KRect(
+                lerp(amount, this.x1, this.x2), this.y1,
+                this.x2, this.y2,
+            )
+        )
+        if (dir === 'v') return new KList(
+            new KRect(
+                this.x1, this.y1,
+                this.x2, lerp(amount, this.y1, this.y2)),
+            new KRect(
+                this.x1, lerp(amount, this.y1, this.y2),
+                this.x2, this.y2)
+        )
+    }
+}
+export class KCanvas extends KRect {
+    constructor(x,y,w,h,selector) {
+        super(x,y,w,h)
+        this.scale = 10
+        if(selector) this.canvas = document.querySelector(selector)
+    }
+    get width() {
+        return this.w
+    }
+    get size() {
+        return [this.w,this.h]
+    }
+    setPixel(xy,color) {
+        let ctx = this.canvas.getContext('2d')
+        let x = xy.get(0)
+        let y = xy.get(1)
+        // console.log("drawing at",x,y,color)
+        ctx.fillStyle = color.toCSSColor()
+        // console.log("fillstyle is",color.toCSSColor())
+        ctx.fillRect(
+            Math.floor(x)*this.scale,
+            Math.floor(y)*this.scale,
+            this.scale,
+            this.scale,
+        )
+    }
+    fillRect(rect,color) {
+        // console.log("filling",rect,color)
+        let ctx = this.canvas.getContext('2d')
+        ctx.fillStyle = color.toCSSColor()
+        let xx = Math.floor(rect.x)*this.scale
+        let ww = Math.floor(rect.w)*this.scale
+        let yy = Math.floor(rect.y)*this.scale
+        let hh = Math.floor(rect.h)*this.scale
+
+        // console.log("filling",xx,yy,ww,hh, color.toCSSColor())
+        ctx.fillRect(
+            xx,
+            yy,
+            ww,
+            hh,
+        )
+    }
+    strokeRect(rect,color) {
+        let ctx = this.canvas.getContext('2d')
+        ctx.fillStyle = color.toCSSColor()
+        // console.log("stroking",rect,color)
+        let xx = Math.floor(rect.x)*this.scale
+        let ww = Math.floor(rect.w)*this.scale
+        let yy = Math.floor(rect.y)*this.scale
+        let hh = Math.floor(rect.h)*this.scale
+
+        // console.log("filling",xx,yy,ww,hh, color.toCSSColor())
+        ctx.fillRect(xx,yy,ww,this.scale)
+        ctx.fillRect(xx,yy+hh-this.scale,ww,this.scale)
+        ctx.fillRect(xx,yy,this.scale,hh)
+        ctx.fillRect(xx+ww-this.scale,yy,this.scale,hh)
+    }
+
+    clear() {
+        let ctx = this.canvas.getContext('2d')
+        ctx.fillStyle = 'black'
+        ctx.fillRect(0,0,this.canvas.width,this.canvas.height)
+    }
 }
 
 export function add(a,b) {
@@ -142,6 +216,15 @@ export function divide(a,b) {
         return new KList(new_data)
     }
     return a / b
+}
+export function lessthan(a,b) {
+    if(a.data && b.data) {
+        let new_data = a.data.map((aa, i) => {
+            return aa < b.data[i]
+        })
+        return new KList(new_data)
+    }
+    return a < b
 }
 export function choose(list) {
     let n = Math.floor(Math.random()*list.length)
@@ -197,6 +280,55 @@ export function wrap(val, min, max) {
     if(val > max) return val - (max-min)
     return val
 }
+export function lerp(t,min,max) {
+    return ((max - min) * t) + min
+}
+export function remap(val, min, max, MIN, MAX) {
+    let t = (val - min) / (max - min)
+    return ((MAX - MIN) * t) + MIN
+}
+
+
+/**
+ * Converts an HSL color value to RGB. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+ * Assumes h, s, and l are contained in the set [0, 1] and
+ * returns r, g, and b in the set [0, 255].
+ *
+ * @param   {number}  h       The hue
+ * @param   {number}  s       The saturation
+ * @param   {number}  l       The lightness
+ * @return  {Array}           The RGB representation
+ */
+export function hslToRgb(h, s, l){
+    var r, g, b;
+
+    if(s == 0){
+        r = g = b = l; // achromatic
+    }else{
+        var hue2rgb = function hue2rgb(p, q, t){
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
+
+export function HSL(h,s,v) {
+    let rgb8 = hslToRgb(h,s,v)
+    return new KColor(rgb8[0]/255,rgb8[1]/255,rgb8[2]/255)
+}
 export const STD_SCOPE = {
     List:(...args)=> new KList(...args),
     getPart:(obj,name) => obj[name],
@@ -211,10 +343,14 @@ export const STD_SCOPE = {
     subtract,
     divide,
     multiply,
+    lessthan,
     randi,
     randf,
     choose,
     wrap,
+    lerp,
+    remap,
+    HSL:HSL,
     Color:(...args) => new KColor(...args),
     Canvas:(...args) => new KCanvas(...args),
     Obj:(...args) => new KObj(...args),

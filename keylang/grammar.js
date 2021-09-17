@@ -39,6 +39,7 @@ export async function make_grammar_semantics() {
             exp1:exp1.ast(),
             exp2:exp2.ast(),
         }),
+        ParenExp: (p1, exp, p2) => exp.ast(),
         FunctionDef:(fun,name,p1,args,p2,block) => ({
             type:"fundef",
             name:name.ast(),
@@ -133,6 +134,9 @@ const BIN_OPS = {
     '/':{
         name:'divide',
     },
+    '<':{
+        name:'lessthan'
+    }
 }
 
 export function ast_to_js(ast) {
@@ -161,8 +165,9 @@ export function ast_to_js(ast) {
     }
     const INDENT = "    "
     if(ast.type === 'fundef') {
+        let args = ast.args.map(a => ast_to_js(a))
         return [
-            `function ${ast_to_js(ast.name)}(){`,
+            `function ${ast_to_js(ast.name)}(${args}){`,
             ...ast_to_js(ast.block).map(s => INDENT + s),
             `}`
         ]
