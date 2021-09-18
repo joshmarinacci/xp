@@ -216,13 +216,19 @@ export function ast_to_js(ast) {
     throw new Error(`unknown AST node ${ast.type}`)
 }
 
+const INDENT = "    "
 function indent_array(arr) {
-    return arr.map(s => "   "+s)
+    return arr.map(s => INDENT+s)
+}
+function indent_line(line) {
+    return INDENT+line
 }
 
 const PY_BIN_OPS = {
     '==': {symbol:'==', name:'equals'}
 }
+
+
 export function ast_to_py(ast,first) {
     if(ast.type === 'identifier') return ast.name
     if(ast.type === 'literal') {
@@ -252,16 +258,72 @@ export function ast_to_py(ast,first) {
     }
     if(ast.type === 'fundef') {
         console.log("doing fun def",JSON.stringify(ast,null,'   '))
+        let name = ast_to_py(ast.name)
         let lines = []
         lines.push(`def ${ast_to_py(ast.name)}(${ast.args.map(a => ast_to_py(a)).join(", ")}):`)
-        lines = lines.concat(ast_to_py(ast.block))
+        let block_lines = ast_to_py(ast.block)
+        let did_special = false
+        if(name === 'setup') {
+            console.log("adding global var refs")
+            did_special = true
+            console.log("need to add some extra stuff for a setup")
+            let l2 = [
+                "global my_button",
+                "global mode_running",
+                "#start user code"
+            ]
+            lines.push(...indent_array(l2))
+            lines.push(...block_lines)
+        }
+        if(name === 'loop') {
+            console.log("adding global var refs")
+            did_special = true
+            console.log("need to add some extra stuff for a loop")
+            lines.push(indent_line("while True:"))
+            lines.push(indent_line("#start user code"))
+            lines.push(...indent_array(block_lines))
+            lines.push(indent_line("# end user code"))
+            lines.push(indent_line(indent_line("yield 0.01")))
+            lines.push()
+        }
+        if(name === 'my_button_clicked') {
+            console.log("need to add some extra stuff for button clicked")
+            console.log("adding global var refs")
+            let l2 = [
+                "global my_button",
+                "global mode_running",
+                "while True:",
+                "#start user code"
+            ]
+            l2.push(...indent_array([
+                "my_button.update()",
+                "if my_button.fell:"
+            ]))
+            lines.push(...indent_array(l2))
+            // lines.push(indent_line(indent_line("my_button.update()")))
+            // lines.push(indent_line(indent_line("if my_button.fell:")))
+            lines.push(...indent_array(indent_array(block_lines)))
+            lines.push(...indent_array(indent_array([
+                "# end user code",
+                "yield 0.01"
+            ])))
+            did_special = true
+        }
+        if(!did_special) {
+            lines = lines.concat(block_lines)
+        }
         lines.push("")
         console.log("fundef lines",lines)
         return lines
     }
     if(ast.type === 'funcall') {
         // console.log("doing funcall",ast)
-        return [`${ast_to_py(ast.name)}(${ast.args.map(a => ast_to_py(a)).join(", ")})`]
+        let name = ast_to_py(ast.name)
+        let args = ast.args.map(a => ast_to_py(a)).join(", ")
+        if(name === 'wait') {
+            return [`yield ${args}`]
+        }
+        return [`${name}(${args})`]
     }
     if(ast.type === 'condition') {
         let lines = []

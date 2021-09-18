@@ -173,10 +173,10 @@ async function compile_py(opts) {
         return
     }
     let ast = semantics(result).ast()
-    console.log("ast is",ast)
+    // console.log("ast is",ast)
     let generated_src = ast_to_py(ast,true)
-    console.log('generate src',generated_src)
-    console.log(generated_src.join("\n"))
+    // console.log('generate src',generated_src)
+    // console.log(generated_src.join("\n"))
     const USER_VARS = []
     let USER_FUNS = []
 
