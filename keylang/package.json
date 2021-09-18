@@ -12,5 +12,8 @@
   "devDependencies": {
     "mocha": "^9.1.1",
     "ohm-js": "^15.5.0"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
   }
 }
