@@ -179,8 +179,6 @@ async function compile_py(src_path, out_dir) {
     let template = await file_to_string(TEMPLATE_PATH)
     template = template.replace("${USER_VARIABLES}",USER_VARS.join("\n"))
     template = template.replace("${USER_FUNCTIONS}",USER_FUNS.join("\n"))
-    // template = template.replace("${APP_SRC}","./"+name+".js")
-    // template = template.replace("${RELOAD}","./reload.js")
     await write_to_file(path.join(out_dir, name+".py"), template)
 }
 

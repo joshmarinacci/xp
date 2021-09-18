@@ -221,7 +221,7 @@ function indent_array(arr) {
 }
 
 const PY_BIN_OPS = {
-    '==': {symbol:'=', name:'equals'}
+    '==': {symbol:'==', name:'equals'}
 }
 export function ast_to_py(ast,first) {
     if(ast.type === 'identifier') return ast.name
