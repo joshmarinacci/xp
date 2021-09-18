@@ -1,9 +1,7 @@
 /*
 
 - [ ] make test_led_button.key to setup a button and blink and change colors on button
-- [ ] create to_js.js  file and seaprate to_python.js
 - [ ] create separate lib.py
-- [ ] create compile_to_python function using target language
 - [ ] choose out dir so you can go to /Volumes/CIRCUITPY
 
  */
@@ -32,6 +30,10 @@ function process_options(argv,defs) {
         if(argv[i] === '--target') {
             i++
             defs.target = argv[i]
+        }
+        if(argv[i] === '--outdir') {
+            i++
+            defs.outdir = argv[i]
         }
     }
     return defs
