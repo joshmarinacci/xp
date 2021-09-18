@@ -262,10 +262,8 @@ export function ast_to_py(ast,first) {
         let lines = []
         lines.push(`def ${ast_to_py(ast.name)}(${ast.args.map(a => ast_to_py(a)).join(", ")}):`)
         let block_lines = ast_to_py(ast.block)
-        let did_special = false
         if(name === 'setup') {
             console.log("adding global var refs")
-            did_special = true
             console.log("need to add some extra stuff for a setup")
             let l2 = [
                 "global my_button",
@@ -274,10 +272,11 @@ export function ast_to_py(ast,first) {
             ]
             lines.push(...indent_array(l2))
             lines.push(...block_lines)
+            lines.push("")
+            return lines
         }
         if(name === 'loop') {
             console.log("adding global var refs")
-            did_special = true
             console.log("need to add some extra stuff for a loop")
             lines.push(indent_line("while True:"))
             lines.push(indent_line("#start user code"))
@@ -285,6 +284,8 @@ export function ast_to_py(ast,first) {
             lines.push(indent_line("# end user code"))
             lines.push(indent_line(indent_line("yield 0.01")))
             lines.push()
+            lines.push("")
+            return lines
         }
         if(name === 'my_button_clicked') {
             console.log("need to add some extra stuff for button clicked")
@@ -307,11 +308,10 @@ export function ast_to_py(ast,first) {
                 "# end user code",
                 "yield 0.01"
             ])))
-            did_special = true
+            lines.push("")
+            return lines
         }
-        if(!did_special) {
-            lines = lines.concat(block_lines)
-        }
+        lines = lines.concat(block_lines)
         lines.push("")
         console.log("fundef lines",lines)
         return lines
