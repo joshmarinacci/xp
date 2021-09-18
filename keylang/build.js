@@ -1,7 +1,16 @@
-import {file_to_string, mkdirs, write_to_file} from './util.js'
+/*
+
+- [ ] make test_led_button.key to setup a button and blink and change colors on button
+- [ ] create to_js.js  file and seaprate to_python.js
+- [ ] create separate lib.py
+- [ ] create compile_to_python function using target language
+- [ ] choose out dir so you can go to /Volumes/CIRCUITPY
+
+ */
+import {copy_file, file_to_string, mkdirs, write_to_file} from './util.js'
 import fs from "fs"
 import path from 'path'
-import {ast_to_js, make_grammar_semantics} from './grammar.js'
+import {ast_to_js, ast_to_py, make_grammar_semantics} from './grammar.js'
 import {STD_SCOPE} from './lib.js'
 import express from "express"
 
@@ -12,7 +21,6 @@ function error_and_exit(str) {
 
 function process_options(argv,defs) {
     argv = argv.slice(2)
-    // console.log("process args",argv)
     for(let i=0; i<argv.length; i++) {
         // console.log(argv[i])
         if(argv[i] === '--src') {
@@ -21,9 +29,11 @@ function process_options(argv,defs) {
         }
         if(argv[i] === '--watch')  defs.watch = true
         if(argv[i] === '--browser')  defs.browser = true
+        if(argv[i] === '--target') {
+            i++
+            defs.target = argv[i]
+        }
     }
-    // console.log("defs",defs)
-
     return defs
 }
 
@@ -32,13 +42,15 @@ let opts = process_options(process.argv,{
     watch:false,
     browser:false,
     outdir:"build",
+    target:null
 })
-console.log("final opts",opts)
+// console.log("final opts",opts)
 
 if(!opts.src) error_and_exit("!! missing input file")
+if(!opts.target) error_and_exit("target output language must be specified. js or py")
 
 
-async function compile(src_file,OUTDIR) {
+async function compile_js(src_file,out_dir) {
         let src = await file_to_string(src_file)
         let generated_src_prefix = path.basename(src_file,'.key')
         let generated_src_out_name = generated_src_prefix + ".js"
@@ -48,7 +60,6 @@ async function compile(src_file,OUTDIR) {
             console.log(result.shortMessage)
             console.log(result.message)
             return
-            // error_and_exit("failed parsing")
         }
         let ast = semantics(result).ast()
         let generated_src = ast_to_js(ast).join("\n")
@@ -78,7 +89,7 @@ function do_cycle() {
 do_cycle()
 `
         generated_src = prelude + generated_src + postlude
-        await write_to_file(path.join(OUTDIR, generated_src_out_name), generated_src)
+        await write_to_file(path.join(out_dir, generated_src_out_name), generated_src)
 }
 
 async function prep(outdir) {
@@ -95,12 +106,10 @@ async function web_template(src, out_dir) {
     await write_to_file(path.join(out_dir, name+".html"), templ)
 }
 
-async function copy_libs(out_dir) {
-    let data = await file_to_string("./lib.js")
-    await write_to_file(path.join(out_dir, "lib.js"), data)
 
-    let data2 = await file_to_string("./reload.js")
-    await write_to_file(path.join(out_dir, "reload.js"), data2)
+async function copy_js_libs(out_dir) {
+    await copy_file("./lib.js",path.join(out_dir,'lib.js'))
+    await copy_file("./reload.js",path.join(out_dir,'reload.js'))
 }
 
 async function start_webserver(src,outdir) {
@@ -128,7 +137,7 @@ async function start_filewatcher(src,outdir) {
             console.log(event);
             if(event.eventType === 'change' && event.filename === src) {
                 console.log("we need to recompile the page")
-                await compile(src,outdir)
+                await compile_js(src,outdir)
                 console.log("recompiled",src)
             }
         }
@@ -141,12 +150,54 @@ async function start_filewatcher(src,outdir) {
     // await compile(src,outdir)
 }
 
+async function compile_py(src_path, out_dir) {
+    console.log("processing",src_path,'to python')
+    let src = await file_to_string(src_path)
+    let generated_src_prefix = path.basename(src_path,'.key')
+    let generated_src_out_name = generated_src_prefix + ".py"
+    const [grammar, semantics] = await make_grammar_semantics()
+    let result = grammar.match(src,'Exp')
+    if(!result.succeeded()) {
+        console.log(result.shortMessage)
+        console.log(result.message)
+        return
+    }
+    let ast = semantics(result).ast()
+    console.log("ast is",ast)
+    let generated_src = ast_to_py(ast,true)
+    console.log('generate src',generated_src)
+    console.log(generated_src.join("\n"))
+    const USER_VARS = []
+    let USER_FUNS = []
+
+    USER_FUNS = generated_src
+
+    let TEMPLATE_PATH = "circuitpython_template.py"
+    let name = path.basename(src_path,'.key')
+    let template = await file_to_string(TEMPLATE_PATH)
+    template = template.replace("${USER_VARIABLES}",USER_VARS.join("\n"))
+    template = template.replace("${USER_FUNCTIONS}",USER_FUNS.join("\n"))
+    // template = template.replace("${APP_SRC}","./"+name+".js")
+    // template = template.replace("${RELOAD}","./reload.js")
+    await write_to_file(path.join(out_dir, name+".py"), template)
+}
+
+async function copy_py_libs(outdir) {
+    await copy_file("tasks.py",path.join(outdir,'tasks.py'))
+}
+
 async function build(opts) {
     await prep(opts.outdir)
-    if(opts.browser)  await start_webserver(opts.src,opts.outdir)
-    await compile(opts.src,opts.outdir)
-    await copy_libs(opts.outdir)
-    await web_template(opts.src,opts.outdir)
-    if(opts.browser)  await start_filewatcher(opts.src,opts.outdir)
+    if(opts.target === 'js') {
+        if (opts.browser) await start_webserver(opts.src, opts.outdir)
+        await compile_js(opts.src, opts.outdir)
+        await copy_js_libs(opts.outdir)
+        await web_template(opts.src, opts.outdir)
+        if (opts.browser) await start_filewatcher(opts.src, opts.outdir)
+    }
+    if(opts.target === 'py') {
+        await compile_py(opts.src, opts.outdir)
+        await copy_py_libs(opts.outdir)
+    }
 }
 build(opts).then(()=>console.log("done compiling"))

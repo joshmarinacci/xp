@@ -24,6 +24,11 @@ export async function write_to_file(path, data) {
     await fs.promises.writeFile(path, data)
 }
 
+export async function copy_file(src, dst) {
+    let data = await file_to_string(src)
+    await write_to_file(dst, data)
+}
+
 export async function mkdirs(dir) {
     log("making dir", dir)
     await fs.promises.mkdir(dir, {recursive: true})

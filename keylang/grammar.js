@@ -18,6 +18,7 @@ export async function make_grammar_semantics() {
         string: (a, str, c) => ({type:'literal', kind:'string', value:toStr(str)}),
         ident: (start, rest,suffix) => ({type:"identifier", name:toStr(start,rest,suffix)}),
         comment:(space,symbol,content) => ({type:'comment',content:content.sourceString}),
+        boolean:(s) => ({type:'literal', kind:'boolean', value:toStr(s)}),
         Assignment: (letp, name, e, exp) => ({
             type: 'assignment',
             letp:letp.ast(),
@@ -29,6 +30,17 @@ export async function make_grammar_semantics() {
             name: name.ast(),
             args: args.asIteration().children.map(arg => arg.ast())
         }),
+        CondExp:(_1,cond,then_block,_2,else_block) => {
+            // console.log('iff',cond.ast(),then_block.ast(),else_block.ast())
+            let eb = else_block.ast()
+            return ({
+                type:'condition',
+                condition:cond.ast(),
+                then_block:then_block.ast(),
+                has_else:eb.length > 0,
+                else_block:(eb.length > 0)?eb[0]:null,
+            })
+        },
         Return:(ret,exp)=> ({
             type:"return",
             exp: exp.ast()
@@ -201,5 +213,68 @@ export function ast_to_js(ast) {
     }
     if(ast.type === 'return')  return `return ${ast_to_js(ast.exp)}`
     console.log('converting to js',ast)
+    throw new Error(`unknown AST node ${ast.type}`)
+}
+
+function indent_array(arr) {
+    return arr.map(s => "   "+s)
+}
+
+const PY_BIN_OPS = {
+    '==': {symbol:'=', name:'equals'}
+}
+export function ast_to_py(ast,first) {
+    if(ast.type === 'identifier') return ast.name
+    if(ast.type === 'literal') {
+        if(ast.kind === 'integer') return ast.value+""
+        if(ast.kind === 'float') return ast.value+""
+        if(ast.kind === 'string') return `"${ast.value}"`
+        if(ast.kind === 'boolean') return (ast.value === 'false')?"False":"True"
+    }
+    if(ast.type === 'binexp') {
+        let A = ast_to_py(ast.exp1)
+        let B = ast_to_py(ast.exp2)
+        // console.log('binary expression',ast,A,B)
+        return `${A} ${PY_BIN_OPS[ast.op].symbol} ${B}`
+        // return []
+    }
+    if(ast.type === 'comment') {
+        return [`#${ast.content.trim()}`]
+    }
+    if(ast.type === 'assignment') {
+        return [`${ast_to_py(ast.name)} = ${ast_to_py(ast.expression)}`]
+    }
+    if(ast.type === 'body') {
+        let lines = ast.body.map(chunk => ast_to_py(chunk))
+        if(first) return lines.flat()
+        // console.log("body lines",indent_array(lines.flat()))
+        return indent_array(lines.flat())
+    }
+    if(ast.type === 'fundef') {
+        console.log("doing fun def",JSON.stringify(ast,null,'   '))
+        let lines = []
+        lines.push(`def ${ast_to_py(ast.name)}(${ast.args.map(a => ast_to_py(a)).join(", ")}):`)
+        lines = lines.concat(ast_to_py(ast.block))
+        lines.push("")
+        console.log("fundef lines",lines)
+        return lines
+    }
+    if(ast.type === 'funcall') {
+        // console.log("doing funcall",ast)
+        return [`${ast_to_py(ast.name)}(${ast.args.map(a => ast_to_py(a)).join(", ")})`]
+    }
+    if(ast.type === 'condition') {
+        let lines = []
+        lines.push(`if ${ast_to_py(ast.condition)}:`)
+        let then_block = ast_to_py(ast.then_block)
+        lines = lines.concat(then_block)
+        if(ast.has_else) {
+            lines.push('else:')
+            lines = lines.concat(ast_to_py(ast.else_block))
+        }
+        console.log('cond',lines)
+        return lines
+    }
+    console.log('converting to py',ast, JSON.stringify(ast,null,'    '))
     throw new Error(`unknown AST node ${ast.type}`)
 }

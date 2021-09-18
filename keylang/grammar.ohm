@@ -29,11 +29,12 @@ keylang {
     Deref = Exp "." ident
     FunctionCall = Exp "(" ListOf<Exp,","> ")"
     FunctionDef  = "fun" ident "(" ListOf<ident,","> ")" Block
+    CondExp = "if" + ParenExp Block ("else" Block)?
 
     Lambda = "(" ListOf<ident,","> ")" "=>" Block
     Return = "return" Exp
 
     Block = "{" Exp* "}"
 
-    Exp = Return | FunctionDef | Lambda | Assignment | Deref | FunctionCall | ParenExp | BinExp | Literal | ident | Block | comment
+    Exp = Return | FunctionDef | Lambda | Assignment | CondExp | Deref | FunctionCall | ParenExp | BinExp | Literal | ident | Block | comment
 }
