@@ -35,6 +35,10 @@ function process_options(argv,defs) {
             i++
             defs.outdir = argv[i]
         }
+        if(argv[i] === '--outfile') {
+            i++
+            defs.outfile = argv[i]
+        }
     }
     return defs
 }
@@ -44,7 +48,8 @@ let opts = process_options(process.argv,{
     watch:false,
     browser:false,
     outdir:"build",
-    target:null
+    target:null,
+    outfile:null,
 })
 // console.log("final opts",opts)
 
@@ -152,11 +157,14 @@ async function start_filewatcher(src,outdir) {
     // await compile(src,outdir)
 }
 
-async function compile_py(src_path, out_dir) {
+async function compile_py(opts) {
+    let src_path = opts.src
+    let out_dir = opts.outdir
     console.log("processing",src_path,'to python')
     let src = await file_to_string(src_path)
     let generated_src_prefix = path.basename(src_path,'.key')
     let generated_src_out_name = generated_src_prefix + ".py"
+    if(opts.outfile) generated_src_out_name = opts.outfile
     const [grammar, semantics] = await make_grammar_semantics()
     let result = grammar.match(src,'Exp')
     if(!result.succeeded()) {
@@ -175,11 +183,10 @@ async function compile_py(src_path, out_dir) {
     USER_FUNS = generated_src
 
     let TEMPLATE_PATH = "circuitpython_template.py"
-    let name = path.basename(src_path,'.key')
     let template = await file_to_string(TEMPLATE_PATH)
     template = template.replace("${USER_VARIABLES}",USER_VARS.join("\n"))
     template = template.replace("${USER_FUNCTIONS}",USER_FUNS.join("\n"))
-    await write_to_file(path.join(out_dir, name+".py"), template)
+    await write_to_file(path.join(out_dir, generated_src_out_name), template)
 }
 
 async function copy_py_libs(outdir) {
@@ -196,7 +203,7 @@ async function build(opts) {
         if (opts.browser) await start_filewatcher(opts.src, opts.outdir)
     }
     if(opts.target === 'py') {
-        await compile_py(opts.src, opts.outdir)
+        await compile_py(opts)
         await copy_py_libs(opts.outdir)
     }
 }
