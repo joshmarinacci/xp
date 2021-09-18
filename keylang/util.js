@@ -36,7 +36,7 @@ export function checkEqual(A, B) {
     // console.log("testing",A,B, A===B)
     if (A === B) return true
     if (typeof A === 'object') {
-        console.log("checking", A, B)
+        // console.log("checking", A, B)
         let a_keys = Object.getOwnPropertyNames(A)
         let b_keys = Object.getOwnPropertyNames(B)
         if (a_keys.length !== b_keys.length) throw new Error("different number of keys")

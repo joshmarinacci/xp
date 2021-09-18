@@ -1,3 +1,37 @@
+export function zip(A, B) {
+    let i = 0
+    let out = new KList()
+    while(true) {
+        if(i >= A.length) break
+        if(i >= B.length) break
+        let a  = A.get(i)
+        let b  = B.get(i)
+        out.push(new KList(a,b))
+        i += 1
+    }
+    // console.log("zip produced",JSON.stringify(out,null,'  '))
+    return out
+}
+export function zipWith(A,B,binop) {
+    return zip(A, B).map((tuple) => binop(tuple.get(0), tuple.get(1)))
+}
+
+export function makeZipWith(binop) {
+    return function(A,B) {
+        return zipWith(A,B,binop)
+    }
+}
+
+export function makeBinOp(binop) {
+    return function(A,B) {
+        if(A.data && B.data) return zipWith(A,B,binop)
+        if(A.data && !B.data) return A.map(a => binop(a,B))
+        if(!A.data && B.data) return B.map(b => binop(A,b))
+        return binop(A,B)
+    }
+
+}
+
 export class KList {
     constructor(...args) {
         this.data = []
@@ -27,6 +61,9 @@ export class KList {
     every(cb) {
         return this.forEach(cb)
     }
+    push(v) {
+        return this.data.push(v)
+    }
     flatten() {
         let arr = []
         this.data.forEach(el => {
@@ -43,7 +80,6 @@ export class KList {
     }
 }
 
-
 export class KColor {
     constructor(r,g,b) {
         this.r = r
@@ -58,14 +94,14 @@ export class KObj {
     constructor() {
     }
 }
-export class KPoint {
+export class KPoint extends KList {
     constructor(x,y) {
-        this.data = [x,y]
+        super(x,y)
     }
 }
-export class KVector {
+export class KVector extends KList{
     constructor(x,y) {
-        this.data = [x,y]
+        super(x,y)
     }
 }
 export class KRect {
@@ -181,51 +217,16 @@ export class KCanvas extends KRect {
     }
 }
 
-export function add(a,b) {
-    if(a.data && b.data) {
-        let new_data = a.data.map((aa,i) => {
-            return aa + b.data[i]
-        })
-        return new KList(new_data)
-    }
-    return a + b
-}
-export function subtract(a,b) {
-    if(a.data && b.data) {
-        let new_data = a.data.map((aa, i) => {
-            return aa - b.data[i]
-        })
-        return new KList(new_data)
-    }
-    return a - b
-}
-export function multiply(a,b) {
-    if(a.data && b.data) {
-        let new_data = a.data.map((aa, i) => {
-            return aa * b.data[i]
-        })
-        return new KList(new_data)
-    }
-    return a * b
-}
-export function divide(a,b) {
-    if(a.data && b.data) {
-        let new_data = a.data.map((aa, i) => {
-            return aa / b.data[i]
-        })
-        return new KList(new_data)
-    }
-    return a / b
-}
-export function lessthan(a,b) {
-    if(a.data && b.data) {
-        let new_data = a.data.map((aa, i) => {
-            return aa < b.data[i]
-        })
-        return new KList(new_data)
-    }
-    return a < b
-}
+export const add = makeBinOp((a,b)=>a+b)
+export const subtract = makeBinOp((a,b)=>a-b)
+export const multiply = makeBinOp((a,b)=>a*b)
+export const divide = makeBinOp((a,b)=>a/b)
+export const lessthan = makeBinOp((a,b)=>a<b)
+export const greaterthan = makeBinOp((a,b)=>a>b)
+export const lessthanorequal = makeBinOp((a,b)=>a<=b)
+export const greaterthanorequal = makeBinOp((a,b)=>a>=b)
+export const equal = makeBinOp((a,b)=>a===b)
+
 export function choose(list) {
     let n = Math.floor(Math.random()*list.length)
     return list.get(n)
@@ -300,7 +301,7 @@ export function remap(val, min, max, MIN, MAX) {
  * @param   {number}  l       The lightness
  * @return  {Array}           The RGB representation
  */
-export function hslToRgb(h, s, l){
+function hslToRgb(h, s, l){
     var r, g, b;
 
     if(s == 0){
