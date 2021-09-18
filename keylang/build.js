@@ -42,15 +42,13 @@ async function compile(src_file,OUTDIR) {
         let src = await file_to_string(src_file)
         let generated_src_prefix = path.basename(src_file,'.key')
         let generated_src_out_name = generated_src_prefix + ".js"
-        // await mkdirs(OUTDIR)
-        // await write_to_file(path.join(OUTDIR, LIB_OUT_NAME), lib)
-
         const [grammar, semantics] = await make_grammar_semantics()
         let result = grammar.match(src,'Exp')
         if(!result.succeeded()) {
             console.log(result.shortMessage)
             console.log(result.message)
-            error_and_exit("failed parsing")
+            return
+            // error_and_exit("failed parsing")
         }
         let ast = semantics(result).ast()
         let generated_src = ast_to_js(ast).join("\n")
