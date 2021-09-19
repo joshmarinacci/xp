@@ -80,6 +80,13 @@ export async function make_grammar_semantics() {
                 type:'body',
                 body:body.ast(),
             }
+        },
+        Directive:(at,name, p1, args, p2) => {
+            return {
+                type:'directive',
+                name:name.ast(),
+                args:args.ast(),
+            }
         }
 
     })

@@ -59,46 +59,96 @@ if(!opts.src) error_and_exit("!! missing input file")
 if(!opts.target) error_and_exit("target output language must be specified. js or py")
 
 
+function strip_directives(ast) {
+    let directives = ast.body.filter(c => c.type === 'directive')
+    ast.body = ast.body.filter(c => c.type !== 'directive')
+    return directives
+}
+
 async function compile_js(src_file,out_dir) {
-        let src = await file_to_string(src_file)
-        let generated_src_prefix = path.basename(src_file,'.key')
-        let generated_src_out_name = generated_src_prefix + ".js"
-        const [grammar, semantics] = await make_grammar_semantics()
-        let result = grammar.match(src,'Exp')
-        if(!result.succeeded()) {
-            console.log(result.shortMessage)
-            console.log(result.message)
-            return
+    let src = await file_to_string(src_file)
+    src = "\n{\n" + src + "\n}\n" //add the implicit block braces
+    let generated_src_prefix = path.basename(src_file,'.key')
+    let generated_src_out_name = generated_src_prefix + ".js"
+    const [grammar, semantics] = await make_grammar_semantics()
+    let result = grammar.match(src,'Exp')
+    if(!result.succeeded()) {
+        console.log(result.shortMessage)
+        console.log(result.message)
+        return
+    }
+    let ast = semantics(result).ast()
+    let directives = strip_directives(ast)
+
+    let board = "canvas"
+    directives.forEach(dir => {
+        // console.log("directive",dir)
+        if(dir.name.name === 'board') {
+            if(dir.args.value === 'trinkey') {
+                board = dir.args.value
+            }
         }
-        let ast = semantics(result).ast()
-        let generated_src = ast_to_js(ast).join("\n")
+    })
+
+    console.log("using board",board)
+    let generated_src = ast_to_js(ast).join("\n")
 
     let imports = Object.keys(STD_SCOPE).map(key => {
         return `const ${key} = lib.STD_SCOPE.${key}`
     }).join("\n")
 
-        let prelude = `
-import * as lib from "./lib.js"
-${imports}
-import {KCanvas} from "./lib.js"
-let screen = new KCanvas(0,0,64,32,"#canvas")
-let system = {
-    time:0
-}
-`
+    let before = []
+    before.push(`import * as lib from "./lib.js"`)
+    before.push(imports)
+    if(board === 'canvas') {
+        before.push("import {KCanvas} from './lib.js'")
+        before.push("let screen = new KCanvas(0,0,64,32,'#canvas')")
+    }
+    if(board === 'trinkey') {
+        before.push("import {board, Button, set_led, print, GREEN, RED, BLACK, WHITE, TaskManager, _NOW} from './trinkey.js'")
+        before.push("const tm = new TaskManager()")
+    }
 
-        let postlude = `
-setup()
-function do_cycle() {
-    screen.clear()
-    system.time = Date.now()
-    loop()
-    setTimeout(do_cycle,100)
-}
-do_cycle()
-`
-        generated_src = prelude + generated_src + postlude
-        await write_to_file(path.join(out_dir, generated_src_out_name), generated_src)
+    before.push(`let system = {
+            time:0
+        }
+        `)
+
+    let after = []
+    if(board === 'canvas') {
+        after.push('setup()')
+        after.push(`
+            function do_cycle() {
+                screen.clear()
+                system.time = Date.now()
+                loop()
+                setTimeout(do_cycle,1000)
+            }
+        `)
+        after.push('do_cycle()')
+    }
+    if(board === 'trinkey') {
+        after.push(`tm.register_start("setup",setup)`)
+        after.push(`tm.register_loop("loop",loop)`)
+        after.push(`tm.register_event("my_button_clicked",my_button_clicked)`)
+        after.push(`
+            tm.start()
+            let start_time = _NOW()
+            print('start time is',start_time)
+            function do_cycle() {
+                tm.cycle()
+                system.time = _NOW()
+                if(system.time > start_time + 20*1000) {
+                    console.log("ending after 20 seconds")
+                } else {
+                    setTimeout(do_cycle,100)
+                }
+            }
+        `)
+        after.push('do_cycle()')
+    }
+    generated_src = before.join("\n") + generated_src + after.join("\n")
+    await write_to_file(path.join(out_dir, generated_src_out_name), generated_src)
 }
 
 async function prep(outdir) {
@@ -117,6 +167,7 @@ async function web_template(src, out_dir) {
 
 
 async function copy_js_libs(out_dir) {
+    await copy_file("./trinkey.js",path.join(out_dir,'trinkey.js'))
     await copy_file("./lib.js",path.join(out_dir,'lib.js'))
     await copy_file("./reload.js",path.join(out_dir,'reload.js'))
 }
@@ -164,6 +215,7 @@ async function compile_py(opts) {
     let out_dir = opts.outdir
     console.log("processing",src_path,'to python')
     let src = await file_to_string(src_path)
+    src = "\n{\n" + src + "\n}\n" //add the implicit block braces
     let generated_src_prefix = path.basename(src_path,'.key')
     let generated_src_out_name = generated_src_prefix + ".py"
     if(opts.outfile) generated_src_out_name = opts.outfile

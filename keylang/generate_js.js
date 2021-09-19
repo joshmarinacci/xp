@@ -15,7 +15,7 @@ const BIN_OPS = {
         name: 'lessthan'
     },
     '==': {
-        name: 'equals'
+        name: 'equal'
     }
 }
 
@@ -32,10 +32,13 @@ export function ast_to_js(ast) {
     if (ast.type === 'identifier') return "" + ast.name
     if (ast.type === 'funcall') {
         let args = ast.args.map(a => ast_to_js(a))
+        let name = ast_to_js(ast.name)
+        if(name === 'wait') {
+            return `await sleep(${args.join(",")})`
+        }
         return `${ast_to_js(ast.name)}(${args.join(",")})`
     }
     if (ast.type === 'assignment') {
-        // console.log("assignment",ast)
         let name = ast_to_js(ast.name)
         let value = ast_to_js(ast.expression)
         if (ast.letp.length === 1) {
@@ -48,7 +51,7 @@ export function ast_to_js(ast) {
     if (ast.type === 'fundef') {
         let args = ast.args.map(a => ast_to_js(a))
         return [
-            `function ${ast_to_js(ast.name)}(${args}){`,
+            `async function ${ast_to_js(ast.name)}(${args}){`,
             ...ast_to_js(ast.block).map(s => INDENT + s),
             `}`
         ]
@@ -81,9 +84,10 @@ export function ast_to_js(ast) {
         if (op) return `${op.name}(${ast_to_js(ast.exp1)},${ast_to_js(ast.exp2)})`
     }
     if (ast.type === 'condition') {
-        return `if(${ast_to_js(ast.condition)}`
-            + ast_to_js(ast.then_block)
-            + (ast.has_else ? 'else ' + ast_to_js(ast.else_block) : "")
+        return `if(${ast_to_js(ast.condition)}) {\n`
+            + ast_to_js(ast.then_block).join("\n")
+            + "}"
+            + (ast.has_else ? ' else{ ' + ast_to_js(ast.else_block) + "}" : "")
     }
     if (ast.type === 'return') return `return ${ast_to_js(ast.exp)}`
     console.log('converting to js', ast)

@@ -289,6 +289,13 @@ export function remap(val, min, max, MIN, MAX) {
     return ((MAX - MIN) * t) + MIN
 }
 
+export function sleep(dur) {
+    return new Promise((res,rej)=>{
+        setTimeout(()=>{
+            res()
+        },Math.floor(dur*1000))
+    })
+}
 
 /**
  * Converts an HSL color value to RGB. Conversion formula
@@ -345,12 +352,14 @@ export const STD_SCOPE = {
     divide,
     multiply,
     lessthan,
+    equal,
     randi,
     randf,
     choose,
     wrap,
     lerp,
     remap,
+    sleep,
     HSL:HSL,
     Color:(...args) => new KColor(...args),
     Canvas:(...args) => new KCanvas(...args),
