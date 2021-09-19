@@ -179,15 +179,9 @@ async function compile_py(opts) {
     // console.log("end result is",out)
     let generated_src = out.generate()
     // console.log('generate src',generated_src)
-    // console.log(generated_src.join("\n"))
-    const USER_VARS = []
-    let USER_FUNS = []
-
-    USER_FUNS = generated_src
-
     let TEMPLATE_PATH = "circuitpython_template.py"
     let template = await file_to_string(TEMPLATE_PATH)
-    template = template.replace("${USER_VARIABLES}",USER_VARS.join("\n"))
+    template = template.replace("${USER_VARIABLES}","")
     template = template.replace("${USER_FUNCTIONS}",generated_src)
     await write_to_file(path.join(out_dir, generated_src_out_name), template)
 }

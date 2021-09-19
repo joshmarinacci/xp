@@ -271,7 +271,7 @@ export class PyOutput {
     }
     end_fun_def(name) {
         let last = this.children.pop()
-        this.lines.push(`def ${last.name}(${last.args})`)
+        this.lines.push(`def ${last.name}(${last.args}):`)
         this.lines.push(...this.refs.map(l => INDENT+'global '+l))
         // this.refs = []
         this.lines.push(...last.lines)
@@ -308,7 +308,7 @@ function button_click(ast, out) {
     out.comment("end while")
     out.outdent()
     out.end_fun_def()
-    out.after(`tm.register_event('foo',foo)`)
+    out.after(`tm.register_event('${name}',${name})`)
 }
 function setup_block(ast,out) {
     let name = ast_to_py(ast.name,out)
@@ -317,10 +317,11 @@ function setup_block(ast,out) {
     out.indent()
     out.line("#start user code")
     ast_to_py(ast.block, out)
+    console.log("now out is",out.children)
     out.line("# end user code")
     out.outdent()
     out.end_fun_def()
-    out.after(`tm.register_start('foo',foo)`)
+    out.after(`tm.register_start('${name}',${name})`)
 }
 function forever_loop(ast,out) {
     let name = ast_to_py(ast.name,out)
@@ -332,11 +333,11 @@ function forever_loop(ast,out) {
     out.line("#start user code")
     ast_to_py(ast.block, out)
     out.line("# end user code")
-    out.outdent()
     out.line('yield 0.01')
     out.outdent()
+    out.outdent()
     out.end_fun_def()
-    out.after(`tm.register_loop('foo',foo)`)
+    out.after(`tm.register_loop('${name}',${name})`)
 }
 
 export function ast_to_py(ast,out) {
@@ -364,8 +365,11 @@ export function ast_to_py(ast,out) {
         return
     }
     if(ast.type === 'body') {
-        console.log('doing a body',out.depth,ast)
-        ast.body.map(chunk => ast_to_py(chunk,out))
+        // console.log('doing a body',out.depth,ast)
+        ast.body.map(chunk => {
+            let res = ast_to_py(chunk,out)
+            if(res)  out.line(res)
+        })
         // if(out.depth === 0) return lines.flat()
         // console.log("body lines",indent_array(lines.flat()))
         // return indent_array(lines.flat())
@@ -389,11 +393,9 @@ export function ast_to_py(ast,out) {
         let name = ast_to_py(ast.name,out)
         let args = ast.args.map(a => ast_to_py(a,out)).join(", ")
         if(name === 'wait') {
-            out.line('yield ${args}')
-        } else {
-            out.line(`${name}(${args})`)
+            return (`yield ${args}`)
         }
-        return
+        return (`${name}(${args})`)
     }
     if(ast.type === 'condition') {
         let lines = []
