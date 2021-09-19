@@ -1,3 +1,5 @@
+import {AST_TYPES} from './grammar.js'
+
 const INDENT = "    "
 const PY_BIN_OPS = {
     '==': {symbol: '==', name: 'equals'}
@@ -77,8 +79,8 @@ function button_click(ast, out) {
     out.indent()
     out.line("while True:")
     out.indent()
-    out.line("my_button.update()")
-    out.line("if my_button.fell:")
+    out.line("button.update()")
+    out.line("if button.fell:")
     out.indent()
     out.line("#start user code")
     ast_to_py(ast.block, out)
@@ -141,6 +143,10 @@ export function ast_to_py(ast, out) {
         out.line(`#${ast.content.trim()}`)
         return
     }
+    if (ast.type === AST_TYPES.vardec) {
+        out.line(`${ast_to_py(ast.name)} = 0`)
+        return
+    }
     if (ast.type === 'assignment') {
         let name = ast_to_py(ast.name, out)
         out.add_variable_reference(name)
@@ -188,6 +194,9 @@ export function ast_to_py(ast, out) {
             out.outdent()
         }
         return
+    }
+    if (ast.type === 'return') {
+        return 'return'
     }
     // console.log('converting to py',ast, JSON.stringify(ast,null,'    '))
     throw new Error(`unknown AST node ${ast.type}`)

@@ -243,7 +243,16 @@ async function compile_py(opts) {
         console.log(result.message)
         return
     }
+    let board = null
     let ast = semantics(result).ast()
+    let directives = strip_directives(ast)
+    directives.forEach(dir => {
+        console.log(dir)
+        if(dir.name.name === 'board') {
+            board = dir.args[0].value
+        }
+    })
+    // console.log("board",board)
     // console.log("ast is",ast)
     let out = new PyOutput()
     ast_to_py(ast,out)

@@ -17,8 +17,15 @@ keyboard = Keyboard(usb_hid.devices)
 pixels = neopixel.NeoPixel(board.NEOPIXEL, 1)
 tm = TaskMaster()
 
-def mouse_press(name):
+def mouse_click(name):
     mouse.click(Mouse.LEFT_BUTTON)
+
+def mouse_press(name):
+    mouse.press(Mouse.LEFT_BUTTON)
+
+def mouse_release(name):
+    mouse.press(Mouse.LEFT_BUTTON)
+    mouse.release_all()
 
 def keyboard_press(name):
     keyboard.press(Keycode.E)
