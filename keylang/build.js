@@ -8,7 +8,7 @@
 import {copy_file, file_to_string, mkdirs, write_to_file} from './util.js'
 import fs from "fs"
 import path from 'path'
-import {ast_to_js, ast_to_py, make_grammar_semantics} from './grammar.js'
+import {ast_to_js, ast_to_py, make_grammar_semantics, PyOutput} from './grammar.js'
 import {STD_SCOPE} from './lib.js'
 import express from "express"
 
@@ -174,7 +174,10 @@ async function compile_py(opts) {
     }
     let ast = semantics(result).ast()
     // console.log("ast is",ast)
-    let generated_src = ast_to_py(ast,true)
+    let out = new PyOutput()
+    ast_to_py(ast,out)
+    // console.log("end result is",out)
+    let generated_src = out.generate()
     // console.log('generate src',generated_src)
     // console.log(generated_src.join("\n"))
     const USER_VARS = []
@@ -185,7 +188,7 @@ async function compile_py(opts) {
     let TEMPLATE_PATH = "circuitpython_template.py"
     let template = await file_to_string(TEMPLATE_PATH)
     template = template.replace("${USER_VARIABLES}",USER_VARS.join("\n"))
-    template = template.replace("${USER_FUNCTIONS}",USER_FUNS.join("\n"))
+    template = template.replace("${USER_FUNCTIONS}",generated_src)
     await write_to_file(path.join(out_dir, generated_src_out_name), template)
 }
 
