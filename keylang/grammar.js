@@ -148,6 +148,9 @@ const BIN_OPS = {
     },
     '<':{
         name:'lessthan'
+    },
+    '==':{
+        name:'equals'
     }
 }
 
@@ -157,6 +160,7 @@ export function ast_to_js(ast) {
     }
     if(ast.type === 'literal') {
         if(ast.kind === 'integer') return ""+ast.value
+        if(ast.kind === 'boolean') return ""+ast.value
         if(ast.kind === 'float') return ""+ast.value
         if(ast.kind === 'string') return `"${ast.value}"`
     }
@@ -210,6 +214,11 @@ export function ast_to_js(ast) {
     if(ast.type === 'binexp') {
         let op = BIN_OPS[ast.op]
         if(op) return `${op.name}(${ast_to_js(ast.exp1)},${ast_to_js(ast.exp2)})`
+    }
+    if(ast.type === 'condition') {
+        return `if(${ast_to_js(ast.condition)}`
+            + ast_to_js(ast.then_block)
+            + (ast.has_else?'else '+ast_to_js(ast.else_block):"")
     }
     if(ast.type === 'return')  return `return ${ast_to_js(ast.exp)}`
     console.log('converting to js',ast)
