@@ -91,9 +91,9 @@ async function compile_js(src_file,out_dir) {
             board = dir.args[0].value
         }
         if(dir.name.name === 'type') {
-            if(dir.args[0].value === 'setup') {
-                // console.log("got a setup directive",dir)
-                let name = dir.args[0].value
+            if(dir.args[0].value === 'start') {
+                console.log("got a setup directive",dir)
+                let name = dir.args[1].name
                 after.push(`tm.register_start("${name}",${name})`)
             }
             if(dir.args[0].value === 'event') {
