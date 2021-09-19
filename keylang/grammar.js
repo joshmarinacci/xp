@@ -1,6 +1,9 @@
 import fs from 'fs'
 import ohm from 'ohm-js'
 
+export const AST_TYPES = {
+    'vardec':'vardec'
+}
 const readFile = fs.promises.readFile
 
 export async function make_grammar() {
@@ -19,11 +22,14 @@ export async function make_grammar_semantics() {
         ident: (start, rest,suffix) => ({type:"identifier", name:toStr(start,rest,suffix)}),
         comment:(space,symbol,content) => ({type:'comment',content:content.sourceString}),
         boolean:(s) => ({type:'literal', kind:'boolean', value:toStr(s)}),
-        Assignment: (letp, name, e, exp) => ({
+        Assignment: (name, e, exp) => ({
             type: 'assignment',
-            letp:letp.ast(),
             name: name.ast(),
             expression: exp.ast(),
+        }),
+        VarDec:(_var, name) => ({
+            type:AST_TYPES.vardec,
+            name:name.ast(),
         }),
         FunctionCall: (name, p1, args, p2) => ({
             type: "funcall",
@@ -85,7 +91,7 @@ export async function make_grammar_semantics() {
             return {
                 type:'directive',
                 name:name.ast(),
-                args:args.ast(),
+                args:args.asIteration().children.map(arg => arg.ast()),
             }
         }
 

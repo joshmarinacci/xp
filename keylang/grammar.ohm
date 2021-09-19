@@ -24,7 +24,8 @@ keylang {
     binop = "+" | "-" | "*" | "/" | "<" | ">" | "=="
     BinExp = Exp binop Exp
     ParenExp = "(" Exp ")"
-    Assignment = "let"? ident "=" Exp
+    Assignment = ident "=" Exp
+    VarDec = "var" ident
 
     Deref = Exp "." ident
     FunctionCall = Exp "(" ListOf<Exp,","> ")"
@@ -33,9 +34,9 @@ keylang {
 
     Lambda = "(" ListOf<ident,","> ")" "=>" Block
     Return = "return" Exp
-    Directive = "@" ident "(" string ")"
+    Directive = "@" ident "(" ListOf<Exp,","> ")"
 
     Block = "{" Exp* "}"
 
-    Exp = Directive | Return | FunctionDef | Lambda | Assignment | CondExp | Deref | FunctionCall | ParenExp | BinExp | Literal | ident | Block | comment
+    Exp = Directive | Return | FunctionDef | Lambda | VarDec | Assignment | CondExp | Deref | FunctionCall | ParenExp | BinExp | Literal | ident | Block | comment
 }

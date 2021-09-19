@@ -80,12 +80,33 @@ async function compile_js(src_file,out_dir) {
     let ast = semantics(result).ast()
     let directives = strip_directives(ast)
 
+    let before = []
+    before.push(`import * as lib from "./lib.js"`)
+
     let board = "canvas"
+    let after = []
     directives.forEach(dir => {
         // console.log("directive",dir)
         if(dir.name.name === 'board') {
-            if(dir.args.value === 'trinkey') {
-                board = dir.args.value
+            board = dir.args[0].value
+        }
+        if(dir.name.name === 'type') {
+            if(dir.args[0].value === 'setup') {
+                // console.log("got a setup directive",dir)
+                let name = dir.args[0].value
+                after.push(`tm.register_start("${name}",${name})`)
+            }
+            if(dir.args[0].value === 'event') {
+                // console.log("got an event directive",dir)
+                let name = dir.args[1].name
+                let fun = dir.args[2].name
+                after.push(`const event_wrapper = ()=> {
+                    if(${name}.wasClicked()) {
+                       ${fun}()
+                    }
+                    ${name}.clear()
+                }`)
+                after.push(`tm.register_event("${name}",event_wrapper)`)
             }
         }
     })
@@ -97,15 +118,13 @@ async function compile_js(src_file,out_dir) {
         return `const ${key} = lib.STD_SCOPE.${key}`
     }).join("\n")
 
-    let before = []
-    before.push(`import * as lib from "./lib.js"`)
     before.push(imports)
     if(board === 'canvas') {
         before.push("import {KCanvas} from './lib.js'")
         before.push("let screen = new KCanvas(0,0,64,32,'#canvas')")
     }
     if(board === 'trinkey') {
-        before.push("import {board, Button, set_led, print, GREEN, RED, BLACK, WHITE, TaskManager, _NOW} from './trinkey.js'")
+        before.push("import {board, LEDButton, print, GREEN, RED, BLACK, WHITE, TaskManager, _NOW} from './trinkey.js'")
         before.push("const tm = new TaskManager()")
     }
 
@@ -114,7 +133,6 @@ async function compile_js(src_file,out_dir) {
         }
         `)
 
-    let after = []
     if(board === 'canvas') {
         after.push('setup()')
         after.push(`
@@ -128,9 +146,7 @@ async function compile_js(src_file,out_dir) {
         after.push('do_cycle()')
     }
     if(board === 'trinkey') {
-        after.push(`tm.register_start("setup",setup)`)
         after.push(`tm.register_loop("loop",loop)`)
-        after.push(`tm.register_event("my_button_clicked",my_button_clicked)`)
         after.push(`
             tm.start()
             let start_time = _NOW()
@@ -148,6 +164,7 @@ async function compile_js(src_file,out_dir) {
         after.push('do_cycle()')
     }
     generated_src = before.join("\n") + generated_src + after.join("\n")
+    // console.log('final',generated_src)
     await write_to_file(path.join(out_dir, generated_src_out_name), generated_src)
 }
 

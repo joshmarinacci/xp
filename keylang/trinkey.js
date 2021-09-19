@@ -1,12 +1,36 @@
 export const board = {
-
+    SWITCH:"SWITCH",
 }
 
-export function Button(id) {
-    console.log("making a fake button")
+class _LEDButton {
+    constructor(id) {
+        console.log("DOM LED button")
+        this.id = id
+        this.elem = document.createElement('button')
+        this.elem.id = "button_"+id
+        this.elem.innerText = `button ${id}`
+        this.elem.classList.add("ledbutton")
+        document.body.append(this.elem)
+        this.clicked = false
+        this.elem.addEventListener('click',() => {
+            this.clicked = true
+        })
+    }
+    wasClicked() {
+        return this.clicked
+    }
+    clear() {
+        this.clicked = false
+    }
+    color(col) {
+        this.elem.style.backgroundColor = color_to_css(col)
+    }
 }
-export function set_led(color) {
-    console.log("pretending to set an led color",color)
+
+const color_to_css = (col) => `rgb(${col[0]*255},${col[1]*255},${col[2]*255})`
+
+export function LEDButton(id) {
+    return new _LEDButton(id)
 }
 export function print(...args) {
     console.log(...args)
@@ -25,7 +49,6 @@ export class TaskManager {
         this.tasks = []
     }
     register_start(name,fun) {
-        console.log("registering the start task",name,fun)
         this.register_task('start',name,fun)
     }
     register_loop(name,fun) {
@@ -53,7 +76,7 @@ export class TaskManager {
     }
     cycle() {
         // print("task master cycling")
-        // this.tasks.filter(t => t.type === 'event').forEach(task => task.fun())
+        this.tasks.filter(t => t.type === 'event').forEach(task => task.fun())
         this.tasks.filter(t => t.type === 'loop').forEach(task => task.fun())
         this.tasks.filter(t => t.type === 'mode').forEach(task => task.fun())
     }

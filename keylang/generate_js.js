@@ -1,3 +1,5 @@
+import {AST_TYPES} from './grammar.js'
+
 const BIN_OPS = {
     '+': {
         name: 'add'
@@ -41,11 +43,11 @@ export function ast_to_js(ast) {
     if (ast.type === 'assignment') {
         let name = ast_to_js(ast.name)
         let value = ast_to_js(ast.expression)
-        if (ast.letp.length === 1) {
-            return [`let ${name} = ${value}`]
-        } else {
-            return [`${name} = ${value}`]
-        }
+        return [`${name} = ${value}`]
+    }
+    if (ast.type === AST_TYPES.vardec) {
+        let name = ast_to_js(ast.name)
+        return ['let ' + name]
     }
     const INDENT = "    "
     if (ast.type === 'fundef') {
