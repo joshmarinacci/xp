@@ -1,6 +1,7 @@
 import path from "path"
-import {ast_to_js, make_grammar_semantics} from './grammar.js'
+import {make_grammar_semantics} from './grammar.js'
 import {file_to_string, log, mkdirs, write_to_file} from './util.js'
+import {ast_to_js} from './generate_js.js'
 // lib file
 // web template
 // generate source

@@ -1,6 +1,7 @@
-import {ast_to_js, eval_ast, make_grammar_semantics} from './grammar.js'
+import {eval_ast, make_grammar_semantics} from './grammar.js'
 import {add, KCanvas, KColor, KList, KObj, KPoint, KRect, KVector, STD_SCOPE} from './lib.js'
 import {checkEqual, mkdirs, write_to_file} from './util.js'
+import {ast_to_js} from './generate_js.js'
 
 
 const scope = STD_SCOPE
