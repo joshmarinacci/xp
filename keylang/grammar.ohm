@@ -27,7 +27,9 @@ keylang {
     UnExp  = unop Exp
     ParenExp = "(" Exp ")"
     Assignment = ident "=" Exp
-    VarDec = "var" ident
+    VarDec
+        = "var" ident "=" Exp --assign
+        | "var" ident --dec
 
     Deref = Exp "." ident
     FunctionCall = Exp "(" ListOf<Exp,","> ")"

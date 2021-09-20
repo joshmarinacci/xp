@@ -52,6 +52,10 @@ export function ast_to_js(ast) {
     }
     if (ast.type === AST_TYPES.vardec) {
         let name = ast_to_js(ast.name)
+        if(ast.expression) {
+            let value = ast_to_js(ast.expression)
+            return ['let ' + name + ' = '+ value]
+        }
         return ['let ' + name]
     }
     const INDENT = "    "
@@ -100,7 +104,7 @@ export function ast_to_js(ast) {
         return `if(${ast_to_js(ast.condition)}) {\n`
             + then
             + "}"
-            + (ast.has_else ? ' else{ ' + ast_to_js(ast.else_block) + "}" : "")
+            + (ast.has_else ? ' else { ' + ast_to_js(ast.else_block) + " } " : "")
     }
     if (ast.type === 'return') return `return ${ast_to_js(ast.exp)}`
     console.log('converting to js', ast)

@@ -29,9 +29,15 @@ export async function make_grammar_semantics() {
             name: name.ast(),
             expression: exp.ast(),
         }),
-        VarDec:(_var, name) => ({
+        VarDec_dec:(_var, name) => ({
             type:AST_TYPES.vardec,
             name:name.ast(),
+            expression:null,
+        }),
+        VarDec_assign:(_var, name, eq, exp) => ({
+            type:AST_TYPES.vardec,
+            name:name.ast(),
+            expression: exp.ast(),
         }),
         FunctionCall: (name, p1, args, p2) => ({
             type: "funcall",
