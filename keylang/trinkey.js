@@ -2,6 +2,7 @@ export const board = {
     SWITCH:"SWITCH",
 }
 
+
 class _LEDButton {
     constructor(id) {
         console.log("DOM LED button")
@@ -22,15 +23,23 @@ class _LEDButton {
     clear() {
         this.clicked = false
     }
+    fill(col) {
+        return this.color(col)
+    }
     color(col) {
         this.elem.style.backgroundColor = color_to_css(col)
     }
 }
 
+const SINGLE_BUTTOn = new _LEDButton("")
+
 const color_to_css = (col) => `rgb(${col[0]*255},${col[1]*255},${col[2]*255})`
 
-export function LEDButton(id) {
-    return new _LEDButton(id)
+export function Button(id) {
+    return SINGLE_BUTTOn
+}
+export function NeoPixel(id) {
+    return SINGLE_BUTTOn
 }
 export function print(...args) {
     console.log(...args)

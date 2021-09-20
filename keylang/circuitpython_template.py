@@ -10,12 +10,14 @@ from digitalio import DigitalInOut, Pull
 from adafruit_hid.mouse import Mouse
 import usb_hid
 import touchio
-from color_names import WHITE, BLACK, RED, GREEN
+from color_names import WHITE, BLACK, RED, GREEN, BLUE
 
 mouse = Mouse(usb_hid.devices)
 keyboard = Keyboard(usb_hid.devices)
-pixels = neopixel.NeoPixel(board.NEOPIXEL, 1)
 tm = TaskMaster()
+
+def NeoPixel(id):
+    return neopixel.NeoPixel(id,1)
 
 def mouse_click(name):
     mouse.click(Mouse.LEFT_BUTTON)
@@ -32,9 +34,6 @@ def keyboard_press(name):
 
 def keyboard_release_all():
     keyboard.release_all()
-
-def set_led(color):
-    pixels.fill(color)
 
 def modes_next():
     tm.nextMode()

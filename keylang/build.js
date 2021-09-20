@@ -124,7 +124,7 @@ async function compile_js(src_file,out_dir) {
         before.push("let screen = new KCanvas(0,0,64,32,'#canvas')")
     }
     if(board === 'trinkey') {
-        before.push("import {board, LEDButton, print, GREEN, RED, BLACK, WHITE, TaskManager, _NOW} from './trinkey.js'")
+        before.push("import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'")
         before.push("const tm = new TaskManager()")
     }
 
