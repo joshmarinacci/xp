@@ -208,10 +208,11 @@ async function start_webserver(src,outdir) {
 async function start_filewatcher(src,outdir) {
     try {
         console.log("watching",src)
+        let base = path.basename(src)
         const watcher = fs.promises.watch(src);
         for await (const event of watcher) {
             console.log(event);
-            if(event.eventType === 'change' && event.filename === src) {
+            if(event.eventType === 'change' && event.filename === base) {
                 console.log("we need to recompile the page")
                 await compile_js(src,outdir)
                 console.log("recompiled",src)

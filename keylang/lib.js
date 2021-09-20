@@ -22,9 +22,11 @@ export function makeZipWith(binop) {
     }
 }
 
+const undef = (A) => typeof A === 'undefined'
+
 export function makeBinOp(binop) {
     return function(A,B) {
-        if(!A || !B ) throw new Error("cannot do operationg on undefined variable")
+        if(undef(A) || undef(B) ) throw new Error("cannot do operationg on undefined variable")
         if(A.data && B.data) return zipWith(A,B,binop)
         if(A.data && !B.data) return A.map(a => binop(a,B))
         if(!A.data && B.data) return B.map(b => binop(A,b))
