@@ -9,7 +9,7 @@ const scope = STD_SCOPE
 
 async function runtests() {
     const [grammar, semantics] = await make_grammar_semantics()
-    function test_parse(scope,code,res) {
+    function test_parse(code,res) {
         console.log(`parsing: "${code}"`)
         let result = grammar.match(code,'Exp')
         if(!result.succeeded()) throw new Error("failed parsing")
@@ -67,46 +67,65 @@ doit()
         }
     }
 
-    test_parse('','4')
-    test_parse('','-4')
-    test_parse('','4.8')
-    test_parse('','0.5')
-    test_parse('',"'foo'")
-    test_parse('',`"foo"`)
-    test_parse('','true')
-    test_parse('','false')
+    test_parse('4')
+    test_parse('-4')
+    test_parse('4.8')
+    test_parse('0.5')
+    test_parse("'foo'")
+    test_parse(`"foo"`)
+    test_parse('true')
+    test_parse('false')
 
     // assignment
-    test_parse('','dot = 5')
-    test_parse('','dot = true')
-    test_parse('','dot = tod')
+    test_parse('dot = 5')
+    test_parse('dot = true')
+    test_parse('dot = tod')
 
     //function call
-    test_parse('','foo()')
-    test_parse('','foo(5)')
-    test_parse('',`foo('bar')`)
-    test_parse('',`foo('bar','baz')`)
-    test_parse('',`foo('bar',foo('baz'))`)
-    test_parse('',`dot = foo('bar')`)
-    test_parse('','range(10).map()')
+    test_parse('foo()')
+    test_parse('foo(5)')
+    test_parse(`foo('bar')`)
+    test_parse(`foo('bar','baz')`)
+    test_parse(`foo('bar',foo('baz'))`)
+    test_parse(`dot = foo('bar')`)
+    test_parse('range(10).map()')
 
     //property access
-    test_parse('',"GET_PROP(dots,'length')")
-    test_parse('','fun foo() { }')
+    test_parse("GET_PROP(dots,'length')")
+    test_parse('fun foo() { }')
+
 
     //conditonals
-    test_parse('',`if(true){}`)
+    test_parse(`if(true){}`)
+    test_parse('a or b')
+    test_parse('a and b')
+    test_parse('not a')
+    test_parse('a and not b')
+    test_parse('a or not b')
+    test_parse('if(a){b}')
+    // test_parse('if a {b}')
+    // test_parse('if a b')
 
     test_eval('','4',4)
     test_eval('','4.8',4.8)
     test_eval('',"'foo'","foo")
+    test_eval('','4+5',9)
+    test_eval('','true',true)
+    test_eval('','false',false)
+    test_eval('','true and true',true)
+    test_eval('','true and false',false)
+    test_eval('','true or false',true)
+    test_eval('','false or true',true)
+    test_eval('','false or false',false)
+    test_eval('','not true',false)
+    test_eval('','not false',true)
 
     test_eval(scope,'List(0,0,0)',new KList(0,0,0))
     test_eval(scope,'range(3)',new KList([0,1,2]))
-    test_eval(scope,`getPart(range(3),'get')`,new KList().get)
+    // test_eval(scope,`getPart(range(3),'get')`,new KList().get)
     test_eval(scope,'part = 3',3)
-    test_eval(scope,`foo = getPart(range(3),'get')`,new KList().get)
-    test_eval(scope,`getPart(range(3),'get')(1)`,1)
+    // test_eval(scope,`foo = getPart(range(3),'get')`,new KList().get)
+    // test_eval(scope,`getPart(range(3),'get')(1)`,1)
     // test_eval(scope, `() => {5}`,(x)=>{5})
     // test_eval(scope, `(x) => {add(x,1)}`,(x)=>{add(x,1)})
     // test_eval(scope, `range(3).map(() => {5})`,[5,5,5])

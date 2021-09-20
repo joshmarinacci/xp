@@ -2,7 +2,8 @@ import fs from 'fs'
 import ohm from 'ohm-js'
 
 export const AST_TYPES = {
-    'vardec':'vardec'
+    'vardec':'vardec',
+    unexp: "unexp"
 }
 const readFile = fs.promises.readFile
 
@@ -57,6 +58,11 @@ export async function make_grammar_semantics() {
             exp1:exp1.ast(),
             exp2:exp2.ast(),
         }),
+        UnExp: (op, exp) => ({
+            type:AST_TYPES.unexp,
+            op:op.sourceString,
+            exp:exp.ast(),
+        }),
         ParenExp: (p1, exp, p2) => exp.ast(),
         FunctionDef:(fun,name,p1,args,p2,block) => ({
             type:"fundef",
@@ -101,7 +107,13 @@ export async function make_grammar_semantics() {
 }
 export function eval_ast(ast,scope) {
     // console.log('ast',JSON.stringify(ast,null,'   '))
-    if(ast.type === 'literal') return ast.value
+    if(ast.type === 'literal') {
+        if(ast.kind === 'boolean') {
+            if(ast.value === 'true') return true
+            if(ast.value === 'false') return false
+        }
+        return ast.value
+    }
     if(ast.type === 'identifier') return ast.name
     if(ast.type === 'funcall') {
         // console.log('ast for the fun call is',ast)
@@ -128,6 +140,17 @@ export function eval_ast(ast,scope) {
         scope[name] = eval_ast(ast.expression,scope)
         return scope[name]
     }
+    if(ast.type === 'binexp') {
+        let A = eval_ast(ast.exp1)
+        let B = eval_ast(ast.exp2)
+        if(ast.op === '+') return A+B
+        if(ast.op === 'and') return A&&B
+        if(ast.op === 'or') return A||B
+    }
+    if(ast.type === 'unexp') {
+        let A = eval_ast(ast.exp)
+        if(ast.op === 'not') return !A
+    }
     if(ast.type === 'body') {
         console.log("body is",ast.body)
         return ast.body.map(exp => {
@@ -143,7 +166,7 @@ export function eval_ast(ast,scope) {
         console.log("body", eval_ast(ast.body,scope))
         // console.log("lambda ",ast)
     }
-    throw new Error("eval ast not implemented")
+    throw new Error("eval ast not implemented for " + JSON.stringify(ast,null,'  '))
 }
 
 

@@ -21,8 +21,10 @@ keylang {
     comment = space* "//" toEOL
     toEOL = (~"\n" any)* "\n"
 
-    binop = "+" | "-" | "*" | "/" | "<" | ">" | "=="
+    binop = "+" | "-" | "*" | "/" | "<" | ">" | "==" | "and" | "or"
     BinExp = Exp binop Exp
+    unop = "not"
+    UnExp  = unop Exp
     ParenExp = "(" Exp ")"
     Assignment = ident "=" Exp
     VarDec = "var" ident
@@ -38,5 +40,5 @@ keylang {
 
     Block = "{" Exp* "}"
 
-    Exp = Directive | Return | FunctionDef | Lambda | VarDec | Assignment | CondExp | Deref | FunctionCall | ParenExp | BinExp | Literal | ident | Block | comment
+    Exp = Directive | Return | FunctionDef | Lambda | VarDec | Assignment | CondExp | Deref | FunctionCall | ParenExp | UnExp | BinExp | Literal | ident | Block | comment
 }
