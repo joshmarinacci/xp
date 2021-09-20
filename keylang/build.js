@@ -120,18 +120,17 @@ async function compile_js(src_file,out_dir) {
 
     before.push(imports)
     if(board === 'canvas') {
-        before.push("import {KCanvas} from './lib.js'")
+        before.push(`import {KCanvas, GREEN, RED, BLACK, WHITE, BLUE,} from './lib.js'`)
+        before.push(`import {TaskManager, print} from './trinkey.js'`)
         before.push("let screen = new KCanvas(0,0,64,32,'#canvas')")
+        before.push("const tm = new TaskManager()")
     }
     if(board === 'trinkey') {
         before.push("import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'")
         before.push("const tm = new TaskManager()")
     }
 
-    before.push(`let system = {
-            time:0
-        }
-        `)
+    before.push(`let system = { time:0  }\n`)
 
     if(board === 'canvas') {
         after.push('setup()')
@@ -140,7 +139,7 @@ async function compile_js(src_file,out_dir) {
                 screen.clear()
                 system.time = Date.now()
                 loop()
-                setTimeout(do_cycle,1000)
+                setTimeout(do_cycle,100)
             }
         `)
         after.push('do_cycle()')

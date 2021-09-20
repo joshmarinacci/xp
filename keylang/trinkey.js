@@ -49,6 +49,7 @@ export const WHITE = [1,1,1]
 export const GREEN = [0,1,0]
 export const BLACK = [0,0,0]
 export const RED   = [1,0,0]
+export const BLUE   = [0,0,1]
 export function _NOW() {
     return new Date().getTime()
 }

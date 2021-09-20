@@ -24,6 +24,7 @@ export function makeZipWith(binop) {
 
 export function makeBinOp(binop) {
     return function(A,B) {
+        if(!A || !B ) throw new Error("cannot do operationg on undefined variable")
         if(A.data && B.data) return zipWith(A,B,binop)
         if(A.data && !B.data) return A.map(a => binop(a,B))
         if(!A.data && B.data) return B.map(b => binop(A,b))
@@ -90,6 +91,13 @@ export class KColor {
         return `rgb(${Math.floor(this.r*255)}, ${Math.floor(this.g*255)},${Math.floor(this.b*255)})`
     }
 }
+
+export const BLACK = new KColor(0,0,0)
+export const BLUE  = new KColor(0,0,1)
+export const RED   = new KColor(1,0,0)
+export const GREEN = new KColor(0,1,0)
+export const WHITE = new KColor(1,1,1)
+
 export class KObj {
     constructor() {
     }
@@ -152,10 +160,13 @@ export class KRect {
     }
 }
 export class KCanvas extends KRect {
-    constructor(x,y,w,h,selector) {
+    constructor(x,y,w,h) {
         super(x,y,w,h)
         this.scale = 10
-        if(selector) this.canvas = document.querySelector(selector)
+        this.canvas = document.createElement('canvas')
+        this.canvas.width = this.w*this.scale
+        this.canvas.height = this.h*this.scale
+        document.body.append(this.canvas)
     }
     get width() {
         return this.w
