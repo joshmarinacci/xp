@@ -130,16 +130,20 @@ async function compile_js(src_file,out_dir) {
         before.push("const tm = new TaskManager()")
     }
 
-    before.push(`let system = { time:0  }\n`)
+    before.push(`let system = {
+    startTime: new Date().getTime()/1000, 
+    currentTime:0
+      }\n`)
 
     if(board === 'canvas') {
         after.push('setup()')
         after.push(`
             function do_cycle() {
                 screen.clear()
-                system.time = Date.now()
+                system.currentTime = new Date().getTime()/1000
+                system.time = system.currentTime-system.startTime
                 loop()
-                setTimeout(do_cycle,100)
+                setTimeout(do_cycle,10)
             }
         `)
         after.push('do_cycle()')
@@ -148,16 +152,11 @@ async function compile_js(src_file,out_dir) {
         after.push(`tm.register_loop("loop",loop)`)
         after.push(`
             tm.start()
-            let start_time = _NOW()
-            print('start time is',start_time)
             function do_cycle() {
                 tm.cycle()
-                system.time = _NOW()
-                if(system.time > start_time + 20*1000) {
-                    console.log("ending after 20 seconds")
-                } else {
-                    setTimeout(do_cycle,100)
-                }
+                system.currentTime = new Date().getTime()/1000
+                system.time = system.currentTime-system.startTime
+                setTimeout(do_cycle,100)
             }
         `)
         after.push('do_cycle()')
