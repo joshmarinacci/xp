@@ -3,7 +3,8 @@ import ohm from 'ohm-js'
 
 export const AST_TYPES = {
     'vardec':'vardec',
-    unexp: "unexp"
+    unexp: "unexp",
+    conditional: "condition"
 }
 const readFile = fs.promises.readFile
 
@@ -37,15 +38,24 @@ export async function make_grammar_semantics() {
             name: name.ast(),
             args: args.asIteration().children.map(arg => arg.ast())
         }),
-        CondExp:(_1,cond,then_block,_2,else_block) => {
+        CondExp_full:(_1,cond,then_block,_2,else_block) => {
             // console.log('iff',cond.ast(),then_block.ast(),else_block.ast())
             let eb = else_block.ast()
             return ({
-                type:'condition',
+                type:AST_TYPES.conditional,
                 condition:cond.ast(),
                 then_block:then_block.ast(),
                 has_else:eb.length > 0,
                 else_block:(eb.length > 0)?eb[0]:null,
+            })
+        },
+        CondExp_slim:(_1,cond,then) => {
+            return ({
+                type:AST_TYPES.conditional,
+                condition:cond.ast(),
+                then_block:then.ast(),
+                has_else:false,
+                else_block:null,
             })
         },
         Return:(ret,exp)=> ({
@@ -157,6 +167,13 @@ export function eval_ast(ast,scope) {
             console.log("body expression",exp)
             return eval_ast(exp,scope)
         })
+    }
+    if(ast.type === AST_TYPES.conditional) {
+        if(eval_ast(ast.condition)) {
+            return eval_ast(ast.then_block)
+        } else {
+            return eval_ast(ast.else_block)[0]
+        }
     }
     if(ast.type === 'lambda') {
         console.log('ast',JSON.stringify(ast,null,'   '))

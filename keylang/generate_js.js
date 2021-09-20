@@ -94,9 +94,11 @@ export function ast_to_js(ast) {
         let op = UN_OPS[ast.op]
         if (op) return `${op.name}(${ast_to_js(ast.exp)})`
     }
-    if (ast.type === 'condition') {
+    if (ast.type === AST_TYPES.conditional) {
+        let then = ast_to_js(ast.then_block)
+        if(Array.isArray(then)) then = then.join("\n")
         return `if(${ast_to_js(ast.condition)}) {\n`
-            + ast_to_js(ast.then_block).join("\n")
+            + then
             + "}"
             + (ast.has_else ? ' else{ ' + ast_to_js(ast.else_block) + "}" : "")
     }

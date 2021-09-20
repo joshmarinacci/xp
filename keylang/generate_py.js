@@ -190,11 +190,12 @@ export function ast_to_py(ast, out) {
         }
         return (`${name}(${args})`)
     }
-    if (ast.type === 'condition') {
+    if (ast.type === AST_TYPES.conditional) {
         let lines = []
         out.line(`if ${ast_to_py(ast.condition, out)}:`)
         out.indent()
-        ast_to_py(ast.then_block, out)
+        let ret = ast_to_py(ast.then_block, out)
+        if(ret) out.line(ret)
         out.outdent()
         if (ast.has_else) {
             out.line('else:')

@@ -32,7 +32,9 @@ keylang {
     Deref = Exp "." ident
     FunctionCall = Exp "(" ListOf<Exp,","> ")"
     FunctionDef  = "fun" ident "(" ListOf<ident,","> ")" Block
-    CondExp = "if" + ParenExp Block ("else" Block)?
+    CondExp
+        = "if" + ParenExp Block ("else" Block)? --full
+        | "if" Exp Exp --slim
 
     Lambda = "(" ListOf<ident,","> ")" "=>" Block
     Return = "return" Exp
