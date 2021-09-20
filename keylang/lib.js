@@ -226,6 +226,7 @@ export const greaterthan = makeBinOp((a,b)=>a>b)
 export const lessthanorequal = makeBinOp((a,b)=>a<=b)
 export const greaterthanorequal = makeBinOp((a,b)=>a>=b)
 export const equal = makeBinOp((a,b)=>a===b)
+export const not   = (a) => !a
 
 export function choose(list) {
     let n = Math.floor(Math.random()*list.length)
@@ -353,6 +354,7 @@ export const STD_SCOPE = {
     multiply,
     lessthan,
     equal,
+    not,
     randi,
     randf,
     choose,

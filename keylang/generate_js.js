@@ -1,5 +1,10 @@
 import {AST_TYPES} from './grammar.js'
 
+const UN_OPS = {
+    'not':{
+        name:'not'
+    }
+}
 const BIN_OPS = {
     '+': {
         name: 'add'
@@ -84,6 +89,10 @@ export function ast_to_js(ast) {
     if (ast.type === 'binexp') {
         let op = BIN_OPS[ast.op]
         if (op) return `${op.name}(${ast_to_js(ast.exp1)},${ast_to_js(ast.exp2)})`
+    }
+    if (ast.type === AST_TYPES.unexp) {
+        let op = UN_OPS[ast.op]
+        if (op) return `${op.name}(${ast_to_js(ast.exp)})`
     }
     if (ast.type === 'condition') {
         return `if(${ast_to_js(ast.condition)}) {\n`

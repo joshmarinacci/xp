@@ -2,7 +2,12 @@ import {AST_TYPES} from './grammar.js'
 
 const INDENT = "    "
 const PY_BIN_OPS = {
-    '==': {symbol: '==', name: 'equals'}
+    '==': {symbol: '==', name: 'equals'},
+    "or": {symbol: 'or', name:' or'},
+    "and": {symbol: 'and', name:' and'},
+}
+const PY_UN_OPS = {
+    'not': {symbol: 'not', name:'not'}
 }
 
 export class PyOutput {
@@ -138,6 +143,10 @@ export function ast_to_py(ast, out) {
         let A = ast_to_py(ast.exp1, out)
         let B = ast_to_py(ast.exp2, out)
         return `${A} ${PY_BIN_OPS[ast.op].symbol} ${B}`
+    }
+    if (ast.type === AST_TYPES.unexp) {
+        let A = ast_to_py(ast.exp, out)
+        return `${PY_UN_OPS[ast.op].symbol} ${A}`
     }
     if (ast.type === 'comment') {
         out.line(`#${ast.content.trim()}`)
