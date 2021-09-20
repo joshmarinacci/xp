@@ -16,6 +16,11 @@ async function runtests() {
         let ast = semantics(result).ast()
         // console.log('result is',ast)
     }
+    function test_parse_fail(code,res) {
+        console.log(`parsing for failure: "${code}"`)
+        let result = grammar.match(code,'Exp')
+        if(result.succeeded()) throw new Error("failed parsing")
+    }
     function test_eval(scope,code,ans) {
         console.log(`parsing: "${code}"`)
         let result = grammar.match(code,'Exp')
@@ -93,6 +98,20 @@ doit()
     //property access
     test_parse("GET_PROP(dots,'length')")
     test_parse('fun foo() { }')
+
+    test_parse_fail('1abc')
+    test_parse_fail('0xFF')
+    test_parse_fail('1.2.3')
+    test_parse_fail(`"foo'`)
+    test_parse_fail('else.part')
+    test_parse_fail('var true')
+    test_parse_fail('var if')
+    test_parse_fail('var else')
+    test_parse_fail('var fun')
+    test_parse_fail('var and')
+    test_parse_fail('var or')
+    test_parse_fail('var not')
+
 
 
     //conditonals

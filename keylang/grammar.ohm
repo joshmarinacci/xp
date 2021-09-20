@@ -15,7 +15,9 @@ keylang {
 
     Literal = number | string | boolean
 
-    ident = letter (letter | digit | under)* dot_part?
+    keyword = "fun" | "if" | "else" | "true" | "false" | "and" | "or" | "not"
+    ident = ~keyword valid_ident
+    valid_ident = letter (letter | digit | under)* dot_part?
     dot_part = "." ident
 
     comment = space* "//" toEOL

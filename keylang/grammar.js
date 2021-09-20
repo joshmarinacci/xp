@@ -21,7 +21,7 @@ export async function make_grammar_semantics() {
         number_int: (n,a) => ({type:'literal', kind:'integer', value:parseInt(toStr(n,a))}),
         number_float: (n,a, b, c) => ({type:'literal', kind:'float', value:parseFloat(toStr(n,a,b,c))}),
         string: (a, str, c) => ({type:'literal', kind:'string', value:toStr(str)}),
-        ident: (start, rest,suffix) => ({type:"identifier", name:toStr(start,rest,suffix)}),
+        valid_ident: (start, rest,suffix) => ({type:"identifier", name:toStr(start,rest,suffix)}),
         comment:(space,symbol,content) => ({type:'comment',content:content.sourceString}),
         boolean:(s) => ({type:'literal', kind:'boolean', value:toStr(s)}),
         Assignment: (name, e, exp) => ({
