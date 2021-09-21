@@ -221,10 +221,12 @@ export function randf(min,max) {
     if(typeof max === 'undefined')  return randf(0,min)
     return Math.random()*(max-min) + min
 }
-export function range(...args) {
+export function range(min,max,step) {
+    if(typeof max === 'undefined') return range(0,min,1)
+    if(typeof step === 'undefined') step = 1
     let arr = []
-    for(let i=0; i<args[0]; i++) {
-        arr[i]= i
+    for(let i=min; i<max; i=i+step) {
+        arr.push(i)
     }
     return new KList(arr)
 }
@@ -322,13 +324,7 @@ export function HSL(h,s,v) {
 export const STD_SCOPE = {
     List:(...args)=> new KList(...args),
     getPart:(obj,name) => obj[name],
-    range:(...args)=> {
-        let arr = []
-        for(let i=0; i<args[0]; i++) {
-            arr[i]= i
-        }
-        return new KList(arr)
-    },
+    range,
     add,
     subtract,
     divide,

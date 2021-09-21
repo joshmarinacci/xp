@@ -1,4 +1,4 @@
-import {add, divide, KList, makeBinOp, multiply, subtract, zip} from './libs_js/common.js'
+import {range, add, divide, KList, makeBinOp, multiply, subtract, zip} from './libs_js/common.js'
 import {checkEqual} from './util.js'
 
 
@@ -7,6 +7,13 @@ async function run_tests() {
         console.log("comparing",res,ans)
         if(!checkEqual(res,ans)) throw new Error("not equal")
     }
+
+    //the range function
+    test(range(3), new KList(0, 1, 2))
+    test(range(0,3), new KList(0,1,2))
+    test(range(1,3), new KList(1,2))
+    test(range(0,11,5), new KList(0,5,10))
+
     // add two lists
     test(add(new KList(0, 1, 2), new KList(5, 6, 7)), new KList(5, 7, 9))
     test(subtract(new KList(0, 1, 2), new KList(5, 6, 7)), new KList(-5, -5, -5))
