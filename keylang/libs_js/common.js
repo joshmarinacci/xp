@@ -341,6 +341,7 @@ export const STD_SCOPE = {
     remap,
     floor:Math.floor,
     sleep,
+    sine1: (v) => remap(Math.sin(v), -1, 1, 0,1),
     HSL:HSL,
     Color:(...args) => new KColor(...args),
     Canvas:(...args) => new KCanvas(...args),
