@@ -9,9 +9,13 @@ export class KCanvas extends KRect {
             this.canvas.height = this.h
             document.body.append(this.canvas)
         }
+        this.globalAlpha = 1.0
     }
     get width() {
         return this.w
+    }
+    get height() {
+        return this.h
     }
     get size() {
         return [this.w,this.h]
@@ -41,6 +45,17 @@ export class KCanvas extends KRect {
         let ctx = this.canvas.getContext('2d')
         ctx.strokeStyle = color.toCSSColor()
         ctx.strokeRect(rect.x,rect.y,rect.w,rect.h)
+    }
+
+    fillCircle(circle, color) {
+        let ctx = this.canvas.getContext('2d')
+        ctx.save()
+        ctx.globalAlpha = this.globalAlpha
+        ctx.fillStyle = color.toCSSColor()
+        ctx.beginPath()
+        ctx.arc(circle.x,circle.y,circle.r,0,2*Math.PI)
+        ctx.fill()
+        ctx.restore()
     }
 
     clear() {

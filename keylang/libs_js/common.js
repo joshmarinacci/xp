@@ -179,6 +179,25 @@ export class KRect {
     }
 }
 
+export class KCircle{
+    constructor(x,y,r) {
+        this.x = x
+        this.y = y
+        this.r = r
+    }
+    get center() {
+        return new KPoint(this.x,this.y)
+    }
+    set center(kp) {
+        this.x = kp.data[0]
+        this.y = kp.data[1]
+    }
+    get radius() {
+        return this.r
+    }
+}
+
+
 export const add = makeBinOp((a,b)=>a+b)
 export const subtract = makeBinOp((a,b)=>a-b)
 export const multiply = makeBinOp((a,b)=>a*b)
@@ -315,6 +334,7 @@ export const STD_SCOPE = {
     divide,
     multiply,
     lessthan,
+    greaterthan,
     equal,
     not,
     randi,
@@ -331,6 +351,7 @@ export const STD_SCOPE = {
     Point:(...args) => new KPoint(...args),
     Vector:(...args) => new KVector(...args),
     Rect:(...args) => new KRect(...args),
+    Circle:(...args) => new KCircle(...args),
 }
 
 export class TaskManager {

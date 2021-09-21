@@ -21,6 +21,9 @@ const BIN_OPS = {
     '<': {
         name: 'lessthan'
     },
+    '>': {
+        name:'greaterthan'
+    },
     '==': {
         name: 'equal'
     }
@@ -59,6 +62,7 @@ export function ast_to_js(ast) {
         return ['let ' + name]
     }
     const INDENT = "    "
+    const ind = (arr) => arr.map(s => INDENT+s)
     if (ast.type === 'fundef') {
         let args = ast.args.map(a => ast_to_js(a))
         return [
@@ -81,7 +85,7 @@ export function ast_to_js(ast) {
             body = []
         }
         return `(${args.join(",")}) => {
-            ${body} 
+            ${ind(body).join("\n")} 
         return ${last} 
         }`
     }
@@ -100,11 +104,11 @@ export function ast_to_js(ast) {
     }
     if (ast.type === AST_TYPES.conditional) {
         let then = ast_to_js(ast.then_block)
-        if(Array.isArray(then)) then = then.join("\n")
+        if(Array.isArray(then)) then = ind(then).join("\n")
         return `if(${ast_to_js(ast.condition)}) {\n`
             + then
-            + "}"
-            + (ast.has_else ? ' else { ' + ast_to_js(ast.else_block) + " } " : "")
+            + "}\n"
+            + (ast.has_else ? ' else {\n ' + ast_to_js(ast.else_block) + " }\n " : "")
     }
     if (ast.type === 'return') return `return ${ast_to_js(ast.exp)}`
     console.log('converting to js', ast)
