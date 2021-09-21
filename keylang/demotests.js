@@ -28,7 +28,7 @@ async function run_demo(src_path) {
     console.error('stderr:', stderr);
 }
 
-async function force_delete(tempOutDir) {
+export async function force_delete(tempOutDir) {
     await fs.promises.rm(tempOutDir,{recursive:true})
 }
 

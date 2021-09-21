@@ -1,7 +1,8 @@
 import {eval_ast, make_grammar_semantics} from './grammar.js'
-import {add, KCanvas, KColor, KList, KObj, KPoint, KRect, KVector, STD_SCOPE} from './libs_js/common.js'
+import {add, KColor, KList, KObj, KPoint, KRect, KVector, STD_SCOPE} from './libs_js/common.js'
 import {checkEqual, mkdirs, write_to_file} from './util.js'
 import {ast_to_js} from './generate_js.js'
+import {force_delete} from './demotests.js'
 
 
 const scope = STD_SCOPE
@@ -50,7 +51,7 @@ async function runtests() {
         let imports = Object.keys(STD_SCOPE).map(key => {
             return `const ${key} = lib.STD_SCOPE.${key}`
         }).join("\n")
-        res = `import * as lib from "../lib.js"
+        res = `import * as lib from "../libs_js/common.js"
         ${imports}
 export function doit() {
     ${res}
@@ -161,7 +162,7 @@ doit()
     await test_js(scope, `{ let palette = List() palette }`, new KList())
     await test_js(scope, `{ let black = Color(0,0,0) black }`, new KColor(0,0,0))
     await test_js(scope, `{ let red = Color(1,0,0) red}`, new KColor(1,0,0))
-    await test_js(scope, `{ let screen = Canvas(0,0,64,32) screen}`, new KCanvas(0,0,64,32))
+    // await test_js(scope, `{ let screen = Canvas(0,0,64,32) screen}`, new KCanvas(0,0,64,32))
     {
         await test_js(scope, `{
         let black = Color(0,0,0)
@@ -204,6 +205,8 @@ doit()
         await test_js(scope, `4/2`,2)
         await test_js(scope, `4*2`,8)
     }
+
+    await force_delete("./temp")
 }
 
 
