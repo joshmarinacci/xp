@@ -1,15 +1,8 @@
-/*
-
-- [ ] make test_led_button.key to setup a button and blink and change colors on button
-- [ ] create separate lib.py
-- [ ] choose out dir so you can go to /Volumes/CIRCUITPY
-
- */
 import {copy_file, file_to_string, mkdirs, write_to_file} from './util.js'
 import fs from "fs"
 import path from 'path'
 import {make_grammar_semantics} from './grammar.js'
-import {STD_SCOPE} from './common.js'
+import {STD_SCOPE} from './libs_js/common.js'
 import express from "express"
 import {ast_to_js} from './generate_js.js'
 import {ast_to_py, PyOutput} from './generate_py.js'
@@ -169,8 +162,8 @@ async function web_template(src, out_dir) {
 
 
 async function copy_js_libs(out_dir) {
-    await copy_file("./common.js",path.join(out_dir,'common.js'))
-    await copy_file("./trinkey.js",path.join(out_dir,'trinkey.js'))
+    await copy_file("./libs_js/common.js",path.join(out_dir,'common.js'))
+    await copy_file("./libs_js/trinkey.js",path.join(out_dir,'trinkey.js'))
     await copy_file("./reload.js",path.join(out_dir,'reload.js'))
 }
 

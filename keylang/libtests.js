@@ -1,4 +1,4 @@
-import {add, divide, KList, makeBinOp, multiply, subtract, zip} from './common.js'
+import {add, divide, KList, makeBinOp, multiply, subtract, zip} from './libs_js/common.js'
 import {checkEqual} from './util.js'
 
 

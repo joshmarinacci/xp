@@ -1,4 +1,4 @@
-import {KCanvas, KList, KRect, KColor, KObj,KPoint, KVector,randi,randf,choose,range,wrap,add, wait} from "./common.js"
+import {KCanvas, KList, KRect, KColor, KObj,KPoint, KVector,randi,randf,choose,range,wrap,add, wait} from "./libs_js/common.js"
 
 let screen = new KCanvas(0,0,64,32,"#canvas")
 /* ========== everything above here will be generated */
