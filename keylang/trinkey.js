@@ -1,3 +1,5 @@
+import {isBrowser} from './common.js'
+
 export const board = {
     SWITCH:"SWITCH",
 }
@@ -7,15 +9,17 @@ class _LEDButton {
     constructor(id) {
         console.log("DOM LED button")
         this.id = id
-        this.elem = document.createElement('button')
-        this.elem.id = "button_"+id
-        this.elem.innerText = `button ${id}`
-        this.elem.classList.add("ledbutton")
-        document.body.append(this.elem)
         this.clicked = false
-        this.elem.addEventListener('click',() => {
-            this.clicked = true
-        })
+        if(isBrowser()) {
+            this.elem = document.createElement('button')
+            this.elem.id = "button_" + id
+            this.elem.innerText = `button ${id}`
+            this.elem.classList.add("ledbutton")
+            document.body.append(this.elem)
+            this.elem.addEventListener('click', () => {
+                this.clicked = true
+            })
+        }
     }
     wasClicked() {
         return this.clicked

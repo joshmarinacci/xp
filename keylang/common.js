@@ -1,3 +1,11 @@
+export function isHeadless() {
+    if(process && process.env && process.env.ARTLANG_HEADLESS) return true
+    return false
+}
+export function isBrowser() {
+    return !isHeadless()
+}
+
 export function zip(A, B) {
     let i = 0
     let out = new KList()
@@ -165,10 +173,12 @@ export class KCanvas extends KRect {
     constructor(x,y,w,h) {
         super(x,y,w,h)
         this.scale = 10
-        this.canvas = document.createElement('canvas')
-        this.canvas.width = this.w*this.scale
-        this.canvas.height = this.h*this.scale
-        document.body.append(this.canvas)
+        if(isBrowser()) {
+            this.canvas = document.createElement('canvas')
+            this.canvas.width = this.w * this.scale
+            this.canvas.height = this.h * this.scale
+            document.body.append(this.canvas)
+        }
     }
     get width() {
         return this.w
@@ -177,18 +187,20 @@ export class KCanvas extends KRect {
         return [this.w,this.h]
     }
     setPixel(xy,color) {
-        let ctx = this.canvas.getContext('2d')
-        let x = xy.get(0)
-        let y = xy.get(1)
-        // console.log("drawing at",x,y,color)
-        ctx.fillStyle = color.toCSSColor()
-        // console.log("fillstyle is",color.toCSSColor())
-        ctx.fillRect(
-            Math.floor(x)*this.scale,
-            Math.floor(y)*this.scale,
-            this.scale,
-            this.scale,
-        )
+        if(isBrowser()) {
+            let ctx = this.canvas.getContext('2d')
+            let x = xy.get(0)
+            let y = xy.get(1)
+            // console.log("drawing at",x,y,color)
+            ctx.fillStyle = color.toCSSColor()
+            // console.log("fillstyle is",color.toCSSColor())
+            ctx.fillRect(
+                Math.floor(x) * this.scale,
+                Math.floor(y) * this.scale,
+                this.scale,
+                this.scale,
+            )
+        }
     }
     fillRect(rect,color) {
         // console.log("filling",rect,color)
@@ -224,9 +236,11 @@ export class KCanvas extends KRect {
     }
 
     clear() {
-        let ctx = this.canvas.getContext('2d')
-        ctx.fillStyle = 'black'
-        ctx.fillRect(0,0,this.canvas.width,this.canvas.height)
+        if(isBrowser()) {
+            let ctx = this.canvas.getContext('2d')
+            ctx.fillStyle = 'black'
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        }
     }
 }
 
