@@ -67,15 +67,19 @@ async function compile_js(src_file,out_dir) {
     }).join("\n")
 
     before.push(imports)
+    before.push(`import {GREEN, RED, BLACK, WHITE, BLUE, isHeadless, TaskManager, print} from './common.js'`)
     if(board === 'canvas') {
-        before.push(`import {KCanvas, GREEN, RED, BLACK, WHITE, BLUE, isHeadless, TaskManager, print} from './common.js'`)
+        before.push(`import {KCanvas} from './canvas.js'`)
         before.push("let screen = new KCanvas(0,0,64,32,'#canvas')")
-        before.push("const tm = new TaskManager()")
+    }
+    if(board === 'matrix') {
+        before.push(`import {KCanvas} from './matrixportal.js'`)
+        before.push("let screen = new KCanvas(0,0,64,32,'#canvas')")
     }
     if(board === 'trinkey') {
         before.push("import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'")
-        before.push("const tm = new TaskManager()")
     }
+    before.push("const tm = new TaskManager()")
 
     before.push(`let system = {
     startTime: new Date().getTime()/1000, 
@@ -134,6 +138,9 @@ async function web_template(src, out_dir) {
 
 async function copy_js_libs(out_dir) {
     await copy_file("./libs_js/common.js",path.join(out_dir,'common.js'))
+    await copy_file("./libs_js/canvas.js",path.join(out_dir,'canvas.js'))
+    await copy_file("./libs_js/matrixportal.js",path.join(out_dir,'matrixportal.js'))
+    await copy_file("./libs_js/neotrellis.js",path.join(out_dir,'neotrellis.js'))
     await copy_file("./libs_js/trinkey.js",path.join(out_dir,'trinkey.js'))
     await copy_file("./reload.js",path.join(out_dir,'reload.js'))
 }

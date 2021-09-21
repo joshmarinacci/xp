@@ -3,6 +3,7 @@ import {file_to_string} from './util.js'
 import {join} from 'path'
 import child_process from 'child_process'
 import {promisify} from 'util'
+import fs from 'fs'
 const exec2 = promisify(child_process.exec);
 
 async function run_demo(src_path) {
@@ -27,10 +28,16 @@ async function run_demo(src_path) {
     console.error('stderr:', stderr);
 }
 
+async function force_delete(tempOutDir) {
+    await fs.promises.rm(tempOutDir,{recursive:true})
+}
+
 async function run_all_demos() {
     await run_demo("demos/falling_dots.key")
     await run_demo("demos/split_rects.key")
     await run_demo("demos/mouse_afk.key")
     await run_demo("demos/test_led_button.key")
+
+    await force_delete("temp_out_dir")
 }
 run_all_demos().then(()=>console.log("all done"))
