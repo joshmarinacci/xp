@@ -40,9 +40,14 @@ async function compile_js(src_file,out_dir) {
         }
         if(dir.name.name === 'type') {
             if(dir.args[0].value === 'start') {
-                console.log("got a setup directive",dir)
+                // console.log("got a setup directive",dir)
                 let name = dir.args[1].name
                 after.push(`tm.register_start("${name}",${name})`)
+            }
+            if(dir.args[0].value === 'loop') {
+                // console.log("got a loop directive")
+                let name = dir.args[1].name
+                after.push(`tm.register_loop("${name}",${name})`)
             }
             if(dir.args[0].value === 'event') {
                 // console.log("got an event directive",dir)
@@ -70,11 +75,11 @@ async function compile_js(src_file,out_dir) {
     before.push(`import {GREEN, RED, BLACK, WHITE, BLUE, isHeadless, TaskManager, print} from './common.js'`)
     if(board === 'canvas') {
         before.push(`import {KCanvas} from './canvas.js'`)
-        before.push("let screen = new KCanvas(0,0,640,320,'#canvas')")
+        before.push("let screen = new KCanvas(0,0,640,320)")
     }
     if(board === 'matrix') {
         before.push(`import {KCanvas} from './matrixportal.js'`)
-        before.push("let screen = new KCanvas(0,0,64,32,'#canvas')")
+        before.push("let screen = new KCanvas(0,0,64,32)")
     }
     if(board === 'trinkey') {
         before.push("import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'")
@@ -87,8 +92,8 @@ async function compile_js(src_file,out_dir) {
       }\n`)
 
     if(board === 'canvas') {
-        after.push('setup()')
         after.push(`
+            tm.start()
             let _loop_count = 0
             function do_cycle() {
                 _loop_count++
@@ -98,7 +103,7 @@ async function compile_js(src_file,out_dir) {
                 // screen.clear()
                 system.currentTime = new Date().getTime()/1000
                 system.time = system.currentTime-system.startTime
-                loop()
+                tm.cycle()
                 setTimeout(do_cycle,10)
             }
         `)
@@ -109,9 +114,22 @@ async function compile_js(src_file,out_dir) {
         after.push(`
             tm.start()
             function do_cycle() {
-                tm.cycle()
                 system.currentTime = new Date().getTime()/1000
                 system.time = system.currentTime-system.startTime
+                tm.cycle()
+                setTimeout(do_cycle,100)
+            }
+        `)
+        after.push('do_cycle()')
+    }
+    if(board === 'matrix') {
+        // after.push(`tm.register_loop("loop",loop)`)
+        after.push(`
+            tm.start()
+            function do_cycle() {
+                system.currentTime = new Date().getTime()/1000
+                system.time = system.currentTime-system.startTime
+                tm.cycle()
                 setTimeout(do_cycle,100)
             }
         `)

@@ -339,6 +339,7 @@ export const STD_SCOPE = {
     wrap,
     lerp,
     remap,
+    floor:Math.floor,
     sleep,
     HSL:HSL,
     Color:(...args) => new KColor(...args),
