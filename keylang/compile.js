@@ -7,33 +7,6 @@ import express from "express"
 import {ast_to_js} from './generate_js.js'
 import {ast_to_py, PyOutput} from './generate_py.js'
 
-function process_options(argv,defs) {
-    argv = argv.slice(2)
-    for(let i=0; i<argv.length; i++) {
-        // console.log(argv[i])
-        if(argv[i] === '--src') {
-            i++
-            defs.src = argv[i]
-        }
-        if(argv[i] === '--watch')  defs.watch = true
-        if(argv[i] === '--browser')  defs.browser = true
-        if(argv[i] === '--target') {
-            i++
-            defs.target = argv[i]
-        }
-        if(argv[i] === '--outdir') {
-            i++
-            defs.outdir = argv[i]
-        }
-        if(argv[i] === '--outfile') {
-            i++
-            defs.outfile = argv[i]
-        }
-    }
-    return defs
-}
-
-
 function strip_directives(ast) {
     let directives = ast.body.filter(c => c.type === 'directive')
     ast.body = ast.body.filter(c => c.type !== 'directive')
@@ -95,8 +68,7 @@ async function compile_js(src_file,out_dir) {
 
     before.push(imports)
     if(board === 'canvas') {
-        before.push(`import {KCanvas, GREEN, RED, BLACK, WHITE, BLUE, isHeadless} from './common.js'`)
-        before.push(`import {TaskManager, print} from './trinkey.js'`)
+        before.push(`import {KCanvas, GREEN, RED, BLACK, WHITE, BLUE, isHeadless, TaskManager, print} from './common.js'`)
         before.push("let screen = new KCanvas(0,0,64,32,'#canvas')")
         before.push("const tm = new TaskManager()")
     }
@@ -159,7 +131,6 @@ async function web_template(src, out_dir) {
     templ = templ.replace("${RELOAD}","./reload.js")
     await write_to_file(path.join(out_dir, name+".html"), templ)
 }
-
 
 async function copy_js_libs(out_dir) {
     await copy_file("./libs_js/common.js",path.join(out_dir,'common.js'))
@@ -246,7 +217,7 @@ async function compile_py(opts) {
 }
 
 async function copy_py_libs(outdir) {
-    await copy_file("tasks.py",path.join(outdir,'tasks.py'))
+    await copy_file("libs_py/tasks.py",path.join(outdir,'tasks.py'))
 }
 
 export async function build(opts) {

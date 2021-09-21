@@ -1,1 +1,4 @@
-console.log("loading the matrix portal")
+export const board = {
+    SWITCH:"SWITCH",
+}
+

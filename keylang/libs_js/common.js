@@ -1,9 +1,17 @@
 export function isHeadless() {
-    if(process && process.env && process.env.ARTLANG_HEADLESS) return true
+    if(typeof process !== 'undefined' && process.env && process.env.ARTLANG_HEADLESS) return true
     return false
 }
 export function isBrowser() {
     return !isHeadless()
+}
+
+export function print(...args) {
+    console.log(...args)
+}
+
+export function _NOW() {
+    return new Date().getTime()
 }
 
 export function zip(A, B) {
@@ -396,4 +404,42 @@ export const STD_SCOPE = {
     Point:(...args) => new KPoint(...args),
     Vector:(...args) => new KVector(...args),
     Rect:(...args) => new KRect(...args),
+}
+
+export class TaskManager {
+    constructor() {
+        this.tasks = []
+    }
+    register_start(name,fun) {
+        this.register_task('start',name,fun)
+    }
+    register_loop(name,fun) {
+        this.register_task('loop',name,fun)
+    }
+    register_event(name,fun) {
+        this.register_task('event',name,fun)
+    }
+
+    register_task(type, name, fun) {
+        this.tasks.push({
+            name:'name',
+            type:type,
+            fun:fun,
+            start:_NOW(),
+            delay:0,
+        })
+    }
+
+    start() {
+        print("starting the task master")
+        this.tasks.filter(t => t.type === 'start').forEach(task => {
+            task.fun()
+        })
+    }
+    cycle() {
+        // print("task master cycling")
+        this.tasks.filter(t => t.type === 'event').forEach(task => task.fun())
+        this.tasks.filter(t => t.type === 'loop').forEach(task => task.fun())
+        this.tasks.filter(t => t.type === 'mode').forEach(task => task.fun())
+    }
 }
