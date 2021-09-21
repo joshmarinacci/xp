@@ -110,8 +110,11 @@ doit()
     test_parse_fail('var else')
     test_parse_fail('var fun')
     test_parse_fail('var and')
+    test_parse('var andy')
     test_parse_fail('var or')
+    test_parse('var orion')
     test_parse_fail('var not')
+    test_parse('var nottingham')
 
 
 

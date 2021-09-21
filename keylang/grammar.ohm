@@ -17,7 +17,8 @@ keylang {
 
     Literal = ListLiteral | number | string | boolean
 
-    keyword = "fun" | "if" | "else" | "true" | "false" | "and" | "or" | "not"
+    not = "not" ~ident
+    keyword = "fun" | "if" | "else" | "true" | "false" | "and" | "or" | not
     ident = ~keyword valid_ident
     valid_ident = letter (letter | digit | under)* dot_part?
     dot_part = "." ident
