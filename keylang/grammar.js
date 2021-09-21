@@ -1,10 +1,12 @@
 import fs from 'fs'
 import ohm from 'ohm-js'
+import {KList} from './libs_js/common.js'
 
 export const AST_TYPES = {
-    'vardec':'vardec',
+    vardec:'vardec',
     unexp: "unexp",
-    conditional: "condition"
+    conditional: "condition",
+    listliteral: 'listliteral'
 }
 const readFile = fs.promises.readFile
 
@@ -24,6 +26,12 @@ export async function make_grammar_semantics() {
         valid_ident: (start, rest,suffix) => ({type:"identifier", name:toStr(start,rest,suffix)}),
         comment:(space,symbol,content) => ({type:'comment',content:content.sourceString}),
         boolean:(s) => ({type:'literal', kind:'boolean', value:toStr(s)}),
+        ListLiteral:(_1, elements, _2) => {
+            return {
+                type: AST_TYPES.listliteral,
+                elements: elements.asIteration().children.map(arg => arg.ast())
+            }
+        },
         Assignment: (name, e, exp) => ({
             type: 'assignment',
             name: name.ast(),
@@ -173,6 +181,10 @@ export function eval_ast(ast,scope) {
             console.log("body expression",exp)
             return eval_ast(exp,scope)
         })
+    }
+    if(ast.type === AST_TYPES.listliteral) {
+        let f_args = ast.elements.map(arg => eval_ast(arg,scope))
+        return new KList(f_args)
     }
     if(ast.type === AST_TYPES.conditional) {
         if(eval_ast(ast.condition)) {

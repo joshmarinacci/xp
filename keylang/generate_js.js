@@ -40,6 +40,10 @@ export function ast_to_js(ast) {
         if (ast.kind === 'string') return `"${ast.value}"`
     }
     if (ast.type === 'identifier') return "" + ast.name
+    if (ast.type === AST_TYPES.listliteral) {
+        let elements = ast.elements.map(a => ast_to_js(a))
+        return 'List(' + elements.join(", ") + ')'
+    }
     if (ast.type === 'funcall') {
         let args = ast.args.map(a => ast_to_js(a))
         let name = ast_to_js(ast.name)

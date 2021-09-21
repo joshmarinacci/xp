@@ -126,6 +126,14 @@ doit()
     // test_parse('if a {b}')
     test_parse('if a b')
 
+
+    // list literals
+    test_parse('[0]')
+    test_parse('[1,2]')
+    test_parse('[1,2,3]')
+    test_parse('[a,b,c]')
+    test_parse('[4+5,5,"foo"]')
+
     test_eval('','4',4)
     test_eval('','4.8',4.8)
     test_eval('',"'foo'","foo")
@@ -143,6 +151,7 @@ doit()
     test_eval('','if (false) { 5 } else { 6 }',6)
 
     test_eval(scope,'List(0,0,0)',new KList(0,0,0))
+    test_eval(scope, '[0,0,0]', new KList(0,0,0))
     test_eval(scope,'range(3)',new KList([0,1,2]))
     // test_eval(scope,`getPart(range(3),'get')`,new KList().get)
     test_eval(scope,'part = 3',3)
@@ -201,6 +210,7 @@ doit()
     {
         await test_js(scope, `4+2`,6)
         await test_js(scope, `List(4,4)+List(2,2)`,new KList(6,6))
+        await test_js(scope, `[4,4]+[2,2]`,new KList(6,6))
         await test_js(scope, `4-2`,2)
         await test_js(scope, `4/2`,2)
         await test_js(scope, `4*2`,8)

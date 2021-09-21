@@ -13,7 +13,9 @@ keylang {
 
     boolean = "true" | "false"
 
-    Literal = number | string | boolean
+    ListLiteral = "[" ListOf<Exp,","> "]"
+
+    Literal = ListLiteral | number | string | boolean
 
     keyword = "fun" | "if" | "else" | "true" | "false" | "and" | "or" | "not"
     ident = ~keyword valid_ident
