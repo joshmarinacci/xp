@@ -5,8 +5,10 @@ export class KCanvas extends KRect {
         super(x,y,w,h)
         if(isBrowser()) {
             this.canvas = document.createElement('canvas')
-            this.canvas.width = this.w
-            this.canvas.height = this.h
+            this.canvas.width = this.w * window.devicePixelRatio
+            this.canvas.height = this.h * window.devicePixelRatio
+            this.canvas.style.width = `${this.w}px`
+            this.canvas.style.height = `${this.h}px`
             document.body.append(this.canvas)
         }
         this.globalAlpha = 1.0
@@ -64,6 +66,27 @@ export class KCanvas extends KRect {
             ctx.fillStyle = 'black'
             ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
         }
+    }
+
+    drawPolyLine(line,color) {
+        let ctx = this.canvas.getContext('2d')
+        ctx.save()
+        ctx.scale(2,2)
+        ctx.translate(0.5,0.5)
+        ctx.strokeStyle = color.toCSSColor()
+        // ctx.strokeStyle = 'black'
+        ctx.lineWidth = 0.1
+        ctx.beginPath()
+        for(let i=0; i<line.length; i++) {
+            let pt = line.get(i)
+            if(i === 0) {
+                ctx.moveTo(pt.get(0),pt.get(1))
+            } else {
+                ctx.lineTo(pt.get(0),pt.get(1))
+            }
+        }
+        ctx.stroke()
+        ctx.restore()
     }
 }
 

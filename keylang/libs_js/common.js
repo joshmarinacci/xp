@@ -62,6 +62,7 @@ export class KList {
             }
         })
         this.get = (index)=>this.data[index]
+        this.set = (index, value) => this.data[index] = value
     }
     get length() {
         return this.data.length

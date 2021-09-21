@@ -75,7 +75,7 @@ async function compile_js(src_file,out_dir) {
     before.push(`import {GREEN, RED, BLACK, WHITE, BLUE, isHeadless, TaskManager, print} from './common.js'`)
     if(board === 'canvas') {
         before.push(`import {KCanvas} from './canvas.js'`)
-        before.push("let screen = new KCanvas(0,0,640,320)")
+        // before.push("let screen = new KCanvas(0,0,640,320)")
     }
     if(board === 'matrix') {
         before.push(`import {KCanvas} from './matrixportal.js'`)
