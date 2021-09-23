@@ -58,3 +58,7 @@ export function checkEqual(A, B) {
     if (A !== B) throw new Error(`Not equal: ${A} ${B}`)
     return true
 }
+
+export async function force_delete(tempOutDir) {
+    await fs.promises.rm(tempOutDir, {recursive: true})
+}
