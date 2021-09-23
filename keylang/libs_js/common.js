@@ -110,6 +110,30 @@ export class KColor {
         return `rgb(${Math.floor(this.r*255)}, ${Math.floor(this.g*255)},${Math.floor(this.b*255)})`
     }
 }
+export class KeyColor {
+    constructor(args) {
+        this.red = 0
+        this.green = 0
+        this.blue = 0
+        if(args.hasOwnProperty('red')) this.red = args.red
+        if(args.hasOwnProperty('green')) this.green = args.green
+        if(args.hasOwnProperty('blue')) this.blue = args.blue
+        if(args.hasOwnProperty('gray')) {
+            this.red = 0.5
+            this.green =  0.5
+            this.blue = 0.5
+        }
+        if(args.hasOwnProperty('hue')) {
+            let hue = args.hue
+            let sat = args.sat
+            let lit = args.lit
+            let [red,green,blue] = hslToRgb(hue,sat,lit)
+            this.red = red
+            this.green = green
+            this.blue = blue
+        }
+    }
+}
 
 export const BLACK = new KColor(0,0,0)
 export const BLUE  = new KColor(0,0,1)
@@ -345,6 +369,7 @@ export const STD_SCOPE = {
     sine1: (v) => remap(Math.sin(v), -1, 1, 0,1),
     HSL:HSL,
     Color:(...args) => new KColor(...args),
+    KeyColor:(...args) => new KeyColor(...args),
     Canvas:(...args) => new KCanvas(...args),
     Obj:(...args) => new KObj(...args),
     Point:(...args) => new KPoint(...args),

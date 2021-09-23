@@ -20,7 +20,7 @@ export async function file_to_string(src_file) {
 }
 
 export async function write_to_file(path, data) {
-    log("writing to", path)
+    // log("writing to", path)
     await fs.promises.writeFile(path, data)
 }
 
@@ -30,7 +30,7 @@ export async function copy_file(src, dst) {
 }
 
 export async function mkdirs(dir) {
-    log("making dir", dir)
+    // log("making dir", dir)
     await fs.promises.mkdir(dir, {recursive: true})
 }
 

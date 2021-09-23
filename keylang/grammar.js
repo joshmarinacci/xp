@@ -6,8 +6,15 @@ export const AST_TYPES = {
     vardec:'vardec',
     unexp: "unexp",
     conditional: "condition",
-    listliteral: 'listliteral'
+    listliteral: 'listliteral',
+    funcall: 'funcall',
+    keywordarg: 'keywordarg'
 }
+export const FUN_CALL_TYPES = {
+    positional: 'positional',
+    keyword: "keyword"
+}
+
 const readFile = fs.promises.readFile
 
 export async function make_grammar() {
@@ -47,10 +54,22 @@ export async function make_grammar_semantics() {
             name:name.ast(),
             expression: exp.ast(),
         }),
-        FunctionCall: (name, p1, args, p2) => ({
-            type: "funcall",
+        PositionalFunCall: (name, p1, args, p2) => ({
+            type: AST_TYPES.funcall,
             name: name.ast(),
+            form:FUN_CALL_TYPES.positional,
             args: args.asIteration().children.map(arg => arg.ast())
+        }),
+        KeywordFunCall:(name, p1, args, p2) => ({
+            type: AST_TYPES.funcall,
+            name: name.ast(),
+            form:FUN_CALL_TYPES.keyword,
+            args: args.asIteration().children.map(arg => arg.ast())
+        }),
+        KeywordArg:(name, _1, value) => ({
+            type: AST_TYPES.keywordarg,
+            name: name.ast(),
+            value:value.ast(),
         }),
         CondExp_full:(_1,cond,then_block,_2,else_block) => {
             // console.log('iff',cond.ast(),then_block.ast(),else_block.ast())

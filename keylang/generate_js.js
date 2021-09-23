@@ -1,4 +1,4 @@
-import {AST_TYPES} from './grammar.js'
+import {AST_TYPES, FUN_CALL_TYPES} from './grammar.js'
 
 const UN_OPS = {
     'not':{
@@ -50,7 +50,11 @@ export function ast_to_js(ast) {
         if(name === 'wait') {
             return `await sleep(${args.join(",")})`
         }
-        return `${ast_to_js(ast.name)}(${args.join(",")})`
+        if(ast.form === FUN_CALL_TYPES.keyword) {
+            return `${name}({${args.join(',')}})`
+        } else {
+            return `${name}(${args.join(",")})`
+        }
     }
     if (ast.type === 'assignment') {
         let name = ast_to_js(ast.name)
@@ -115,6 +119,7 @@ export function ast_to_js(ast) {
             + (ast.has_else ? ' else {\n ' + ast_to_js(ast.else_block) + " }\n " : "")
     }
     if (ast.type === 'return') return `return ${ast_to_js(ast.exp)}`
+    if (ast.type === AST_TYPES.keywordarg) return `${ast_to_js(ast.name)}:${ast_to_js(ast.value)}`
     console.log('converting to js', ast)
     throw new Error(`unknown AST node ${ast.type}`)
 }

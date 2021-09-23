@@ -1,8 +1,17 @@
 import {eval_ast, make_grammar_semantics} from './grammar.js'
-import {add, KColor, KList, KObj, KPoint, KRect, KVector, STD_SCOPE} from './libs_js/common.js'
-import {checkEqual, mkdirs, write_to_file} from './util.js'
+import {
+    add,
+    KColor,
+    KeyColor,
+    KList,
+    KObj,
+    KPoint,
+    KRect,
+    KVector,
+    STD_SCOPE
+} from './libs_js/common.js'
+import {checkEqual, force_delete, mkdirs, write_to_file} from './util.js'
 import {ast_to_js} from './generate_js.js'
-import {force_delete} from './demotests.js'
 
 
 const scope = STD_SCOPE
@@ -11,7 +20,7 @@ const scope = STD_SCOPE
 async function runtests() {
     const [grammar, semantics] = await make_grammar_semantics()
     function test_parse(code,res) {
-        console.log(`parsing: "${code}"`)
+        // console.log(`parsing: "${code}"`)
         let result = grammar.match(code,'Exp')
         if(!result.succeeded()) throw new Error("failed parsing")
         let ast = semantics(result).ast()
@@ -23,12 +32,12 @@ async function runtests() {
         if(result.succeeded()) throw new Error("failed parsing")
     }
     function test_eval(scope,code,ans) {
-        console.log(`parsing: "${code}"`)
+        // console.log(`parsing: "${code}"`)
         let result = grammar.match(code,'Exp')
         if(!result.succeeded()) throw new Error("failed parsing")
         let ast = semantics(result).ast()
         let res = eval_ast(ast,scope)
-        console.log("comparing",res,ans)
+        // console.log("comparing",res,ans)
         if(!checkEqual(res,ans)) throw new Error("not equal")
     }
     async function test_js(scope, code, ans) {
@@ -38,7 +47,7 @@ async function runtests() {
         await mkdirs("temp")
         let ast = semantics(result).ast()
         let res = ast_to_js(ast)
-        console.log("initial res is",res)
+        // console.log("initial res is",res)
         if(Array.isArray(res)) {
             let last = res[res.length-1]
             last = 'return '+last
@@ -87,7 +96,7 @@ doit()
     test_parse('dot = true')
     test_parse('dot = tod')
 
-    //function call
+    //function call with positional arguments
     test_parse('foo()')
     test_parse('foo(5)')
     test_parse(`foo('bar')`)
@@ -95,6 +104,13 @@ doit()
     test_parse(`foo('bar',foo('baz'))`)
     test_parse(`dot = foo('bar')`)
     test_parse('range(10).map()')
+
+    //function call with keyword arguments
+    test_parse(`foo()`)
+    test_parse(`foo(x:5)`)
+    test_parse(`foo(x:5,y:"foo")`)
+    test_parse(`foo(y:'foo', x:5)`)
+    test_parse(`foo(x:5,y:"foo")`)
 
     //property access
     test_parse("GET_PROP(dots,'length')")
@@ -174,6 +190,9 @@ doit()
     await test_js(scope, `{ let palette = List() palette }`, new KList())
     await test_js(scope, `{ let black = Color(0,0,0) black }`, new KColor(0,0,0))
     await test_js(scope, `{ let red = Color(1,0,0) red}`, new KColor(1,0,0))
+    await test_js(scope, `{ let black = KeyColor(red:0, blue:0, green:0) black }`, new KeyColor({red:0,blue:0,green:0}))
+    await test_js(scope, `{ let gray = KeyColor(gray:0.5) gray }`, new KeyColor({red:0.5,blue:0.5,green:0.5}))
+    await test_js(scope, `{ let red = KeyColor(hue:0, sat:1, lit:0.5) red }`, new KeyColor({hue:0,sat:1,lit:0.5}))
     // await test_js(scope, `{ let screen = Canvas(0,0,64,32) screen}`, new KCanvas(0,0,64,32))
     {
         await test_js(scope, `{

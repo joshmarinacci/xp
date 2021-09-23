@@ -37,7 +37,10 @@ keylang {
         | "var" ident --dec
 
     Deref = Exp "." ident
-    FunctionCall = Exp "(" ListOf<Exp,","> ")"
+    FunctionCall = PositionalFunCall | KeywordFunCall
+    PositionalFunCall = Exp "(" ListOf<Exp,","> ")"
+    KeywordFunCall = Exp "(" ListOf<KeywordArg,","> ")"
+    KeywordArg = ident ":" Exp
     FunctionDef  = "fun" ident "(" ListOf<ident,","> ")" Block
     CondExp
         = "if" + ParenExp Block ("else" Block)? --full
