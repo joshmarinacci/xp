@@ -204,11 +204,16 @@ export class KRect {
     }
 }
 
+function hasProp(args,name) {
+    return args.hasOwnProperty(name)
+}
+
 export class KCircle{
-    constructor(x,y,r) {
-        this.x = x
-        this.y = y
-        this.r = r
+    constructor(args) {
+        if(hasProp(args,'x')) this.x = args.x
+        if(hasProp(args,'y')) this.y = args.y
+        if(hasProp(args,'r')) this.r = args.r
+        if(hasProp(args,'radius')) this.r = args.radius
     }
     get center() {
         return new KPoint(this.x,this.y)
