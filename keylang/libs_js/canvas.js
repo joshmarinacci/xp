@@ -5,10 +5,10 @@ export class KCanvas extends KRect {
         super(x,y,w,h)
         if(isBrowser()) {
             this.canvas = document.createElement('canvas')
-            this.canvas.width = this.w * window.devicePixelRatio
-            this.canvas.height = this.h * window.devicePixelRatio
-            this.canvas.style.width = `${this.w}px`
-            this.canvas.style.height = `${this.h}px`
+            this.canvas.width = this.w
+            this.canvas.height = this.h
+            this.canvas.style.width = `${this.w/window.devicePixelRatio}px`
+            this.canvas.style.height = `${this.h/window.devicePixelRatio}px`
             document.body.append(this.canvas)
         }
         this.globalAlpha = 1.0
