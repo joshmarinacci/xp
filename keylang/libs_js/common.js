@@ -116,8 +116,11 @@ export class KeyColor {
         this.green = 0
         this.blue = 0
         if(args.hasOwnProperty('red')) this.red = args.red
+        if(args.hasOwnProperty('r')) this.red = args.r
         if(args.hasOwnProperty('green')) this.green = args.green
+        if(hasProp(args,'g')) this.green = args.g
         if(args.hasOwnProperty('blue')) this.blue = args.blue
+        if(hasProp(args,'b')) this.blue = args.b
         if(args.hasOwnProperty('gray')) {
             this.red = args.gray
             this.green =  args.gray
@@ -132,6 +135,9 @@ export class KeyColor {
             this.green = green
             this.blue = blue
         }
+    }
+    toCSSColor() {
+        return `rgb(${Math.floor(this.red*255)}, ${Math.floor(this.green*255)},${Math.floor(this.blue*255)})`
     }
 }
 
@@ -368,7 +374,7 @@ function hslToRgb(h, s, l){
         b = hue2rgb(p, q, h - 1/3);
     }
 
-    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    return [r,g,b]//, Math.round(g * 255), Math.round(b * 255)];
 }
 
 export function HSL(h,s,v) {
