@@ -162,44 +162,68 @@ export class KRect {
             let opts = x
             this.x = opts.x || 0
             this.y = opts.y || 0
-            this.w = opts.w || 0
-            this.h = opts.h || 0
+            this._w = opts.w || 10
+            this._h = opts.h || 10
         } else {
             this.x = x
             this.y = y
-            this.w = w
-            this.h = h
+            this._w = w
+            this._h = h
         }
     }
     get x1() {
         return this.x
     }
     get x2() {
-        return this.x + this.w
+        return this.x + this._w
     }
     get y1() {
         return this.y
     }
     get y2() {
-        return this.y + this.h
+        return this.y + this._h
+    }
+    get w() {
+        return this._w
+    }
+    get h() {
+        return this._h
+    }
+    get size() {
+        return new KPoint(this._w,this._h)
+    }
+    get left() {
+        return this.x
+    }
+    get right() {
+        return this.x + this._w
+    }
+    get top() {
+        return this.y
+    }
+    get bottom() {
+        return this.y2
     }
     split(dir,amount) {
         if (dir === 'h') return new KList(
-            new KRect(
-                this.x1, this.y1,
-                lerp(amount, this.x1, this.x2), this.y2,),
-            new KRect(
-                lerp(amount, this.x1, this.x2), this.y1,
-                this.x2, this.y2,
-            )
+            new KRect({
+                x:this.x1,
+                y:this.y1,
+                w:lerp(amount, this.x1, this.x2),
+                h:this.y2
+            }),
+            new KRect({
+                x:lerp(amount, this.x1, this.x2), y:this.y1,
+            w:this.x2, h:this.y2,
+            })
         )
         if (dir === 'v') return new KList(
-            new KRect(
-                this.x1, this.y1,
-                this.x2, lerp(amount, this.y1, this.y2)),
-            new KRect(
-                this.x1, lerp(amount, this.y1, this.y2),
-                this.x2, this.y2)
+            new KRect({
+                x:this.x1, y:this.y1,
+                w:this.x2, h:lerp(amount, this.y1, this.y2)}),
+            new KRect({
+                x:this.x1, y:lerp(amount, this.y1, this.y2),
+                w:this.x2, h:this.y2})
         )
     }
 }
