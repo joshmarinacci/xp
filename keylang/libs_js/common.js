@@ -119,9 +119,9 @@ export class KeyColor {
         if(args.hasOwnProperty('green')) this.green = args.green
         if(args.hasOwnProperty('blue')) this.blue = args.blue
         if(args.hasOwnProperty('gray')) {
-            this.red = 0.5
-            this.green =  0.5
-            this.blue = 0.5
+            this.red = args.gray
+            this.green =  args.gray
+            this.blue = args.gray
         }
         if(args.hasOwnProperty('hue')) {
             let hue = args.hue
