@@ -25,7 +25,6 @@ export function zip(A, B) {
         out.push(new KList(a,b))
         i += 1
     }
-    // console.log("zip produced",JSON.stringify(out,null,'  '))
     return out
 }
 export function zipWith(A,B,binop) {

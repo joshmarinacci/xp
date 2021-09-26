@@ -75,7 +75,7 @@ export class KCanvas extends KRect {
         ctx.translate(0.5,0.5)
         ctx.strokeStyle = color.toCSSColor()
         // ctx.strokeStyle = 'black'
-        ctx.lineWidth = 0.1
+        ctx.lineWidth = 1.0
         ctx.beginPath()
         for(let i=0; i<line.length; i++) {
             let pt = line.get(i)
@@ -90,3 +90,5 @@ export class KCanvas extends KRect {
     }
 }
 
+
+    
