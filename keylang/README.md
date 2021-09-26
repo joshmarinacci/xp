@@ -3,11 +3,6 @@ So this is a language made for making art.
 It will compile the art lang into javscript then run it in the browser.
 It can also compile it to curcuit puthon for a nwo trelis or a rgb matricks.
 It's still in the works it is just basics right now but it is compleatly open source so you can dablle in what ever you want.
-
-
-# Note's
-
-
 # AutoKey language features
 
 It should be possible to write code without using the shift key or caps lock
@@ -109,3 +104,36 @@ type Rect {
     }
 }
 ```
+The art lang can make rects cirle colors and hues.
+Hear is a example
+
+```Javascript
+@board('canvas')
+
+let rects
+let WIDTH = 800
+let LENGTH = 800
+let WIDTH2 = 300
+screen = new KCanvas(0,0,WIDTH,LENGTH)
+
+@type("start",setup)
+fun setup() {
+    rects = range(screen.top,screen.bottom,30).map((i)=> {
+        let r = Rect(y:i, w:randf(200,700), h:20)
+        let v = screen.width - r.w
+        r.x = v/2
+        r.hue = randf(0,0.2)
+        r
+    })
+}
+
+@type("loop",loop)
+fun loop() {
+    rects.every((rect) => {
+        rect.hue = wrap(rect.hue + 0.004,0,1)
+        rect.color = KeyColor(hue:rect.hue, sat:0.6, lit:0.5)
+        screen.fillRect(rect,rect.color)
+    })
+}
+```
+This will make rects of diferent width and change the color's.
