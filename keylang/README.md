@@ -79,7 +79,7 @@ test(prelude,'add(dots.get(0).xy,dots.get(0).v)',[2,4])
 ```
 
 
-# types
+# Types
 
 you can define custom objects or 'classes'
 
@@ -104,10 +104,9 @@ type Rect {
     }
 }
 ```
-The art lang can make rects cirle colors and hues.
-Hear is a example
+* The art lang can make rects cirle's , colors and hues. Hear is a example
 
-```Javascript
+```javascript
 @board('canvas')
 
 let rects
