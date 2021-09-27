@@ -12,7 +12,7 @@ import {
 import {checkEqual} from './util.js'
 
 function test(res,ans) {
-    console.log("comparing",res,ans)
+    // console.log("comparing",res,ans)
     if(!checkEqual(res,ans)) throw new Error("not equal")
 }
 
@@ -73,7 +73,7 @@ class MDView {
         }
     }
     get1(n) {
-        console.log("getting from shape",this.shape, this.realShape)
+        // console.log("getting from shape",this.shape, this.realShape)
         if(this.shape[0]!== null && this.shape[1] === null) {
             let i = this.shape[0]
             return this.array.get2(i,n)
@@ -81,7 +81,7 @@ class MDView {
     }
 
     set1(n,v) {
-        console.log('setting from view',this.shape,this.realShape, 'to parrent array',this.array.shape)
+        // console.log('setting from view',this.shape,this.realShape, 'to parrent array',this.array.shape)
         if(this.shape[0]!== null && this.shape[1] === null) {
             let i = this.shape[0]
             let j = n
@@ -90,7 +90,7 @@ class MDView {
     }
 
     toJSFlatArray() {
-        console.log("shape is",this.shape)
+        // console.log("shape is",this.shape)
         let out = []
         if(this.shape[0]===null && this.shape[1] !== null){
             let i = this.shape[1]
@@ -113,7 +113,7 @@ class MDView {
 
 class MDArray {
     constructor(...args) {
-        console.log('args',args)
+        // console.log('args',args)
         let rank = args.length
         this.rank = args.length
         this.shape = args
@@ -174,7 +174,7 @@ class MDArray {
 
 function mulMD(arr1, arr2) {
     if(typeof arr2.rank === 'undefined') {
-        console.log("second is a scalar")
+        // console.log("second is a scalar")
         let arr3 = new MDArray(...arr1.shape)
         for(let i=0; i<arr1.shape[0]; i++) {
             for (let j = 0; j < arr1.shape[1]; j++) {
@@ -204,9 +204,9 @@ function mulMD(arr1, arr2) {
 }
 
 function addMD(arr1, arr2) {
-    console.log("adding a1",arr1.rank,arr1.shape,arr1.realShape, ' a2  ', arr2.rank,arr2.shape, arr2.realShape)
+    // console.log("adding a1",arr1.rank,arr1.shape,arr1.realShape, ' a2  ', arr2.rank,arr2.shape, arr2.realShape)
     let arr3 = new MDArray(...arr1.realShape)
-    console.log("out is",arr3)
+    // console.log("out is",arr3)
     for(let j=0; j<arr1.realShape[0]; j++) {
         let a = arr1.get1(j)
         let b = arr2.get1(j)
@@ -224,12 +224,12 @@ function MDArray_fromList(data, w, h) {
 }
 
 function incrementMD(arr, b) {
-    console.log('increment array is shape',arr.shape, arr.realShape)
+    // console.log('increment array is shape',arr.shape, arr.realShape)
     if(arr.rank === 1) {
         for(let i=0; i<arr.realShape[0]; i++) {
             let a = arr.get1(i)
             let c= a + b
-            console.log(i, ' ' ,a,b,c)
+            // console.log(i, ' ' ,a,b,c)
             arr.set1(i,c)
         }
     }
@@ -238,7 +238,7 @@ function incrementMD(arr, b) {
             for(let j=0; j<arr.shape[1]; j++) {
                 let a = arr.get2(i,j)
                 let c = a + b
-                console.log(a,b,c)
+                // console.log(a,b,c)
                 arr.set2(i,j,c)
             }
         }
@@ -303,9 +303,9 @@ async function mdarray_tests() {
         //1d plus a slice of 2d
         let mat = new MDArray(3,3)
         mat.fillWith((x,y) => x*y)
-        console.log('mat is',mat)
+        // console.log('mat is',mat)
         let slice = mat.slice(1,null)
-        console.log("slice is",slice, slice.toJSFlatArray())
+        // console.log("slice is",slice, slice.toJSFlatArray())
         let vec = new MDArray(3)
         vec.fill(3)
 
@@ -321,7 +321,6 @@ async function mdarray_tests() {
         arr2.fill(1)
         arr2.set2(0,1,0)
         arr2.set2(1,1,0)
-        console.log("comparings",mat.toJSFlatArray(),arr2.toJSFlatArray())
         test(mat.toJSFlatArray(), arr2.toJSFlatArray())
         test(mat.toJSFlatArray(),[1,1,0,0,1,1])
     }
