@@ -136,3 +136,21 @@ fun loop() {
 }
 ```
 This will make rects of diferent width and change the color's.
+
+
+# Rect Line code
+```javascript
+@board('canvas')
+let line
+line = [[10,100], [100,100]] 
+var rects
+@type("start",setup)
+
+fun setup() {
+screen = new KCanvas(0,0,500,500)
+screen.drawPolyLine(line,BLACK)
+screen.strokeRect(rect,BLACK)
+}
+
+```
+* This code will make a canavas and make a streight line on it is just a example to build on.
