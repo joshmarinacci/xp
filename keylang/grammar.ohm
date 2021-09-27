@@ -52,5 +52,5 @@ keylang {
 
     Block = "{" Exp* "}"
 
-    Exp = Directive | Return | FunctionDef | Lambda | VarDec | Assignment | CondExp | Deref | FunctionCall | ParenExp | UnExp | BinExp | Literal | ident | Block | comment
+    Exp = Directive | Return | FunctionDef | Lambda | VarDec | Assignment | CondExp | Deref | FunctionCall | BinExp | ParenExp | UnExp | Literal | ident | Block | comment
 }

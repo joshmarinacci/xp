@@ -153,6 +153,14 @@ doit()
     test_parse('[a,b,c]')
     test_parse('[4+5,5,"foo"]')
 
+
+    //complex edge cases
+    test_parse('r.x = 5')
+    test_parse('(4)/2')
+    test_parse('(screen.width - r.w)/2')
+    test_parse('r.x = (screen.width - r.w)/2')
+
+    //evaluations
     test_eval('','4',4)
     test_eval('','4.8',4.8)
     test_eval('',"'foo'","foo")
