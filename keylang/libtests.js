@@ -1,13 +1,22 @@
-import {range, add, divide, KList, makeBinOp, multiply, subtract, zip} from './libs_js/common.js'
+import {
+    range,
+    add,
+    divide,
+    KList,
+    makeBinOp,
+    multiply,
+    subtract,
+    zip,
+    KRect
+} from './libs_js/common.js'
 import {checkEqual} from './util.js'
 
+function test(res,ans) {
+    console.log("comparing",res,ans)
+    if(!checkEqual(res,ans)) throw new Error("not equal")
+}
 
-async function run_tests() {
-    function test(res,ans) {
-        console.log("comparing",res,ans)
-        if(!checkEqual(res,ans)) throw new Error("not equal")
-    }
-
+async function list_tests() {
     //the range function
     test(range(3), new KList(0, 1, 2))
     test(range(0,3), new KList(0,1,2))
@@ -33,4 +42,338 @@ async function run_tests() {
     test(add_lists(new KList(0,1,2),5), new KList(5,6,7))
 
 }
-run_tests().then(()=>console.log("all tests pass"))
+
+async function math_tests() {
+    test(rando('foo').randf(),0.005)
+    test(rando('bar').randf(),0.158)
+    test(sine1(0),0.5)
+    test(sine1(Math.PI/2),1)
+    test(sine1(Math.PI),0.5)
+}
+
+class MDView {
+    constructor(array, i, j) {
+        this.array = array
+        this.shape=[i,j]
+        this.realShape = [i,j]
+        if(this.shape[0]===null) {
+            this.realShape[0] = this.array.shape[0]
+        } else {
+            this.realShape[0] = null
+        }
+        if(this.shape[1]===null) {
+            this.realShape[1] = this.array.shape[1]
+        } else {
+            this.realShape[1] = null
+        }
+        this.realShape = this.realShape.filter(t => t !== null)
+        this.rank = 0
+        for(let n=0; n<this.shape.length; n++) {
+            if(this.shape[n] != null) this.rank++
+        }
+    }
+    get1(n) {
+        console.log("getting from shape",this.shape, this.realShape)
+        if(this.shape[0]!== null && this.shape[1] === null) {
+            let i = this.shape[0]
+            return this.array.get2(i,n)
+        }
+    }
+
+    set1(n,v) {
+        console.log('setting from view',this.shape,this.realShape, 'to parrent array',this.array.shape)
+        if(this.shape[0]!== null && this.shape[1] === null) {
+            let i = this.shape[0]
+            let j = n
+            this.array.set2(i, j, v)
+        }
+    }
+
+    toJSFlatArray() {
+        console.log("shape is",this.shape)
+        let out = []
+        if(this.shape[0]===null && this.shape[1] !== null){
+            let i = this.shape[1]
+            for(let j=0; j<this.array.shape[0]; j++) {
+                out.push(this.array.get2(i,j))
+            }
+        }
+        if(this.shape[0]!== null && this.shape[1] === null) {
+            let i = this.shape[0]
+            for(let j=0; j<this.array.shape[1]; j++) {
+                // let n = this.array.index(i,j)
+                // console.log("n is",this.array.get2(i,j))
+                out.push(this.array.get2(i,j))
+            }
+        }
+        return out
+    }
+
+}
+
+class MDArray {
+    constructor(...args) {
+        console.log('args',args)
+        let rank = args.length
+        this.rank = args.length
+        this.shape = args
+        let internal_length = 1
+        for(let i=0; i<args.length; i++) {
+            internal_length *= args[i]
+        }
+        // console.log("internal length", internal_length)
+        if(rank === 0) {
+            this.data = 0
+        } else {
+            this.data = new Array(internal_length)
+            this.data.fill(0)
+        }
+    }
+    toJSFlatArray() {
+        return this.data.slice()
+    }
+
+    set1(i, v) {
+        this.data[i] = v
+    }
+    set2(i,j, v) {
+        let n = i + j*this.shape[0]
+        this.data[n] = v
+    }
+    index(i,j) {
+        return i + j*this.shape[0]
+    }
+
+    fill(val) {
+        this.data.fill(val)
+    }
+    get(i) {
+        return this.data[i]
+    }
+    get1(i) {
+        return this.data[i]
+    }
+    get2(i,j) {
+        let n = i + j*this.shape[0]
+        return this.data[n]
+    }
+
+    fillWith(cb) {
+        for(let i=0; i<this.shape[0]; i++) {
+            for (let j = 0; j < this.shape[1]; j++) {
+                let n = this.index(i,j)
+                this.data[n] = cb(i, j)
+            }
+        }
+    }
+
+    slice(i,j) {
+        return new MDView(this, i,j)
+    }
+}
+
+function mulMD(arr1, arr2) {
+    if(typeof arr2.rank === 'undefined') {
+        console.log("second is a scalar")
+        let arr3 = new MDArray(...arr1.shape)
+        for(let i=0; i<arr1.shape[0]; i++) {
+            for (let j = 0; j < arr1.shape[1]; j++) {
+                let a = arr1.get2(i, j)
+                let b = arr2
+                let v = a * b
+                arr3.set2(i, j, v)
+            }
+        }
+        return arr3
+    }
+
+    if(arr1.rank !== arr2.rank) {
+        throw new Error(`cannot multiply arrays of different ranks ${arr1.rank} !== ${arr2.rank}`)
+    }
+
+    let arr3 = new MDArray(...arr1.shape)
+    for(let i=0; i<arr1.shape[0]; i++) {
+        for(let j=0; j<arr1.shape[1]; j++) {
+            let a = arr1.get2(i,j)
+            let b = arr2.get2(i,j)
+            let v = a * b
+            arr3.set2(i,j,v)
+        }
+    }
+    return arr3
+}
+
+function addMD(arr1, arr2) {
+    console.log("adding a1",arr1.rank,arr1.shape,arr1.realShape, ' a2  ', arr2.rank,arr2.shape, arr2.realShape)
+    let arr3 = new MDArray(...arr1.realShape)
+    console.log("out is",arr3)
+    for(let j=0; j<arr1.realShape[0]; j++) {
+        let a = arr1.get1(j)
+        let b = arr2.get1(j)
+        let v = a + b
+        // console.log(a,b,v)
+        arr3.set1(j,v)
+    }
+    return arr3
+}
+
+function MDArray_fromList(data, w, h) {
+    let arr = new MDArray(w,h)
+    arr.data = data
+    return arr
+}
+
+function incrementMD(arr, b) {
+    console.log('increment array is shape',arr.shape, arr.realShape)
+    if(arr.rank === 1) {
+        for(let i=0; i<arr.realShape[0]; i++) {
+            let a = arr.get1(i)
+            let c= a + b
+            console.log(i, ' ' ,a,b,c)
+            arr.set1(i,c)
+        }
+    }
+    if(arr.rank === 2) {
+        for(let i=0; i<arr.shape[0]; i++) {
+            for(let j=0; j<arr.shape[1]; j++) {
+                let a = arr.get2(i,j)
+                let c = a + b
+                console.log(a,b,c)
+                arr.set2(i,j,c)
+            }
+        }
+    }
+}
+
+async function mdarray_tests() {
+    test(new MDArray(2).rank,1)
+    test(new MDArray(2).shape,[2])
+    test(new MDArray(2,2).rank,2)
+    test(new MDArray(2,2).shape,[2,2])
+    test(new MDArray(2,2,2).rank,3)
+    test(new MDArray(2,2,2).shape,[2,2,2])
+
+    {
+        //set values in a 1d array
+        let arr = new MDArray(4)
+        test(arr.shape,[4])
+        test(arr.toJSFlatArray(),[0,0,0,0])
+        arr.set1(2,88)
+        test(arr.toJSFlatArray(),[0,0,88,0])
+    }
+    {
+        //set values in a 2d array
+        let arr = new MDArray(3,4)
+        test(arr.shape,[3,4])
+        test(arr.toJSFlatArray(),[0,0,0 ,  0,0,0,  0,0,0,  0,0,0])
+        arr.set2(0,0,88)
+        arr.set2(2,3,88)
+        test(arr.toJSFlatArray(),[88,0,0,  0,0,0,  0,0,0,  0,0,88])
+    }
+    {
+        let arr1 = new MDArray(2,2)
+        arr1.fill(5)
+        let arr2 = new MDArray(2,2)
+        arr2.fill(6)
+        let arr3 = mulMD(arr1,arr2)
+        test(arr3.toJSFlatArray(),[30,30,30,30])
+    }
+    {
+        let arr1 = new MDArray(4,4)
+        arr1.fillWith((i,j)=>i*j)
+        //look at the first row
+        test(arr1.slice(null,0).toJSFlatArray(), [0,0,0,0])
+        //first column
+        test(arr1.slice(0,null).toJSFlatArray(), [0,0,0,0])
+        //look at the second row
+        test(arr1.slice(null,1).toJSFlatArray(), [0,1,2,3])
+        //third row
+        test(arr1.slice(null,2).toJSFlatArray(), [0,2,4,6])
+        //fourth row
+        test(arr1.slice(null,3).toJSFlatArray(), [0,3,6,9])
+    }
+    {
+        //scalar times 2d
+        //3x3 array
+        let arr = new MDArray(3,3)
+        arr.fill(4)
+        test(mulMD(arr,2).toJSFlatArray(),[8,8,8, 8,8,8, 8,8,8])
+    }
+    {
+        //1d plus a slice of 2d
+        let mat = new MDArray(3,3)
+        mat.fillWith((x,y) => x*y)
+        console.log('mat is',mat)
+        let slice = mat.slice(1,null)
+        console.log("slice is",slice, slice.toJSFlatArray())
+        let vec = new MDArray(3)
+        vec.fill(3)
+
+        test(addMD(mat.slice(1,null),vec).toJSFlatArray(),[3,4,5])
+    }
+    {
+        //init a 2d array
+        let data = [1,1,
+                    0,0,
+                    1,1,]
+        let mat = MDArray_fromList(data,2,3)
+        let arr2 = new MDArray(2,3)
+        arr2.fill(1)
+        arr2.set2(0,1,0)
+        arr2.set2(1,1,0)
+        console.log("comparings",mat.toJSFlatArray(),arr2.toJSFlatArray())
+        test(mat.toJSFlatArray(), arr2.toJSFlatArray())
+        test(mat.toJSFlatArray(),[1,1,0,0,1,1])
+    }
+    {
+        //add and assign to the y component of a list of points as a 2d array
+        let data = [1,2,
+                    3,4,
+                    5,6]
+        let arr = MDArray_fromList(data,2,3)
+        // console.log('arr is',arr.toJSFlatArray())
+        //move down by four pixels
+        let slice = arr.slice(1,null)
+        // console.log("sliceo is",slice,slice.toJSFlatArray())
+        // console.log('element 0 of slice is',slice.get1(0))
+        incrementMD(slice,4)
+        test(arr.toJSFlatArray(),[1,6, 3,8, 5,10])
+    }
+    /*
+    {
+        //an array of rects
+        let rects = range(3).map((i)=>new KRect({x:i,w:10}))
+        let arr = MDArray.fromList(rects,3,1)
+        test(arr.slice('x').asJSFlatArray(),[0,1,2])
+        test(arr.slice('y').asJSFlatArray(),[0,0,0])
+        test(arr.slice('w').asJSFlatArray(),[10,10,10])
+        increment(arr.slice('y'),5)
+        test(arr.slice('y').asJSFlatArray(),[5,5,5])
+    }
+    {
+        //make a 5x5 image of black
+        let img1 = MDArray(5,5,3).fill(0)
+        //make the first row red
+        img1.slice(null,0,0).fill(1)
+        //make the second row 50% gray
+        img1.slice(null,1,null).fill(0.5)
+        //make the third row dark green
+        img1.slice(null,1,1).fill(0.3)
+        //brighten the entire image by multiplying by 2 and clamping
+        let img2 = clamp(multiply(img1,2),0,1)
+        //first row should still be full red
+        test(img2.slice(null,0,null).asJSFlatArray(),[1,0,0, 1,0,0, 1,0,0, 1,0,0, 1,0,0])
+        //second row should now be pure white
+        test(img2.slice(null,1,null).asJSFlatArray(),[1,1,1, 1,1,1, 1,1,1, 1,1,1, 1,1,1])
+        //third row should be brighter green
+        test(img2.slice(null,2,null).asJSFlatArray(),[0,0.6,0, 0,0.6,0, 0,0.6,0, 0,0.6,0, 0,0.6,0, ])
+    }
+*/
+}
+
+Promise.all([
+    // list_tests(),
+    // math_tests(),
+    mdarray_tests()
+])
+    .then(()=>console.log("all tests pass"))
