@@ -81,6 +81,10 @@ async function compile_js(src_file,out_dir) {
         before.push(`import {KCanvas} from './matrixportal.js'`)
         before.push("let screen = new KCanvas(0,0,64,32)")
     }
+    if(board === 'trellis') {
+        before.push(`import {Trellis} from './neotrellis.js'`)
+        before.push("let trellis = new Trellis(8,4)")
+    }
     if(board === 'trinkey') {
         before.push("import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'")
     }
@@ -134,6 +138,19 @@ async function compile_js(src_file,out_dir) {
             }
         `)
         after.push('do_cycle()')
+    }
+    if(board === 'trellis') {
+        after.push(`
+            tm.start()
+            function do_cycle() {
+                system.currentTime = new Date().getTime()/1000
+                system.time = system.currentTime-system.startTime
+                tm.cycle()
+                trellis.cycle()
+                setTimeout(do_cycle,100)
+            }
+            do_cycle()
+        `)
     }
     generated_src = before.join("\n") + generated_src + after.join("\n")
     // console.log('final',generated_src)
