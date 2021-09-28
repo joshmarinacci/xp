@@ -441,7 +441,7 @@ export class TaskManager {
     _run_task(task) {
         // console.log("task is",task.name)
         if(task.pending) {
-            console.log(`${task.name} already running`)
+            // console.log(`${task.name} already running`)
             return
         }
         // console.log(`starting ${task.name}`)
