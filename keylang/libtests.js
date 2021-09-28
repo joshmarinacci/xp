@@ -12,7 +12,7 @@ import {
 import {checkEqual} from './util.js'
 
 function test(res,ans) {
-    // console.log("comparing",res,ans)
+    console.log("comparing",res,ans)
     if(!checkEqual(res,ans)) throw new Error("not equal")
 }
 
@@ -259,10 +259,21 @@ const mulMD = makeBinOpMD((a,b)=>a*b)
 const addMD = makeBinOpMD((a,b)=>a+b)
 const incrementMD = makeBinOpMDAssign((a,b)=>a+b)
 
-function MDArray_fromList(data, w, h) {
-    let arr = new MDArray(w,h)
+function MDArray_fromList(data, shape) {
+    let arr = new MDArray(...shape)
     arr.data = data
     return arr
+}
+
+function rangeMD(min,max,step) {
+    if(typeof step === 'undefined') step = 1
+    if(typeof max === 'undefined') return rangeMD(0,min)
+    let data = []
+    console.log("range",min,max,step)
+    for(let i=min; i<max; i+=step) {
+        data.push(i)
+    }
+    return MDArray_fromList(data,[data.length])
 }
 
 async function mdarray_tests() {
@@ -272,6 +283,34 @@ async function mdarray_tests() {
     test(new MDArray(2,2).shape,[2,2])
     test(new MDArray(2,2,2).rank,3)
     test(new MDArray(2,2,2).shape,[2,2,2])
+
+    // //the range function
+    test(rangeMD(3).toJSFlatArray(),[0,1,2])
+    test(rangeMD(0,3).toJSFlatArray(), [0,1,2])
+    test(rangeMD(1,3).toJSFlatArray(), [1,2])
+    test(rangeMD(0,11,5).toJSFlatArray(), [0,5,10])
+
+    // // add two lists
+    // test(addMD(
+    //     MDArray_fromList([0,1,2],[3]),
+    //     MDArray_fromList([5, 6, 7],[3])
+    // ).toJSFlatArray(), [5,7,9])
+    // test(subtract(new KList(0, 1, 2), new KList(5, 6, 7)), new KList(-5, -5, -5))
+    // test(multiply(new KList(0, 1, 2), new KList(5, 6, 7)), new KList(0, 6, 14))
+    // test(divide(new KList(0, 1, 2), new KList(5, 6, 7)), new KList(0, 1/6, 2/7))
+    //
+    // test(zip(new KList(0,1,2), new KList(3,2,1)), new KList(new KList(0,3),new KList(1,2),new KList(2,1)))
+    // test(zip(new KList(0,1,2), new KList(3,2,1)).map(l=>l.get(0)+l.get(1)), new KList(3,3,3))
+    //
+    // //make our own add and subtract functions that work on anything
+    // const add_lists = makeBinOp((a,b) => a+b)
+    // const sub_lists = makeBinOp((a,b) => a-b)
+    //
+    // test(add_lists(new KList(0,1,2), new KList(3,2,1)), new KList(3,3,3))
+    // test(sub_lists(new KList(0,1,2), new KList(3,2,1)), new KList(-3,-1,1))
+    // test(add_lists(5,new KList(0,1,2)), new KList(5,6,7))
+    // test(add_lists(new KList(0,1,2),5), new KList(5,6,7))
+
 
     {
         //set values in a 1d array
@@ -336,7 +375,7 @@ async function mdarray_tests() {
         let data = [1,1,
                     0,0,
                     1,1,]
-        let mat = MDArray_fromList(data,2,3)
+        let mat = MDArray_fromList(data,[2,3])
         let arr2 = new MDArray(2,3)
         arr2.fill(1)
         arr2.set2(0,1,0)
@@ -349,7 +388,7 @@ async function mdarray_tests() {
         let data = [1,2,
                     3,4,
                     5,6]
-        let arr = MDArray_fromList(data,2,3)
+        let arr = MDArray_fromList(data,[2,3])
         // console.log('arr is',arr.toJSFlatArray())
         //move down by four pixels
         let slice = arr.slice(1,null)
