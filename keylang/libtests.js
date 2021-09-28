@@ -172,77 +172,97 @@ class MDArray {
     }
 }
 
-function mulMD(arr1, arr2) {
-    if(typeof arr2.rank === 'undefined') {
-        // console.log("second is a scalar")
+function makeBinOpMD(op) {
+    return function(arr1, arr2) {
+        // console.log("make bin op md",arr1,arr2)
+        if(typeof arr2.rank === 'undefined') {
+            // console.log('array vs scalar')
+            let arr3 = new MDArray(...arr1.shape)
+            for(let i=0; i<arr1.shape[0]; i++) {
+                for (let j = 0; j < arr1.shape[1]; j++) {
+                    let a = arr1.get2(i, j)
+                    let b = arr2
+                    let v = op(a,b)
+                    arr3.set2(i, j, v)
+                }
+            }
+            return arr3
+        }
+
+        if(arr1.rank !== arr2.rank) {
+            throw new Error(`cannot multiply arrays of different ranks ${arr1.rank} !== ${arr2.rank}`)
+        }
+
         let arr3 = new MDArray(...arr1.shape)
+        if(arr1.rank === 1) {
+            // console.log("rank 1 binop")
+            for(let i=0; i<arr1.realShape[0]; i++) {
+                let a = arr1.get1(i)
+                let b = arr2.get1(i)
+                let c= op(a,b)
+                // console.log(i, ' ' ,a,b,c)
+                arr3.set1(i,c)
+            }
+        }
         for(let i=0; i<arr1.shape[0]; i++) {
-            for (let j = 0; j < arr1.shape[1]; j++) {
-                let a = arr1.get2(i, j)
-                let b = arr2
-                let v = a * b
-                arr3.set2(i, j, v)
+            for(let j=0; j<arr1.shape[1]; j++) {
+                let a = arr1.get2(i,j)
+                let b = arr2.get2(i,j)
+                let v = op(a,b)
+                arr3.set2(i,j,v)
             }
         }
         return arr3
     }
-
-    if(arr1.rank !== arr2.rank) {
-        throw new Error(`cannot multiply arrays of different ranks ${arr1.rank} !== ${arr2.rank}`)
-    }
-
-    let arr3 = new MDArray(...arr1.shape)
-    for(let i=0; i<arr1.shape[0]; i++) {
-        for(let j=0; j<arr1.shape[1]; j++) {
-            let a = arr1.get2(i,j)
-            let b = arr2.get2(i,j)
-            let v = a * b
-            arr3.set2(i,j,v)
+}
+function makeBinOpMDAssign(op) {
+    return function(arr1, arr2) {
+        if(typeof arr2.rank === 'undefined') {
+            if(arr1.rank === 1) {
+                for(let i=0; i<arr1.realShape[0]; i++) {
+                    let a = arr1.get1(i)
+                    let b = arr2
+                    let c= op(a,b)
+                    // console.log(i, ' ' ,a,b,c)
+                    arr1.set1(i,c)
+                }
+                return
+            }
+            for(let i=0; i<arr1.shape[0]; i++) {
+                for (let j = 0; j < arr1.shape[1]; j++) {
+                    let a = arr1.get2(i, j)
+                    let b = arr2
+                    let v = op(a,b)
+                    // console(i,j, ' ' , a,b,v)
+                    arr1.set2(i, j, v)
+                }
+            }
+            return
         }
-    }
-    return arr3
-}
 
-function addMD(arr1, arr2) {
-    // console.log("adding a1",arr1.rank,arr1.shape,arr1.realShape, ' a2  ', arr2.rank,arr2.shape, arr2.realShape)
-    let arr3 = new MDArray(...arr1.realShape)
-    // console.log("out is",arr3)
-    for(let j=0; j<arr1.realShape[0]; j++) {
-        let a = arr1.get1(j)
-        let b = arr2.get1(j)
-        let v = a + b
-        // console.log(a,b,v)
-        arr3.set1(j,v)
+        if(arr1.rank !== arr2.rank) {
+            throw new Error(`cannot multiply arrays of different ranks ${arr1.rank} !== ${arr2.rank}`)
+        }
+
+        for(let i=0; i<arr1.shape[0]; i++) {
+            for(let j=0; j<arr1.shape[1]; j++) {
+                let a = arr1.get2(i,j)
+                let b = arr2.get2(i,j)
+                let v = op(a,b)
+                arr2.set2(i,j,v)
+            }
+        }
+        return
     }
-    return arr3
 }
+const mulMD = makeBinOpMD((a,b)=>a*b)
+const addMD = makeBinOpMD((a,b)=>a+b)
+const incrementMD = makeBinOpMDAssign((a,b)=>a+b)
 
 function MDArray_fromList(data, w, h) {
     let arr = new MDArray(w,h)
     arr.data = data
     return arr
-}
-
-function incrementMD(arr, b) {
-    // console.log('increment array is shape',arr.shape, arr.realShape)
-    if(arr.rank === 1) {
-        for(let i=0; i<arr.realShape[0]; i++) {
-            let a = arr.get1(i)
-            let c= a + b
-            // console.log(i, ' ' ,a,b,c)
-            arr.set1(i,c)
-        }
-    }
-    if(arr.rank === 2) {
-        for(let i=0; i<arr.shape[0]; i++) {
-            for(let j=0; j<arr.shape[1]; j++) {
-                let a = arr.get2(i,j)
-                let c = a + b
-                // console.log(a,b,c)
-                arr.set2(i,j,c)
-            }
-        }
-    }
 }
 
 async function mdarray_tests() {
@@ -303,13 +323,13 @@ async function mdarray_tests() {
         //1d plus a slice of 2d
         let mat = new MDArray(3,3)
         mat.fillWith((x,y) => x*y)
-        // console.log('mat is',mat)
+        // console.log('mat is',mat, mat.toJSFlatArray())
         let slice = mat.slice(1,null)
         // console.log("slice is",slice, slice.toJSFlatArray())
         let vec = new MDArray(3)
         vec.fill(3)
-
-        test(addMD(mat.slice(1,null),vec).toJSFlatArray(),[3,4,5])
+        // console.log("vec is",vec)
+        test(addMD(slice,vec).toJSFlatArray(),[3,4,5])
     }
     {
         //init a 2d array
