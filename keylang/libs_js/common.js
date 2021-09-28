@@ -429,24 +429,39 @@ export class TaskManager {
 
     register_task(type, name, fun) {
         this.tasks.push({
-            name:'name',
+            name:name,
             type:type,
             fun:fun,
             start:_NOW(),
             delay:0,
+            pending:false,
+        })
+    }
+
+    _run_task(task) {
+        // console.log("task is",task.name)
+        if(task.pending) {
+            console.log(`${task.name} already running`)
+            return
+        }
+        // console.log(`starting ${task.name}`)
+        task.pending = true
+        let prom = task.fun()
+        if(!prom) console.error("task did not return a promise!")
+        prom.then(() => {
+            // console.log("task",task.name,'ended')
+            task.pending = false
         })
     }
 
     start() {
         print("starting the task master")
-        this.tasks.filter(t => t.type === 'start').forEach(task => {
-            task.fun()
-        })
+        this.tasks.filter(t => t.type === 'start').forEach(this._run_task)
     }
     cycle() {
         // print("task master cycling")
-        this.tasks.filter(t => t.type === 'event').forEach(task => task.fun())
-        this.tasks.filter(t => t.type === 'loop').forEach(task => task.fun())
-        this.tasks.filter(t => t.type === 'mode').forEach(task => task.fun())
+        this.tasks.filter(t => t.type === 'event').forEach(this._run_task)
+        this.tasks.filter(t => t.type === 'loop').forEach(this._run_task)
+        this.tasks.filter(t => t.type === 'mode').forEach(this._run_task)
     }
 }

@@ -1,4 +1,4 @@
-import {isBrowser, KColor} from './common.js'
+import {isBrowser, KColor, KList} from './common.js'
 
 export const board = {
     SWITCH:"SWITCH",
@@ -50,6 +50,7 @@ export class Trellis {
         }
     }
     set(coords, color) {
+        if(coords instanceof KList) coords = coords.data
         let n = coords[0] + coords[1]*this.w
         this.buttons[n].style.backgroundColor = color.toCSSColor()
     }
