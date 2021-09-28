@@ -12,7 +12,7 @@ import {
 import {checkEqual} from './util.js'
 
 function test(res,ans) {
-    console.log("comparing",res,ans)
+    // console.log("comparing",res,ans)
     if(!checkEqual(res,ans)) throw new Error("not equal")
 }
 
@@ -55,33 +55,25 @@ class MDView {
     constructor(array, def) {
         // console.log("making a slice view",array,def)
         this.array = array
-        this.fakeShape=def
-        this.realShape = []
+        this.sliceshape=def
+        this.shape = []
         def.forEach((d,i) => {
-            // console.log("term",d)
             if(d !== null) {
-                this.realShape.push(this.array.shape[i])
+                this.shape.push(this.array.shape[i])
             }
         })
-        // this.rank = 0
-        this.rank = this.fakeShape.filter( t => t !== null).length
-        // for(let n=0; n<this.fakeShape.length; n++) {
-        //     if(this.fakeShape[n] != null) this.rank++
-        // }
-        // console.log("slice",this.rank,this.realShape,this.toJSFlatArray())
+        this.rank = def.filter( t => t !== null).length
     }
     get1(n) {
-        // console.log("getting from shape",this.shape, this.realShape)
-        if(this.fakeShape[0]!== null && this.fakeShape[1] === null) {
-            let i = this.fakeShape[0]
+        if(this.sliceshape[0]!== null && this.sliceshape[1] === null) {
+            let i = this.sliceshape[0]
             return this.array.get2(i,n)
         }
     }
 
     set1(n,v) {
-        // console.log('setting from view',this.shape,this.realShape, 'to parrent array',this.array.shape)
-        if(this.fakeShape[0]!== null && this.fakeShape[1] === null) {
-            let i = this.fakeShape[0]
+        if(this.sliceshape[0]!== null && this.sliceshape[1] === null) {
+            let i = this.sliceshape[0]
             let j = n
             this.array.set2(i, j, v)
         }
@@ -90,17 +82,15 @@ class MDView {
     toJSFlatArray() {
         // console.log("shape is",this.shape)
         let out = []
-        if(this.fakeShape[0]===null && this.fakeShape[1] !== null){
-            let i = this.fakeShape[1]
+        if(this.sliceshape[0]===null && this.sliceshape[1] !== null){
+            let i = this.sliceshape[1]
             for(let j=0; j<this.array.shape[0]; j++) {
                 out.push(this.array.get2(i,j))
             }
         }
-        if(this.fakeShape[0]!== null && this.fakeShape[1] === null) {
-            let i = this.fakeShape[0]
+        if(this.sliceshape[0]!== null && this.sliceshape[1] === null) {
+            let i = this.sliceshape[0]
             for(let j=0; j<this.array.shape[1]; j++) {
-                // let n = this.array.index(i,j)
-                // console.log("n is",this.array.get2(i,j))
                 out.push(this.array.get2(i,j))
             }
         }
@@ -191,14 +181,9 @@ function makeBinOpMD(op) {
             throw new Error(`cannot multiply arrays of different ranks ${arr1.rank} !== ${arr2.rank}`)
         }
         // console.log("arr1 shape is",arr1)
-        let nshape = arr1.shape
-        if(arr1 instanceof MDView) {
-            nshape = arr1.fakeShape
-        }
-        let arr3 = new MDArray(...nshape)
+        let arr3 = new MDArray(...arr1.shape)
         if(arr1.rank === 1) {
-            // console.log("rank 1 binop")
-            for(let i=0; i<arr1.realShape[0]; i++) {
+            for(let i=0; i<arr1.shape[0]; i++) {
                 let a = arr1.get1(i)
                 let b = arr2.get1(i)
                 let c= op(a,b)
@@ -207,12 +192,14 @@ function makeBinOpMD(op) {
             }
             return arr3
         }
-        for(let i=0; i<arr1.shape[0]; i++) {
-            for(let j=0; j<arr1.shape[1]; j++) {
-                let a = arr1.get2(i,j)
-                let b = arr2.get2(i,j)
-                let v = op(a,b)
-                arr3.set2(i,j,v)
+        if(arr1.rank === 2) {
+            for (let i = 0; i < arr1.shape[0]; i++) {
+                for (let j = 0; j < arr1.shape[1]; j++) {
+                    let a = arr1.get2(i, j)
+                    let b = arr2.get2(i, j)
+                    let v = op(a, b)
+                    arr3.set2(i, j, v)
+                }
             }
         }
         return arr3
@@ -222,7 +209,7 @@ function makeBinOpMDAssign(op) {
     return function(arr1, arr2) {
         if(typeof arr2.rank === 'undefined') {
             if(arr1.rank === 1) {
-                for(let i=0; i<arr1.realShape[0]; i++) {
+                for(let i=0; i<arr1.shape[0]; i++) {
                     let a = arr1.get1(i)
                     let b = arr2
                     let c= op(a,b)
