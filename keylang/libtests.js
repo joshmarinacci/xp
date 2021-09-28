@@ -96,23 +96,36 @@ class MDView {
 }
 
 class MDArray {
-    constructor(...args) {
-        // console.log('args',args)
-        let rank = args.length
-        this.rank = args.length
-        this.shape = args
-        let internal_length = 1
-        for(let i=0; i<args.length; i++) {
-            internal_length *= args[i]
+    constructor(shape) {
+        this.rank = shape.length
+        this.shape = shape
+        let data_len = 1
+        for(let i=0; i<shape.length; i++) {
+            data_len *= shape[i]
         }
-        // console.log("internal length", internal_length)
-        if(rank === 0) {
+        if(this.rank === 0) {
             this.data = 0
         } else {
-            this.data = new Array(internal_length)
+            this.data = new Array(data_len)
             this.data.fill(0)
         }
     }
+    get length() {
+        if(this.rank === 1) return this.shape[0]
+        throw new Error(`cannot get length of a rank ${this.rank} array`)
+    }
+    map(cb) {
+        let arr = new MDArray(this.shape)
+        arr.fillWith(cb)
+        return arr
+    }
+    forEach(cb) {
+        this.data.forEach(cb)
+    }
+    every(cb) {
+        return this.forEach(cb)
+    }
+
     toJSFlatArray() {
         return this.data.slice()
     }
@@ -125,14 +138,12 @@ class MDArray {
         this.data[n] = v
     }
     index(i,j) {
+        if(this.rank === 1) return i
         return i + j*this.shape[0]
     }
 
     fill(val) {
         this.data.fill(val)
-    }
-    get(i) {
-        return this.data[i]
     }
     get1(i) {
         return this.data[i]
@@ -143,6 +154,13 @@ class MDArray {
     }
 
     fillWith(cb) {
+        if(this.rank === 1) {
+            for(let i=0; i<this.shape[0]; i++) {
+                let n = this.index(i)
+                this.data[n] = cb(i)
+            }
+            return
+        }
         for(let i=0; i<this.shape[0]; i++) {
             for (let j = 0; j < this.shape[1]; j++) {
                 let n = this.index(i,j)
@@ -161,7 +179,7 @@ function makeBinOpMD(op) {
         // console.log("make bin op md",arr1.rank,'op',arr2.rank)
         if(typeof arr1.rank === 'undefined') {
             if(arr2.rank === 1) {
-                let arr3 = new MDArray(...arr2.shape)
+                let arr3 = new MDArray(arr2.shape)
                 for(let i=0; i<arr2.shape[0]; i++) {
                     let a = arr1
                     let b = arr2.get1(i)
@@ -171,7 +189,7 @@ function makeBinOpMD(op) {
                 return arr3
             }
             if(arr2.rank === 2) {
-                let arr3 = new MDArray(...arr2.shape)
+                let arr3 = new MDArray(arr2.shape)
                 for (let i = 0; i < arr2.shape[0]; i++) {
                     for (let j = 0; j < arr2.shape[1]; j++) {
                         let a = arr1
@@ -185,7 +203,7 @@ function makeBinOpMD(op) {
         }
         if(typeof arr2.rank === 'undefined') {
             if(arr1.rank === 1) {
-                let arr3 = new MDArray(...arr1.shape)
+                let arr3 = new MDArray(arr1.shape)
                 for (let i = 0; i < arr1.shape[0]; i++) {
                     let a = arr1.get1(i)
                     let b = arr2
@@ -196,7 +214,7 @@ function makeBinOpMD(op) {
             }
             if(arr1.rank === 2) {
                 // console.log('array vs scalar')
-                let arr3 = new MDArray(...arr1.shape)
+                let arr3 = new MDArray(arr1.shape)
                 for (let i = 0; i < arr1.shape[0]; i++) {
                     for (let j = 0; j < arr1.shape[1]; j++) {
                         let a = arr1.get2(i, j)
@@ -213,7 +231,7 @@ function makeBinOpMD(op) {
             throw new Error(`cannot multiply arrays of different ranks ${arr1.rank} !== ${arr2.rank}`)
         }
         // console.log("arr1 shape is",arr1)
-        let arr3 = new MDArray(...arr1.shape)
+        let arr3 = new MDArray(arr1.shape)
         if(arr1.rank === 1) {
             for(let i=0; i<arr1.shape[0]; i++) {
                 let a = arr1.get1(i)
@@ -284,7 +302,7 @@ const subtract = makeBinOpMD((a,b)=>a-b)
 const incrementMD = makeBinOpMDAssign((a,b)=>a+b)
 
 function MDArray_fromList(data, shape) {
-    let arr = new MDArray(...shape)
+    let arr = new MDArray(shape)
     arr.data = data
     return arr
 }
@@ -305,12 +323,12 @@ function MDList(...data) {
 }
 
 async function mdarray_tests() {
-    test(new MDArray(2).rank,1)
-    test(new MDArray(2).shape,[2])
-    test(new MDArray(2,2).rank,2)
-    test(new MDArray(2,2).shape,[2,2])
-    test(new MDArray(2,2,2).rank,3)
-    test(new MDArray(2,2,2).shape,[2,2,2])
+    test(new MDArray([2]).rank,1)
+    test(new MDArray([2]).shape,[2])
+    test(new MDArray([2,2]).rank,2)
+    test(new MDArray([2,2]).shape,[2,2])
+    test(new MDArray([2,2,2]).rank,3)
+    test(new MDArray([2,2,2]).shape,[2,2,2])
 
     // //the range function
     test(rangeMD(3).toJSFlatArray(),[0,1,2])
@@ -320,7 +338,7 @@ async function mdarray_tests() {
 
     // // add two lists
     test(add(
-        MDArray_fromList([0,1,2],[3]),
+        MDArray_fromList([0, 1, 2],[3]),
         MDArray_fromList([5, 6, 7],[3])
     ).toJSFlatArray(), [5,7,9])
     test(subtract(
@@ -351,7 +369,7 @@ async function mdarray_tests() {
 
     {
         //set values in a 1d array
-        let arr = new MDArray(4)
+        let arr = new MDArray([4])
         test(arr.shape,[4])
         test(arr.toJSFlatArray(),[0,0,0,0])
         arr.set1(2,88)
@@ -359,7 +377,7 @@ async function mdarray_tests() {
     }
     {
         //set values in a 2d array
-        let arr = new MDArray(3,4)
+        let arr = new MDArray([3,4])
         test(arr.shape,[3,4])
         test(arr.toJSFlatArray(),[0,0,0 ,  0,0,0,  0,0,0,  0,0,0])
         arr.set2(0,0,88)
@@ -367,15 +385,15 @@ async function mdarray_tests() {
         test(arr.toJSFlatArray(),[88,0,0,  0,0,0,  0,0,0,  0,0,88])
     }
     {
-        let arr1 = new MDArray(2,2)
+        let arr1 = new MDArray([2,2])
         arr1.fill(5)
-        let arr2 = new MDArray(2,2)
+        let arr2 = new MDArray([2,2])
         arr2.fill(6)
         let arr3 = multiply(arr1,arr2)
         test(arr3.toJSFlatArray(),[30,30,30,30])
     }
     {
-        let arr1 = new MDArray(4,4)
+        let arr1 = new MDArray([4,4])
         arr1.fillWith((i,j)=>i*j)
         //look at the first row
         test(arr1.slice([null,0]).toJSFlatArray(), [0,0,0,0])
@@ -391,18 +409,18 @@ async function mdarray_tests() {
     {
         //scalar times 2d
         //3x3 array
-        let arr = new MDArray(3,3)
+        let arr = new MDArray([3,3])
         arr.fill(4)
         test(multiply(arr,2).toJSFlatArray(),[8,8,8, 8,8,8, 8,8,8])
     }
     {
         //1d plus a slice of 2d
-        let mat = new MDArray(3,3)
+        let mat = new MDArray([3,3])
         mat.fillWith((x,y) => x*y)
         // console.log('mat is',mat, mat.toJSFlatArray())
         let slice = mat.slice([1,null])
         // console.log("slice is",slice, slice.toJSFlatArray())
-        let vec = new MDArray(3)
+        let vec = new MDArray([3])
         vec.fill(3)
         // console.log("vec is",vec)
         test(add(slice,vec).toJSFlatArray(),[3,4,5])
@@ -413,7 +431,7 @@ async function mdarray_tests() {
                     0,0,
                     1,1,]
         let mat = MDArray_fromList(data,[2,3])
-        let arr2 = new MDArray(2,3)
+        let arr2 = new MDArray([2,3])
         arr2.fill(1)
         arr2.set2(0,1,0)
         arr2.set2(1,1,0)
