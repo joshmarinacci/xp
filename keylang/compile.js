@@ -72,7 +72,7 @@ async function compile_js(src_file,out_dir) {
     }).join("\n")
 
     before.push(imports)
-    before.push(`import {GREEN, RED, BLACK, WHITE, BLUE, isHeadless, TaskManager, print} from './common.js'`)
+    before.push(`import {GREEN, RED, BLACK, WHITE, BLUE, isHeadless, TaskManager, print, makeRandom} from './common.js'`)
     if(board === 'canvas') {
         before.push(`import {KCanvas} from './canvas.js'`)
         // before.push("let screen = new KCanvas(0,0,640,320)")
