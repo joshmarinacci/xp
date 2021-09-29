@@ -8,11 +8,21 @@ import {ast_to_js} from './generate_js.js'
 import {ast_to_py, PyOutput} from './generate_py.js'
 
 const BOARDS = {
-    "canvas":"canvas",
-    "matrix":"matrix",
-    "trellis":"trellis",
-    "trinkey":"trinkey",
-    "thumby":"thumby",
+    "canvas":{
+        name:"canvas"
+    },
+    "matrix":{
+        name:"matrix"
+    },
+    "trellis":{
+        name:"trellis"
+    },
+    "trinkey":{
+        name:"trinkey"
+    },
+    "thumby":{
+        name:"thumby"
+    },
 }
 function strip_directives(ast) {
     let directives = ast.body.filter(c => c.type === 'directive')
@@ -43,7 +53,7 @@ async function compile_js(src_file,out_dir) {
     directives.forEach(dir => {
         // console.log("directive",dir)
         if(dir.name.name === 'board') {
-            board = dir.args[0].value
+            board = BOARDS[dir.args[0].value]
         }
         if(dir.name.name === 'type') {
             if(dir.args[0].value === 'start') {
@@ -80,22 +90,23 @@ async function compile_js(src_file,out_dir) {
 
     before.push(imports)
     before.push(`import {GREEN, RED, BLACK, WHITE, BLUE, isHeadless, TaskManager, print, makeRandom} from './common.js'`)
-    if(board === BOARDS.canvas) {
+
+    if(board.name === BOARDS.canvas.name) {
         before.push(`import {KCanvas} from './canvas.js'`)
         // before.push("let screen = new KCanvas(0,0,640,320)")
     }
-    if(board === BOARDS.matrix) {
+    if(board.name === BOARDS.matrix.name) {
         before.push(`import {KCanvas} from './matrixportal.js'`)
         before.push("let screen = new KCanvas(0,0,64,32)")
     }
-    if(board === BOARDS.trellis) {
+    if(board.name === BOARDS.trellis.name) {
         before.push(`import {Trellis} from './trellis.js'`)
         before.push("let trellis = new Trellis(8,4)")
     }
-    if(board === BOARDS.trinkey) {
+    if(board.name === BOARDS.trinkey.name) {
         before.push("import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'")
     }
-    if(board === BOARDS.thumby) {
+    if(board.name === BOARDS.thumby.name) {
         before.push("import {ThumbyCanvas} from './thumby.js'")
     }
     before.push("const tm = new TaskManager()")
@@ -105,7 +116,7 @@ async function compile_js(src_file,out_dir) {
     currentTime:0
       }\n`)
 
-    if(board === BOARDS.canvas) {
+    if(board.name === BOARDS.canvas.name) {
         after.push(`
             tm.start()
             let _loop_count = 0
@@ -123,7 +134,7 @@ async function compile_js(src_file,out_dir) {
         `)
         after.push('do_cycle()')
     }
-    if(board === BOARDS.trinkey) {
+    if(board.name === BOARDS.trinkey.name) {
         after.push(`tm.register_loop("loop",loop)`)
         after.push(`
             tm.start()
@@ -136,7 +147,7 @@ async function compile_js(src_file,out_dir) {
         `)
         after.push('do_cycle()')
     }
-    if(board === BOARDS.matrix) {
+    if(board.name === BOARDS.matrix.name) {
         // after.push(`tm.register_loop("loop",loop)`)
         after.push(`
             tm.start()
@@ -149,7 +160,7 @@ async function compile_js(src_file,out_dir) {
         `)
         after.push('do_cycle()')
     }
-    if(board === BOARDS.trellis) {
+    if(board.name === BOARDS.trellis.name) {
         after.push(`
             tm.start()
             function do_cycle() {
@@ -162,7 +173,7 @@ async function compile_js(src_file,out_dir) {
             do_cycle()
         `)
     }
-    if(board === BOARDS.thumby) {
+    if(board.name === BOARDS.thumby.name) {
         after.push(`
             tm.start()
             function do_cycle() {

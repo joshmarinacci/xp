@@ -42,7 +42,7 @@ const undef = (A) => typeof A === 'undefined'
 
 export function makeBinOp(binop) {
     return function(A,B) {
-        if(undef(A) || undef(B) ) throw new Error("cannot do operationg on undefined variable")
+        if(undef(A) || undef(B) ) throw new Error(`cannot do operation on undefined variable ${A} or ${B}`)
         if(A.data && B.data) return zipWith(A,B,binop)
         if(A.data && !B.data) return A.map(a => binop(a,B))
         if(!A.data && B.data) return B.map(b => binop(A,b))
@@ -486,11 +486,12 @@ export class TaskManager {
         // console.log(`starting ${task.name}`)
         task.pending = true
         let prom = task.fun()
-        if(!prom) console.error("task did not return a promise!")
-        prom.then(() => {
-            // console.log("task",task.name,'ended')
+        // if(!prom) console.error("task did not return a promise!")
+        if(prom) {
+            prom.then(() => task.pending = false)
+        } else {
             task.pending = false
-        })
+        }
     }
 
     start() {

@@ -74,7 +74,7 @@ export function ast_to_js(ast) {
     if (ast.type === 'fundef') {
         let args = ast.args.map(a => ast_to_js(a))
         return [
-            `async function ${ast_to_js(ast.name)}(${args}){`,
+            `function ${ast_to_js(ast.name)}(${args}){`,
             ...ast_to_js(ast.block).map(s => INDENT + s),
             `}`
         ]
