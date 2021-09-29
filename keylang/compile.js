@@ -11,25 +11,30 @@ const BOARDS = {
     "canvas":{
         name:"canvas",
         before:`import {KCanvas} from './canvas.js'`,
+        standard_cycle:true,
     },
     "matrix":{
         name:"matrix",
         before:`
         import {KCanvas} from './matrixportal.js'
-        let screen = new KCanvas(0,0,64,32)`
+        let screen = new KCanvas(0,0,64,32)`,
+        standard_cycle:true,
     },
     "trellis":{
         name:"trellis",
         before:`import {Trellis} from './trellis.js'
-        let trellis = new Trellis(8,4)`
+        let trellis = new Trellis(8,4)`,
+        standard_cycle:true,
     },
     "trinkey":{
         name:"trinkey",
         before:`import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'`,
+        standard_cycle:true,
     },
     "thumby":{
         name:"thumby",
         before:`import {ThumbyCanvas} from './thumby.js'`,
+        standard_cycle:true,
     },
 }
 function strip_directives(ast) {
@@ -105,64 +110,7 @@ async function compile_js(src_file,out_dir) {
     currentTime:0
       }\n`)
 
-    if(board.name === BOARDS.canvas.name) {
-        after.push(`
-            tm.start()
-            let _loop_count = 0
-            function do_cycle() {
-                _loop_count++
-                if(isHeadless() && _loop_count>60) {
-                    process.exit(0)
-                }
-                // screen.clear()
-                system.currentTime = new Date().getTime()/1000
-                system.time = system.currentTime-system.startTime
-                tm.cycle()
-                setTimeout(do_cycle,10)
-            }
-        `)
-        after.push('do_cycle()')
-    }
-    if(board.name === BOARDS.trinkey.name) {
-        after.push(`tm.register_loop("loop",loop)`)
-        after.push(`
-            tm.start()
-            function do_cycle() {
-                system.currentTime = new Date().getTime()/1000
-                system.time = system.currentTime-system.startTime
-                tm.cycle()
-                setTimeout(do_cycle,100)
-            }
-        `)
-        after.push('do_cycle()')
-    }
-    if(board.name === BOARDS.matrix.name) {
-        // after.push(`tm.register_loop("loop",loop)`)
-        after.push(`
-            tm.start()
-            function do_cycle() {
-                system.currentTime = new Date().getTime()/1000
-                system.time = system.currentTime-system.startTime
-                tm.cycle()
-                setTimeout(do_cycle,100)
-            }
-        `)
-        after.push('do_cycle()')
-    }
-    if(board.name === BOARDS.trellis.name) {
-        after.push(`
-            tm.start()
-            function do_cycle() {
-                system.currentTime = new Date().getTime()/1000
-                system.time = system.currentTime-system.startTime
-                tm.cycle()
-                trellis.cycle()
-                setTimeout(do_cycle,100)
-            }
-            do_cycle()
-        `)
-    }
-    if(board.name === BOARDS.thumby.name) {
+    if(board.standard_cycle===true) {
         after.push(`
             tm.start()
             function do_cycle() {
@@ -176,7 +124,9 @@ async function compile_js(src_file,out_dir) {
     }
     generated_src = before.join("\n") + generated_src + after.join("\n")
     // console.log('final',generated_src)
-    await write_to_file(path.join(out_dir, generated_src_out_name), generated_src)
+    let outfile = path.join(out_dir, generated_src_out_name)
+    console.log("writing",outfile)
+    await write_to_file(outfile, generated_src)
 }
 
 async function prep(outdir) {
