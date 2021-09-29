@@ -6,15 +6,17 @@ export class ThumbyCanvas extends KRect {
     constructor(w,h) {
         super(0,0,w,h)
         console.log("making thumby canvas")
+        this.scale = 1
         if(isBrowser()) {
-            this.scale = 3
-            this.canvas = document.createElement('canvas')
+            this.scale = 10
+            this.canvas = document.querySelector('#canvas')
+            // this.canvas = document.createElement('canvas')
             this.canvas.classList.add("thumby-wrapper")
             this.canvas.width = this.w*this.scale
             this.canvas.height = this.h*this.scale
             this.canvas.style.width = `${this.w*this.scale/window.devicePixelRatio}px`
             this.canvas.style.height = `${this.h*this.scale/window.devicePixelRatio}px`
-            document.body.append(this.canvas)
+            // document.body.append(this.canvas)
         }
         this.globalAlpha = 1.0
     }
@@ -46,7 +48,7 @@ export class ThumbyCanvas extends KRect {
         console.log("filling",rect,color)
         let ctx = this.canvas.getContext('2d')
         ctx.fillStyle = color.toCSSColor()
-        ctx.fillRect(rect.x,rect.y,rect.w,rect.h)
+        ctx.fillRect(rect.x*this.scale,rect.y*this.scale,rect.w*this.scale,rect.h*this.scale)
     }
     strokeRect(rect,color) {
         let ctx = this.canvas.getContext('2d')

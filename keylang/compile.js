@@ -35,6 +35,7 @@ const BOARDS = {
         name:"thumby",
         before:`import {ThumbyCanvas} from './thumby.js'`,
         standard_cycle:true,
+        template_path:'templates/thumby.html'
     },
 }
 function strip_directives(ast) {
@@ -127,14 +128,20 @@ async function compile_js(src_file,out_dir) {
     let outfile = path.join(out_dir, generated_src_out_name)
     console.log("writing",outfile)
     await write_to_file(outfile, generated_src)
+    await web_template(src_file, out_dir, board)
 }
 
 async function prep(outdir) {
     await mkdirs(outdir)
 }
 
-async function web_template(src, out_dir) {
-    let TEMPLATE_PATH = "web_template.html"
+async function web_template(src, out_dir, board) {
+    console.log("doing html template for",board)
+    let TEMPLATE_PATH = "templates/web_template.html"
+    if(board.template_path) {
+        TEMPLATE_PATH = board.template_path
+    }
+    console.log("using template",TEMPLATE_PATH)
     let name = path.basename(src,'.key')
     let templ = await file_to_string(TEMPLATE_PATH)
     templ = templ.replace("${LIB_SRC}","./common.js")
@@ -243,7 +250,6 @@ export async function build(opts) {
         if (opts.browser) await start_webserver(opts.src, opts.outdir)
         await compile_js(opts.src, opts.outdir)
         await copy_js_libs(opts.outdir)
-        await web_template(opts.src, opts.outdir)
         if (opts.browser) await start_filewatcher(opts.src, opts.outdir,async ()=>{
             await compile_js(opts.src,opts.outdir)
         })

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style type="text/css">
+        .thumby-wrapper {
+            border: 5px solid red;
+        }
+        .thumby-case {
+            background-color: #888888;
+            width: 380px;
+            height: 400px;
+            position: relative;
+        }
+        .thumby-case canvas {
+            border: 1px solid black;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+        }
+        #dpad {
+            position: absolute;
+            left: 50px;
+            border: 1px solid red;
+            width: 100px;
+            height: 100px;
+        }
+        .dpad {
+            background-color: black;
+            position: absolute;
+            width: 30px;
+            height: 30px;
+        }
+        .dpad:hover {
+            background-color: red;
+        }
+        #left {
+            left: 0px;
+            top: 35px;
+        }
+        #up {
+            top: 0px;
+            left: 35px;
+        }
+        #center {
+            top: 35px;
+            left: 35px;
+        }
+        #down {
+            bottom: 0px;
+            left: 35px;
+        }
+        #right {
+            right: 0px;
+            top: 35px;
+        }
+
+        #abbut {
+            position: absolute;
+            right: 50px;
+            border: 1px solid red;
+            width: 100px;
+            height: 100px;
+        }
+        .abbut {
+            background-color: red;
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 15px;
+        }
+        #abut {
+            left: 10px;
+            top: 30px;
+        }
+        #bbut {
+            right: 10px;
+            top: 10px;
+        }
+
+        #dpad, #abbut {
+            top: 250px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="thumby-case">
+    <canvas id="canvas" width="360" height="200"></canvas>
+    <div id="dpad">
+        <div id="left" class="dpad"></div>
+        <div id="right" class="dpad"></div>
+        <div id="center" class="dpad"></div>
+        <div id="up" class="dpad"></div>
+        <div id="down" class="dpad"></div>
+    </div>
+
+    <div id="abbut">
+        <div id="abut" class="abbut"></div>
+        <div id="bbut" class="abbut"></div>
+    </div>
+</div>
+
+
+<script src="${LIB_SRC}" type="module"></script>
+<script src="${APP_SRC}" type="module"></script>
+<script src="${RELOAD}" type="module"></script>
+</body>
+</html>
