@@ -9,19 +9,27 @@ import {ast_to_py, PyOutput} from './generate_py.js'
 
 const BOARDS = {
     "canvas":{
-        name:"canvas"
+        name:"canvas",
+        before:`import {KCanvas} from './canvas.js'`,
     },
     "matrix":{
-        name:"matrix"
+        name:"matrix",
+        before:`
+        import {KCanvas} from './matrixportal.js'
+        let screen = new KCanvas(0,0,64,32)`
     },
     "trellis":{
-        name:"trellis"
+        name:"trellis",
+        before:`import {Trellis} from './trellis.js'
+        let trellis = new Trellis(8,4)`
     },
     "trinkey":{
-        name:"trinkey"
+        name:"trinkey",
+        before:`import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'`,
     },
     "thumby":{
-        name:"thumby"
+        name:"thumby",
+        before:`import {ThumbyCanvas} from './thumby.js'`,
     },
 }
 function strip_directives(ast) {
@@ -90,29 +98,10 @@ async function compile_js(src_file,out_dir) {
 
     before.push(imports)
     before.push(`import {GREEN, RED, BLACK, WHITE, BLUE, isHeadless, TaskManager, print, makeRandom} from './common.js'`)
-
-    if(board.name === BOARDS.canvas.name) {
-        before.push(`import {KCanvas} from './canvas.js'`)
-        // before.push("let screen = new KCanvas(0,0,640,320)")
-    }
-    if(board.name === BOARDS.matrix.name) {
-        before.push(`import {KCanvas} from './matrixportal.js'`)
-        before.push("let screen = new KCanvas(0,0,64,32)")
-    }
-    if(board.name === BOARDS.trellis.name) {
-        before.push(`import {Trellis} from './trellis.js'`)
-        before.push("let trellis = new Trellis(8,4)")
-    }
-    if(board.name === BOARDS.trinkey.name) {
-        before.push("import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'")
-    }
-    if(board.name === BOARDS.thumby.name) {
-        before.push("import {ThumbyCanvas} from './thumby.js'")
-    }
+    if(board.before) before.push(board.before)
     before.push("const tm = new TaskManager()")
-
     before.push(`let system = {
-    startTime: new Date().getTime()/1000, 
+    startTime: new Date().getTime()/1000,
     currentTime:0
       }\n`)
 
