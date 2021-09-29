@@ -96,7 +96,7 @@ async function compile_js(src_file,out_dir) {
         before.push("import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'")
     }
     if(board === BOARDS.thumby) {
-        before.push("import {} from './thumby.js'")
+        before.push("import {ThumbyCanvas} from './thumby.js'")
     }
     before.push("const tm = new TaskManager()")
 
