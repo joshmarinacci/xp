@@ -197,7 +197,7 @@ async function start_webserver(src,outdir) {
     console.log("webserver started")
 }
 
-async function start_filewatcher(src,outdir) {
+async function start_filewatcher(src,outdir, cb) {
     try {
         console.log("watching",src)
         let base = path.basename(src)
@@ -206,7 +206,7 @@ async function start_filewatcher(src,outdir) {
             console.log(event);
             if(event.eventType === 'change' && event.filename === base) {
                 console.log("we need to recompile the page")
-                await compile_js(src,outdir)
+                await cb()
                 console.log("recompiled",src)
             }
         }
@@ -239,7 +239,7 @@ async function compile_py(opts) {
     let ast = semantics(result).ast()
     let directives = strip_directives(ast)
     directives.forEach(dir => {
-        console.log(dir)
+        // console.log(dir)
         if(dir.name.name === 'board') {
             board = dir.args[0].value
         }
@@ -255,7 +255,9 @@ async function compile_py(opts) {
     let template = await file_to_string(TEMPLATE_PATH)
     template = template.replace("${USER_VARIABLES}","")
     template = template.replace("${USER_FUNCTIONS}",generated_src)
-    await write_to_file(path.join(out_dir, generated_src_out_name), template)
+    let outfile = path.join(out_dir, generated_src_out_name)
+    console.log(`writing ${outfile}`)
+    await write_to_file(outfile, template)
 }
 
 async function copy_py_libs(outdir) {
@@ -269,11 +271,16 @@ export async function build(opts) {
         await compile_js(opts.src, opts.outdir)
         await copy_js_libs(opts.outdir)
         await web_template(opts.src, opts.outdir)
-        if (opts.browser) await start_filewatcher(opts.src, opts.outdir)
+        if (opts.browser) await start_filewatcher(opts.src, opts.outdir,async ()=>{
+            await compile_js(opts.src,opts.outdir)
+        })
     }
     if(opts.target === 'py') {
         await compile_py(opts)
         await copy_py_libs(opts.outdir)
+        if (opts.watch) await start_filewatcher(opts.src, opts.outdir, async () => {
+            await compile_py(opts)
+        })
     }
 }
 

@@ -15,6 +15,7 @@ function process_options(argv,defs) {
         }
         if(argv[i] === '--watch')  defs.watch = true
         if(argv[i] === '--browser')  defs.browser = true
+        if(argv[i] === '--watch')  defs.watch = true
         if(argv[i] === '--target') {
             i++
             defs.target = argv[i]
