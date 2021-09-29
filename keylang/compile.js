@@ -33,7 +33,7 @@ const BOARDS = {
     },
     "thumby":{
         name:"thumby",
-        before:`import {ThumbyCanvas} from './thumby.js'`,
+        before:`import {board, ThumbyCanvas, Button, DPad} from './thumby.js'`,
         standard_cycle:true,
         template_path:'templates/thumby.html'
     },

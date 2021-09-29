@@ -2,6 +2,12 @@ import {isBrowser, KRect} from './common.js'
 
 console.log("initting thumby support")
 
+export const board = {
+    A_BUTTON:"#abut",
+    B_BUTTON:"#bbut",
+    D_PAD:"#dpad .dpad",
+}
+
 export class ThumbyCanvas extends KRect {
     constructor(w,h) {
         super(0,0,w,h)
@@ -97,3 +103,72 @@ export class ThumbyCanvas extends KRect {
     }
 }
 
+class ABButton {
+    constructor(id) {
+        console.log("AB button",id)
+        this.id = id
+        this.clicked = false
+        if(isBrowser()) {
+            this.elem = document.querySelector(id)
+            this.elem.addEventListener('click', (e) => {
+                console.log("clicked the button",e.target.id)
+                this.clicked = true
+            })
+        }
+    }
+    wasClicked() {
+        return this.clicked
+    }
+    clear() {
+        this.clicked = false
+    }
+    fill(col) {
+        return this.color(col)
+    }
+    color(col) {
+        this.elem.style.backgroundColor = color_to_css(col)
+    }
+}
+
+class DPadControl {
+    constructor(id) {
+        console.log("AB button")
+        this.id = id
+        this.clicked = false
+        if(isBrowser()) {
+            this.buttons  = document.querySelectorAll(id)
+            console.log("got the buttons",this.buttons,id)
+            this.buttons.forEach(bt => {
+                bt.addEventListener('click',(e) => {
+                    console.log("clicked the dpad button",e.target.id)
+                })
+            })
+            // this.elem.id = "button_" + id
+            // this.elem.innerText = `button ${id}`
+            // this.elem.classList.add("ledbutton")
+            // document.body.append(this.elem)
+            // this.elem.addEventListener('click', () => {
+            //     this.clicked = true
+            // })
+        }
+    }
+    wasClicked() {
+        return this.clicked
+    }
+    clear() {
+        this.clicked = false
+    }
+    fill(col) {
+        return this.color(col)
+    }
+    color(col) {
+        this.elem.style.backgroundColor = color_to_css(col)
+    }
+}
+
+export function Button(id) {
+    return new ABButton(id)
+}
+export function DPad(id) {
+    return new DPadControl(id)
+}
