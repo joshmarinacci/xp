@@ -162,6 +162,18 @@ async function compile_js(src_file,out_dir) {
             do_cycle()
         `)
     }
+    if(board === BOARDS.thumby) {
+        after.push(`
+            tm.start()
+            function do_cycle() {
+                system.currentTime = new Date().getTime()/1000
+                system.time = system.currentTime-system.startTime
+                tm.cycle()
+                setTimeout(do_cycle,100)
+            }
+            do_cycle()
+        `)
+    }
     generated_src = before.join("\n") + generated_src + after.join("\n")
     // console.log('final',generated_src)
     await write_to_file(path.join(out_dir, generated_src_out_name), generated_src)

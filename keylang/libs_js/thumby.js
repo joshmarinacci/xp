@@ -5,6 +5,7 @@ console.log("initting thumby support")
 export class ThumbyCanvas extends KRect {
     constructor(w,h) {
         super(0,0,w,h)
+        console.log("making thumby canvas")
         if(isBrowser()) {
             this.scale = 3
             this.canvas = document.createElement('canvas')
@@ -42,7 +43,7 @@ export class ThumbyCanvas extends KRect {
         }
     }
     fillRect(rect,color) {
-        // console.log("filling",rect,color)
+        console.log("filling",rect,color)
         let ctx = this.canvas.getContext('2d')
         ctx.fillStyle = color.toCSSColor()
         ctx.fillRect(rect.x,rect.y,rect.w,rect.h)
