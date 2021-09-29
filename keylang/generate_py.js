@@ -82,21 +82,29 @@ function button_click(ast, out) {
     let args = ast.args.map(a => ast_to_py(a), out).join(", ")
     out.start_fun_def(name, args)
     out.indent()
+    out.line("#start user code")
+    ast_to_py(ast.block, out)
+    out.line("# end user code")
+    out.outdent()
+    out.end_fun_def()
+
+    let wrapper_name = `wrapper_${name}_${Math.floor(Math.random()*10000)}`
+    out.start_fun_def(wrapper_name,[])
+    out.indent()
     out.line("while True:")
     out.indent()
     out.line("button.update()")
     out.line("if button.fell:")
     out.indent()
-    out.line("#start user code")
-    ast_to_py(ast.block, out)
-    out.line("# end user code")
+    out.line(`${name}()`)
+    out.outdent()
     out.outdent()
     out.line('yield 0.01')
-    out.outdent()
     out.comment("end while")
     out.outdent()
     out.end_fun_def()
-    out.after(`tm.register_event('${name}',${name})`)
+    out.after(`tm.register_event('${wrapper_name}',${wrapper_name})`)
+
 }
 
 function setup_block(ast, out) {
@@ -118,16 +126,25 @@ function forever_loop(ast, out) {
     let args = ast.args.map(a => ast_to_py(a), out).join(", ")
     out.start_fun_def(name, args)
     out.indent()
-    out.line("while True:")
-    out.indent()
     out.line("#start user code")
     ast_to_py(ast.block, out)
     out.line("# end user code")
-    out.line('yield 0.01')
-    out.outdent()
     out.outdent()
     out.end_fun_def()
-    out.after(`tm.register_loop('${name}',${name})`)
+
+    let wrapper_name = `wrapper_${name}_${Math.floor(Math.random()*10000)}`
+    out.start_fun_def(wrapper_name,[])
+    out.indent()
+    out.line("while True:")
+
+    out.indent()
+    out.line(`${name}()`)
+    out.outdent()
+
+    out.line('yield 0.01')
+    out.outdent()
+    out.end_fun_def()
+    out.after(`tm.register_loop('${wrapper_name}',${wrapper_name})`)
 }
 
 export function ast_to_py(ast, out) {
