@@ -7,6 +7,13 @@ import express from "express"
 import {ast_to_js} from './generate_js.js'
 import {ast_to_py, PyOutput} from './generate_py.js'
 
+const BOARDS = {
+    "canvas":"canvas",
+    "matrix":"matrix",
+    "trellis":"trellis",
+    "trinkey":"trinkey",
+    "thumby":"thumby",
+}
 function strip_directives(ast) {
     let directives = ast.body.filter(c => c.type === 'directive')
     ast.body = ast.body.filter(c => c.type !== 'directive')
@@ -31,7 +38,7 @@ async function compile_js(src_file,out_dir) {
     let before = []
     before.push(`import * as lib from "./common.js"`)
 
-    let board = "canvas"
+    let board = BOARDS.canvas
     let after = []
     directives.forEach(dir => {
         // console.log("directive",dir)
@@ -73,19 +80,19 @@ async function compile_js(src_file,out_dir) {
 
     before.push(imports)
     before.push(`import {GREEN, RED, BLACK, WHITE, BLUE, isHeadless, TaskManager, print, makeRandom} from './common.js'`)
-    if(board === 'canvas') {
+    if(board === BOARDS.canvas) {
         before.push(`import {KCanvas} from './canvas.js'`)
         // before.push("let screen = new KCanvas(0,0,640,320)")
     }
-    if(board === 'matrix') {
+    if(board === BOARDS.matrix) {
         before.push(`import {KCanvas} from './matrixportal.js'`)
         before.push("let screen = new KCanvas(0,0,64,32)")
     }
-    if(board === 'trellis') {
+    if(board === BOARDS.trellis) {
         before.push(`import {Trellis} from './neotrellis.js'`)
         before.push("let trellis = new Trellis(8,4)")
     }
-    if(board === 'trinkey') {
+    if(board === BOARDS.trinkey) {
         before.push("import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'")
     }
     before.push("const tm = new TaskManager()")
@@ -95,7 +102,7 @@ async function compile_js(src_file,out_dir) {
     currentTime:0
       }\n`)
 
-    if(board === 'canvas') {
+    if(board === BOARDS.canvas) {
         after.push(`
             tm.start()
             let _loop_count = 0
@@ -113,7 +120,7 @@ async function compile_js(src_file,out_dir) {
         `)
         after.push('do_cycle()')
     }
-    if(board === 'trinkey') {
+    if(board === BOARDS.trinkey) {
         after.push(`tm.register_loop("loop",loop)`)
         after.push(`
             tm.start()
@@ -126,7 +133,7 @@ async function compile_js(src_file,out_dir) {
         `)
         after.push('do_cycle()')
     }
-    if(board === 'matrix') {
+    if(board === BOARDS.matrix) {
         // after.push(`tm.register_loop("loop",loop)`)
         after.push(`
             tm.start()
@@ -139,7 +146,7 @@ async function compile_js(src_file,out_dir) {
         `)
         after.push('do_cycle()')
     }
-    if(board === 'trellis') {
+    if(board === BOARDS.trellis) {
         after.push(`
             tm.start()
             function do_cycle() {
@@ -244,7 +251,7 @@ async function compile_py(opts) {
             board = dir.args[0].value
         }
     })
-    // console.log("board",board)
+    console.log("board",board)
     // console.log("ast is",ast)
     let out = new PyOutput()
     ast_to_py(ast,out)
