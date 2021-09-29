@@ -89,11 +89,14 @@ async function compile_js(src_file,out_dir) {
         before.push("let screen = new KCanvas(0,0,64,32)")
     }
     if(board === BOARDS.trellis) {
-        before.push(`import {Trellis} from './neotrellis.js'`)
+        before.push(`import {Trellis} from './trellis.js'`)
         before.push("let trellis = new Trellis(8,4)")
     }
     if(board === BOARDS.trinkey) {
         before.push("import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'")
+    }
+    if(board === BOARDS.thumby) {
+        before.push("import {} from './thumby.js'")
     }
     before.push("const tm = new TaskManager()")
 
@@ -182,7 +185,8 @@ async function copy_js_libs(out_dir) {
     await copy_file("./libs_js/common.js",path.join(out_dir,'common.js'))
     await copy_file("./libs_js/canvas.js",path.join(out_dir,'canvas.js'))
     await copy_file("./libs_js/matrixportal.js",path.join(out_dir,'matrixportal.js'))
-    await copy_file("./libs_js/neotrellis.js",path.join(out_dir,'neotrellis.js'))
+    await copy_file("./libs_js/trellis.js",path.join(out_dir,'trellis.js'))
+    await copy_file("./libs_js/thumby.js",path.join(out_dir,'thumby.js'))
     await copy_file("./libs_js/trinkey.js",path.join(out_dir,'trinkey.js'))
     await copy_file("./reload.js",path.join(out_dir,'reload.js'))
 }
