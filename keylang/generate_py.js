@@ -135,12 +135,10 @@ function forever_loop(ast, out) {
     let wrapper_name = `wrapper_${name}_${Math.floor(Math.random()*10000)}`
     out.start_fun_def(wrapper_name,[])
     out.indent()
-    out.line("while True:")
-
+    out.line(`for y in ${name}():`)
     out.indent()
-    out.line(`${name}()`)
-
-    out.line('yield 0.01')
+    out.line('yield y')
+    out.outdent()
     out.outdent()
     out.outdent()
     out.end_fun_def()
