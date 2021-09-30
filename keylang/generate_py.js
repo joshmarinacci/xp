@@ -98,8 +98,8 @@ function button_click(ast, out) {
     out.indent()
     out.line(`${name}()`)
     out.outdent()
-    out.outdent()
     out.line('yield 0.01')
+    out.outdent()
     out.comment("end while")
     out.outdent()
     out.end_fun_def()
@@ -135,13 +135,11 @@ function forever_loop(ast, out) {
     let wrapper_name = `wrapper_${name}_${Math.floor(Math.random()*10000)}`
     out.start_fun_def(wrapper_name,[])
     out.indent()
-    out.line("while True:")
-
+    out.line(`for y in ${name}():`)
     out.indent()
-    out.line(`${name}()`)
+    out.line('yield y')
     out.outdent()
-
-    out.line('yield 0.01')
+    out.outdent()
     out.outdent()
     out.end_fun_def()
     out.after(`tm.register_loop('${wrapper_name}',${wrapper_name})`)
@@ -155,6 +153,10 @@ export function ast_to_py(ast, out) {
         if (ast.kind === 'float') return ast.value + ""
         if (ast.kind === 'string') return `"${ast.value}"`
         if (ast.kind === 'boolean') return (ast.value === 'false') ? "False" : "True"
+    }
+    if (ast.type === AST_TYPES.listliteral) {
+        let elements = ast.elements.map(a => ast_to_py(a,out))
+        return 'List(' + elements.join(", ") + ')'
     }
     if (ast.type === 'binexp') {
         let A = ast_to_py(ast.exp1, out)
@@ -170,7 +172,13 @@ export function ast_to_py(ast, out) {
         return
     }
     if (ast.type === AST_TYPES.vardec) {
-        out.line(`${ast_to_py(ast.name)} = 0`)
+        let name = ast_to_py(ast.name,out)
+        if(ast.expression) {
+            let value = ast_to_py(ast.expression,out)
+            out.line(`${name} = ${value}`)
+        } else {
+            out.line(`${name} = 0`)
+        }
         return
     }
     if (ast.type === 'assignment') {
@@ -184,6 +192,12 @@ export function ast_to_py(ast, out) {
             let res = ast_to_py(chunk, out)
             if (res) out.line(res)
         })
+        return
+    }
+    if (ast.type === 'lambda') {
+        let args = ast.args.map(a => ast_to_py(a,out)).flat()
+        let body = ast_to_py(ast.body,out)
+        console.log("skipping lambda generation")
         return
     }
     if (ast.type === 'fundef') {
@@ -225,6 +239,7 @@ export function ast_to_py(ast, out) {
     if (ast.type === 'return') {
         return 'return'
     }
+    if (ast.type === AST_TYPES.keywordarg) return `${ast_to_py(ast.name,out)}=${ast_to_py(ast.value,out)}`
     // console.log('converting to py',ast, JSON.stringify(ast,null,'    '))
     throw new Error(`unknown AST node ${ast.type}`)
 }

@@ -101,7 +101,10 @@ class TaskMaster:
         start = event['start']
         diff = now-start
         if diff > delay:
-            event['delay'] = next(event['gen'])
+            try:
+                event['delay'] = next(event['gen'])
+            except StopIteration:
+                event['gen'] = event['runner']()
             event['start'] = now
 
     def cycleLoop(self,loop):
