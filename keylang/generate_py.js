@@ -154,6 +154,10 @@ export function ast_to_py(ast, out) {
         if (ast.kind === 'string') return `"${ast.value}"`
         if (ast.kind === 'boolean') return (ast.value === 'false') ? "False" : "True"
     }
+    if (ast.type === AST_TYPES.listliteral) {
+        let elements = ast.elements.map(a => ast_to_py(a,out))
+        return 'List(' + elements.join(", ") + ')'
+    }
     if (ast.type === 'binexp') {
         let A = ast_to_py(ast.exp1, out)
         let B = ast_to_py(ast.exp2, out)
@@ -168,7 +172,13 @@ export function ast_to_py(ast, out) {
         return
     }
     if (ast.type === AST_TYPES.vardec) {
-        out.line(`${ast_to_py(ast.name)} = 0`)
+        let name = ast_to_py(ast.name,out)
+        if(ast.expression) {
+            let value = ast_to_py(ast.expression,out)
+            out.line(`${name} = ${value}`)
+        } else {
+            out.line(`${name} = 0`)
+        }
         return
     }
     if (ast.type === 'assignment') {
@@ -182,6 +192,12 @@ export function ast_to_py(ast, out) {
             let res = ast_to_py(chunk, out)
             if (res) out.line(res)
         })
+        return
+    }
+    if (ast.type === 'lambda') {
+        let args = ast.args.map(a => ast_to_py(a,out)).flat()
+        let body = ast_to_py(ast.body,out)
+        console.log("skipping lambda generation")
         return
     }
     if (ast.type === 'fundef') {
@@ -223,6 +239,7 @@ export function ast_to_py(ast, out) {
     if (ast.type === 'return') {
         return 'return'
     }
+    if (ast.type === AST_TYPES.keywordarg) return `${ast_to_py(ast.name,out)}=${ast_to_py(ast.value,out)}`
     // console.log('converting to py',ast, JSON.stringify(ast,null,'    '))
     throw new Error(`unknown AST node ${ast.type}`)
 }
