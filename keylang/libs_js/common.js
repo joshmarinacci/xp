@@ -197,9 +197,14 @@ export class MDArray {
         let n = i + j*this.shape[0] + k*this.shape[1]
         this.data[n] = v
     }
-    index(i,j) {
+    get3(i,j,k) {
+        let n = this.index(i,j,k)
+        return this.data[n]
+    }
+    index(i,j,k) {
         if(this.rank === 1) return i
-        return i + j*this.shape[0]
+        if(this.rank === 2) return i + j*this.shape[0]
+        return i + j*this.shape[0] + k*this.shape[1]
     }
 
     fill(val) {
