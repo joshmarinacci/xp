@@ -10,8 +10,7 @@ import {
     KVector,
     STD_SCOPE
 } from './libs_js/common.js'
-import {checkEqual, force_delete, mkdirs, write_to_file} from './util.js'
-import {ast_to_js} from './generate_js.js'
+import {checkEqual, force_delete, test_js} from './util.js'
 
 
 const scope = STD_SCOPE
@@ -39,47 +38,6 @@ async function runtests() {
         let res = eval_ast(ast,scope)
         // console.log("comparing",res,ans)
         if(!checkEqual(res,ans)) throw new Error("not equal")
-    }
-    async function test_js(scope, code, ans) {
-        console.log(`parsing: "${code}"`)
-        let result = grammar.match(code, 'Exp')
-        if (!result.succeeded()) throw new Error("failed parsing")
-        await mkdirs("temp")
-        let ast = semantics(result).ast()
-        let res = ast_to_js(ast)
-        // console.log("initial res is",res)
-        if(Array.isArray(res)) {
-            let last = res[res.length-1]
-            last = 'return '+last
-            // console.log('last is',last)
-            res[res.length-1] = last
-            res = res.join("\n")
-        } else {
-            res = 'return ' + res
-        }
-        let imports = Object.keys(STD_SCOPE).map(key => {
-            return `const ${key} = lib.STD_SCOPE.${key}`
-        }).join("\n")
-        res = `import * as lib from "../libs_js/common.js"
-        ${imports}
-export function doit() {
-    ${res}
-}
-//console.log("running the generated module")
-doit()
-        `
-        console.log("generated code", res)
-        let pth = `temp/generated_${Math.floor(Math.random()*10000)}.js`
-        await write_to_file(pth, res)
-        try {
-            let mod = await import("./"+pth)
-            let fres = mod.doit()
-            console.log("comparing", fres, ans)
-            if (!checkEqual(fres, ans)) throw new Error("not equal")
-        } catch (e) {
-            console.log("error happened",e)
-            throw e
-        }
     }
 
     test_parse('4')

@@ -3,9 +3,9 @@ import {
     KList,
     makeBinOp,
     zip,
-    KRect
+    KRect, KObj, KPoint, KVector, STD_SCOPE, MDArray, rangeMD, MDArray_fromList, MDList
 } from './libs_js/common.js'
-import {checkEqual} from './util.js'
+import {checkEqual, log, test_js} from './util.js'
 
 function test(res,ans) {
     // console.log("comparing",res,ans)
@@ -45,133 +45,6 @@ async function math_tests() {
     test(sine1(0),0.5)
     test(sine1(Math.PI/2),1)
     test(sine1(Math.PI),0.5)
-}
-
-class MDView {
-    constructor(array, def) {
-        // console.log("making a slice view",array,def)
-        this.array = array
-        this.sliceshape=def
-        this.shape = []
-        def.forEach((d,i) => {
-            if(d !== null) {
-                this.shape.push(this.array.shape[i])
-            }
-        })
-        this.rank = def.filter( t => t !== null).length
-    }
-    get1(n) {
-        if(this.sliceshape[0]!== null && this.sliceshape[1] === null) {
-            let i = this.sliceshape[0]
-            return this.array.get2(i,n)
-        }
-    }
-
-    set1(n,v) {
-        if(this.sliceshape[0]!== null && this.sliceshape[1] === null) {
-            let i = this.sliceshape[0]
-            let j = n
-            this.array.set2(i, j, v)
-        }
-    }
-
-    toJSFlatArray() {
-        // console.log("shape is",this.shape)
-        let out = []
-        if(this.sliceshape[0]===null && this.sliceshape[1] !== null){
-            let i = this.sliceshape[1]
-            for(let j=0; j<this.array.shape[0]; j++) {
-                out.push(this.array.get2(i,j))
-            }
-        }
-        if(this.sliceshape[0]!== null && this.sliceshape[1] === null) {
-            let i = this.sliceshape[0]
-            for(let j=0; j<this.array.shape[1]; j++) {
-                out.push(this.array.get2(i,j))
-            }
-        }
-        return out
-    }
-
-}
-
-class MDArray {
-    constructor(shape) {
-        this.rank = shape.length
-        this.shape = shape
-        let data_len = 1
-        for(let i=0; i<shape.length; i++) {
-            data_len *= shape[i]
-        }
-        if(this.rank === 0) {
-            this.data = 0
-        } else {
-            this.data = new Array(data_len)
-            this.data.fill(0)
-        }
-    }
-    get length() {
-        if(this.rank === 1) return this.shape[0]
-        throw new Error(`cannot get length of a rank ${this.rank} array`)
-    }
-    map(cb) {
-        let arr = new MDArray(this.shape)
-        arr.fillWith(cb)
-        return arr
-    }
-    forEach(cb) {
-        this.data.forEach(cb)
-    }
-    every(cb) {
-        return this.forEach(cb)
-    }
-
-    toJSFlatArray() {
-        return this.data.slice()
-    }
-
-    set1(i, v) {
-        this.data[i] = v
-    }
-    set2(i,j, v) {
-        let n = i + j*this.shape[0]
-        this.data[n] = v
-    }
-    index(i,j) {
-        if(this.rank === 1) return i
-        return i + j*this.shape[0]
-    }
-
-    fill(val) {
-        this.data.fill(val)
-    }
-    get1(i) {
-        return this.data[i]
-    }
-    get2(i,j) {
-        let n = i + j*this.shape[0]
-        return this.data[n]
-    }
-
-    fillWith(cb) {
-        if(this.rank === 1) {
-            for(let i=0; i<this.shape[0]; i++) {
-                let n = this.index(i)
-                this.data[n] = cb(i)
-            }
-            return
-        }
-        for(let i=0; i<this.shape[0]; i++) {
-            for (let j = 0; j < this.shape[1]; j++) {
-                let n = this.index(i,j)
-                this.data[n] = cb(i, j)
-            }
-        }
-    }
-
-    slice(def) {
-        return new MDView(this, def)
-    }
 }
 
 function makeBinOpMD(op) {
@@ -301,28 +174,8 @@ const add = makeBinOpMD((a,b)=>a+b)
 const subtract = makeBinOpMD((a,b)=>a-b)
 const incrementMD = makeBinOpMDAssign((a,b)=>a+b)
 
-function MDArray_fromList(data, shape) {
-    let arr = new MDArray(shape)
-    arr.data = data
-    return arr
-}
-
-function rangeMD(min,max,step) {
-    if(typeof step === 'undefined') step = 1
-    if(typeof max === 'undefined') return rangeMD(0,min)
-    let data = []
-    // console.log("range",min,max,step)
-    for(let i=min; i<max; i+=step) {
-        data.push(i)
-    }
-    return MDArray_fromList(data,[data.length])
-}
-
-function MDList(...data) {
-    return MDArray_fromList(data,[data.length])
-}
-
 async function mdarray_tests() {
+    log("runining mdarray_tests")
     test(new MDArray([2]).rank,1)
     test(new MDArray([2]).shape,[2])
     test(new MDArray([2,2]).rank,2)
@@ -484,9 +337,29 @@ async function mdarray_tests() {
 */
 }
 
+async function md_image_tests() {
+    log("running md_image_tests")
+    {
+        let img = new MDArray([4,4,3])
+        img.set3(0,0,0, 1.0)
+        img.set3(0,0,1, 0)
+        img.set3(0,0,2, 0)
+        //make canvas demo that can draw md array as image. must be w x h x 3 to draw
+        console.log("src image is",img)
+        await test_js(STD_SCOPE, `{
+let img = MDArray([4,4,3])
+img.set3(0,0,0, 1.0)
+img.set3(0,0,1, 0)
+img.set3(0,0,2, 0)
+img
+}`, img)
+    }
+}
+
 Promise.all([
     // list_tests(),
     // math_tests(),
-    mdarray_tests()
+    mdarray_tests(),
+    md_image_tests(),
 ])
     .then(()=>console.log("all tests pass"))

@@ -100,6 +100,159 @@ export class KList {
     }
 }
 
+class MDView {
+    constructor(array, def) {
+        // console.log("making a slice view",array,def)
+        this.array = array
+        this.sliceshape=def
+        this.shape = []
+        def.forEach((d,i) => {
+            if(d !== null) {
+                this.shape.push(this.array.shape[i])
+            }
+        })
+        this.rank = def.filter( t => t !== null).length
+    }
+    get1(n) {
+        if(this.sliceshape[0]!== null && this.sliceshape[1] === null) {
+            let i = this.sliceshape[0]
+            return this.array.get2(i,n)
+        }
+    }
+
+    set1(n,v) {
+        if(this.sliceshape[0]!== null && this.sliceshape[1] === null) {
+            let i = this.sliceshape[0]
+            let j = n
+            this.array.set2(i, j, v)
+        }
+    }
+
+    toJSFlatArray() {
+        // console.log("shape is",this.shape)
+        let out = []
+        if(this.sliceshape[0]===null && this.sliceshape[1] !== null){
+            let i = this.sliceshape[1]
+            for(let j=0; j<this.array.shape[0]; j++) {
+                out.push(this.array.get2(i,j))
+            }
+        }
+        if(this.sliceshape[0]!== null && this.sliceshape[1] === null) {
+            let i = this.sliceshape[0]
+            for(let j=0; j<this.array.shape[1]; j++) {
+                out.push(this.array.get2(i,j))
+            }
+        }
+        return out
+    }
+
+}
+export class MDArray {
+    constructor(shape) {
+        if(shape instanceof KList) {
+            shape = shape.data
+        }
+        this.rank = shape.length
+        this.shape = shape
+        let data_len = 1
+        for(let i=0; i<shape.length; i++) {
+            data_len *= shape[i]
+        }
+        if(this.rank === 0) {
+            this.data = 0
+        } else {
+            console.log("making",this.rank,this.shape,data_len)
+            this.data = new Array(data_len)
+            this.data.fill(0)
+        }
+    }
+    get length() {
+        if(this.rank === 1) return this.shape[0]
+        throw new Error(`cannot get length of a rank ${this.rank} array`)
+    }
+    map(cb) {
+        let arr = new MDArray(this.shape)
+        arr.fillWith(cb)
+        return arr
+    }
+    forEach(cb) {
+        this.data.forEach(cb)
+    }
+    every(cb) {
+        return this.forEach(cb)
+    }
+
+    toJSFlatArray() {
+        return this.data.slice()
+    }
+
+    set1(i, v) {
+        this.data[i] = v
+    }
+    set2(i,j, v) {
+        let n = i + j*this.shape[0]
+        this.data[n] = v
+    }
+    set3(i,j,k, v) {
+        let n = i + j*this.shape[0] + k*this.shape[1]
+        this.data[n] = v
+    }
+    index(i,j) {
+        if(this.rank === 1) return i
+        return i + j*this.shape[0]
+    }
+
+    fill(val) {
+        this.data.fill(val)
+    }
+    get1(i) {
+        return this.data[i]
+    }
+    get2(i,j) {
+        let n = i + j*this.shape[0]
+        return this.data[n]
+    }
+
+    fillWith(cb) {
+        if(this.rank === 1) {
+            for(let i=0; i<this.shape[0]; i++) {
+                let n = this.index(i)
+                this.data[n] = cb(i)
+            }
+            return
+        }
+        for(let i=0; i<this.shape[0]; i++) {
+            for (let j = 0; j < this.shape[1]; j++) {
+                let n = this.index(i,j)
+                this.data[n] = cb(i, j)
+            }
+        }
+    }
+
+    slice(def) {
+        return new MDView(this, def)
+    }
+}
+export function MDArray_fromList(data, shape) {
+    let arr = new MDArray(shape)
+    arr.data = data
+    return arr
+}
+export function rangeMD(min,max,step) {
+    if(typeof step === 'undefined') step = 1
+    if(typeof max === 'undefined') return rangeMD(0,min)
+    let data = []
+    // console.log("range",min,max,step)
+    for(let i=min; i<max; i+=step) {
+        data.push(i)
+    }
+    return MDArray_fromList(data,[data.length])
+}
+export function MDList(...data) {
+    return MDArray_fromList(data,[data.length])
+}
+
+
 export class KColor {
     constructor(r,g,b) {
         this.r = r
@@ -450,6 +603,7 @@ export const STD_SCOPE = {
     Vector:(...args) => new KVector(...args),
     Rect:(...args) => new KRect(...args),
     Circle:(...args) => new KCircle(...args),
+    MDArray:(...args) => new MDArray(...args),
 }
 
 export class TaskManager {
