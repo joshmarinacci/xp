@@ -98,8 +98,8 @@ function button_click(ast, out) {
     out.indent()
     out.line(`${name}()`)
     out.outdent()
-    out.outdent()
     out.line('yield 0.01')
+    out.outdent()
     out.comment("end while")
     out.outdent()
     out.end_fun_def()
@@ -139,9 +139,9 @@ function forever_loop(ast, out) {
 
     out.indent()
     out.line(`${name}()`)
-    out.outdent()
 
     out.line('yield 0.01')
+    out.outdent()
     out.outdent()
     out.end_fun_def()
     out.after(`tm.register_loop('${wrapper_name}',${wrapper_name})`)
