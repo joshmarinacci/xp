@@ -19,6 +19,20 @@ const BOARDS = {
         import {KCanvas} from './matrixportal.js'
         let screen = new KCanvas(0,0,64,32)`,
         standard_cycle:true,
+        python:{
+            libs:[
+                'libs_py/common.py',
+                'libs_py/matrix.py',
+            ],
+            imports: `
+import displayio
+from adafruit_matrixportal.matrixportal import MatrixPortal
+import adafruit_fancyled.adafruit_fancyled as fancy
+from adafruit_display_shapes import roundrect
+from common import WHITE, BLACK, RED, GREEN, BLUE, Rect, remap, sine1, floor, System, List, pick
+from matrix import Canvas
+  `.trim()
+        }
     },
     "trellis":{
         name:"trellis",
@@ -201,7 +215,7 @@ async function start_filewatcher(src,outdir, cb) {
 
 async function compile_py(opts) {
     let src_path = opts.src
-    let out_dir = opts.outdir
+    let outdir = opts.outdir
     console.log("processing",src_path,'to python')
     let src = await file_to_string(src_path)
     src = "\n{\n" + src + "\n}\n" //add the implicit block braces
@@ -221,7 +235,7 @@ async function compile_py(opts) {
     directives.forEach(dir => {
         // console.log(dir)
         if(dir.name.name === 'board') {
-            board = dir.args[0].value
+            board = BOARDS[dir.args[0].value]
         }
     })
     console.log("board",board)
@@ -230,18 +244,26 @@ async function compile_py(opts) {
     ast_to_py(ast,out)
     // console.log("end result is",out)
     let generated_src = out.generate()
-    // console.log('generate src',generated_src)
     let TEMPLATE_PATH = "circuitpython_template.py"
     let template = await file_to_string(TEMPLATE_PATH)
+    template = template.replace("${BOARD_IMPORTS}",board.python.imports)
     template = template.replace("${USER_VARIABLES}","")
     template = template.replace("${USER_FUNCTIONS}",generated_src)
-    let outfile = path.join(out_dir, generated_src_out_name)
+    let outfile = path.join(outdir, generated_src_out_name)
     console.log(`writing ${outfile}`)
     await write_to_file(outfile, template)
+
+    // let CP_ROOT = "/Users/josh/Desktop/Hardware\ Hacking/MatrixPortal/adafruit-circuitpython-bundle-6.x-mpy-20210903"
+    // let src_lib = path.join(CP_ROOT,'lib','neopixel.mpy')
+    // let dst_lib = path.join(outdir,'lib/neopixel.mpy')
+    // console.log('copying',src_lib,'to',dst_lib)
+    // await copy_file(src_lib,dst_lib)
 }
 
 async function copy_py_libs(outdir) {
     await copy_file("libs_py/tasks.py",path.join(outdir,'tasks.py'))
+    await copy_file("libs_py/common.py",path.join(outdir,'common.py'))
+    await copy_file("libs_py/matrix.py",path.join(outdir,'matrix.py'))
 }
 
 export async function build(opts) {

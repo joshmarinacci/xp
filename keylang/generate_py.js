@@ -50,7 +50,7 @@ export class PyOutput {
     }
 
     start_fun_def(name, args) {
-        console.log('starting a fun def', name)
+        // console.log('starting a fun def', name)
         this.children.push({
             name: name,
             args: args,
@@ -114,7 +114,6 @@ function setup_block(ast, out) {
     out.indent()
     out.line("#start user code")
     ast_to_py(ast.block, out)
-    console.log("now out is", out.children)
     out.line("# end user code")
     out.outdent()
     out.end_fun_def()
@@ -148,6 +147,11 @@ function forever_loop(ast, out) {
 export function ast_to_py(ast, out) {
     // console.log("doing",ast.type,'depth',out.depth)
     if (ast.type === 'identifier') return ast.name
+    if (ast.type === AST_TYPES.deref) {
+        let before = ast_to_py(ast.before,out)
+        let after = ast_to_py(ast.after,out)
+        return `${before}.${after}`
+    }
     if (ast.type === 'literal') {
         if (ast.kind === 'integer') return ast.value + ""
         if (ast.kind === 'float') return ast.value + ""

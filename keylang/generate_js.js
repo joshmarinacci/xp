@@ -97,7 +97,7 @@ export function ast_to_js(ast) {
         return ${last} 
         }`
     }
-    if (ast.type === 'deref') {
+    if (ast.type === AST_TYPES.deref) {
         let before = ast_to_js(ast.before)
         let after = ast_to_js(ast.after)
         return `${before}.${after}`

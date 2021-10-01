@@ -10,12 +10,20 @@ from digitalio import DigitalInOut, Pull
 from adafruit_hid.mouse import Mouse
 import usb_hid
 import touchio
-from color_names import WHITE, BLACK, RED, GREEN, BLUE
+${BOARD_IMPORTS}
 
 mouse = Mouse(usb_hid.devices)
 keyboard = Keyboard(usb_hid.devices)
+matrixportal = MatrixPortal(
+    default_bg=0xFF00FF,
+    status_neopixel=board.NEOPIXEL, bit_depth=6,
+    debug=True)
 tm = TaskMaster()
 
+screen = Canvas(0,0,64,32)
+system = System()
+g = displayio.Group()
+g.append(screen)
 def NeoPixel(id):
     return neopixel.NeoPixel(id,1)
 
@@ -51,8 +59,10 @@ tm.start()
 start_time = time.monotonic()
 _SYSTEM_running = True
 while _SYSTEM_running:
+    matrixportal.display.refresh(minimum_frames_per_second=0)
+    matrixportal.display.show(g)
+    system.update()
     tm.cycle(0.01)
-    now = time.monotonic()
 #     if now > start_time + 20:
 #         _SYSTEM_running = False
 

@@ -105,6 +105,8 @@ class TaskMaster:
                 event['delay'] = next(event['gen'])
             except StopIteration:
                 event['gen'] = event['runner']()
+            except TypeError:
+                event['gen'] = event['runner']()
             event['start'] = now
 
     def cycleLoop(self,loop):

@@ -8,7 +8,8 @@ export const AST_TYPES = {
     conditional: "condition",
     listliteral: 'listliteral',
     funcall: 'funcall',
-    keywordarg: 'keywordarg'
+    keywordarg: 'keywordarg',
+    deref: 'deref'
 }
 export const FUN_CALL_TYPES = {
     positional: 'positional',
