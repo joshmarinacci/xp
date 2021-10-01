@@ -358,6 +358,7 @@ export function MDList(...data) {
 // }
 export class KeyColor {
     constructor(args) {
+        if(!args) args = {}
         this.red = 0
         this.green = 0
         this.blue = 0

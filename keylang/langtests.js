@@ -1,7 +1,6 @@
 import {eval_ast, make_grammar_semantics} from './grammar.js'
 import {
     add,
-    KColor,
     KeyColor,
     MDList,
     KObj,
@@ -153,22 +152,22 @@ async function runtests() {
     await test_js(scope, 'List(0,1,2)',new MDList(0,1,2))
     await test_js(scope, 'range(3)',new MDList(0,1,2))
     await test_js(scope, `{ let palette = List() palette }`, new MDList())
-    await test_js(scope, `{ let black = Color(0,0,0) black }`, new KColor(0,0,0))
-    await test_js(scope, `{ let red = Color(1,0,0) red}`, new KColor(1,0,0))
+    await test_js(scope, `{ let black = Color() black }`, new KeyColor({}))
+    await test_js(scope, `{ let red = Color(r:1) red}`, new KeyColor({r:1}))
     await test_js(scope, `{ let black = KeyColor(red:0, blue:0, green:0) black }`, new KeyColor({red:0,blue:0,green:0}))
     await test_js(scope, `{ let gray = KeyColor(gray:0.5) gray }`, new KeyColor({red:0.5,blue:0.5,green:0.5}))
     await test_js(scope, `{ let red = KeyColor(hue:0, sat:1, lit:0.5) red }`, new KeyColor({hue:0,sat:1,lit:0.5}))
     // await test_js(scope, `{ let screen = Canvas(0,0,64,32) screen}`, new KCanvas(0,0,64,32))
     {
         await test_js(scope, `{
-        let black = Color(0,0,0)
-        let red = Color(1,0,0)
-        let green = Color(0,1,0)
-        let blue = Color(0,0,1)
+        let black = Color()
+        let red = Color(r:1)
+        let green = Color(g:1)
+        let blue = Color(b:1)
         let palette = List(black,red,green,blue)
         palette
         }
-        `, new MDList(new KColor(0, 0, 0), new KColor(1, 0, 0), new KColor(0, 1, 0), new KColor(0, 0, 1)))
+        `, new MDList(new KeyColor({}), new KeyColor({r:1}), new KeyColor({g:1}), new KeyColor({b:1})))
     }
     await test_js(scope, '{let dot = Obj() dot}', new KObj())
     await test_js(scope, '{let dot = Obj() dot.five = 5 dot.five}', 5)
