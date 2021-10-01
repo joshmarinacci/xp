@@ -73,7 +73,7 @@ export class KCanvas extends KRect {
     drawPolyLine(line,color) {
         let ctx = this.canvas.getContext('2d')
         ctx.save()
-        ctx.scale(2,2)
+        ctx.scale(this.scale,this.scale)
         ctx.translate(0.5,0.5)
         ctx.strokeStyle = color.toCSSColor()
         // ctx.strokeStyle = 'black'
