@@ -44,7 +44,6 @@ export function makeBinOp(op) {
     return function(arr1, arr2) {
         // console.log("make bin op md",arr1.rank,'op',arr2.rank)
         if(typeof arr1.rank === 'undefined' && typeof arr2.rank === 'undefined') {
-            console.log("math on scalar",arr1,arr2,op)
             return op(arr1,arr2)
         }
         if(typeof arr1.rank === 'undefined') {
@@ -227,7 +226,7 @@ export class MDArray {
         if(this.rank === 0) {
             this.data = 0
         } else {
-            console.log(`MDArray making rank=${this.rank} shape=${this.shape} data len=${data_len}`)
+            // console.log(`MDArray making rank=${this.rank} shape=${this.shape} data len=${data_len}`)
             this.data = new Array(data_len)
             this.data.fill(0)
         }
@@ -238,7 +237,15 @@ export class MDArray {
     }
     map(cb) {
         let arr = new MDArray(this.shape)
-        arr.fillWith(cb)
+        if(this.rank === 1) {
+            for(let i=0; i<this.shape[0];i++) {
+                let r = this.get1(i)
+                let s = cb(r)
+                arr.set1(i,s)
+            }
+        } else {
+            throw new Error(`can't map higher rank arrays ${this.rank}`)
+        }
         return arr
     }
     forEach(cb) {

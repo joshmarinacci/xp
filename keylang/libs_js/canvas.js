@@ -80,11 +80,11 @@ export class KCanvas extends KRect {
         ctx.lineWidth = 0.1
         ctx.beginPath()
         for(let i=0; i<line.length; i++) {
-            let pt = line.get(i)
+            let pt = line.get1(i)
             if(i === 0) {
-                ctx.moveTo(pt.get(0),pt.get(1))
+                ctx.moveTo(pt.get1(0),pt.get1(1))
             } else {
-                ctx.lineTo(pt.get(0),pt.get(1))
+                ctx.lineTo(pt.get1(0),pt.get1(1))
             }
         }
         ctx.stroke()
