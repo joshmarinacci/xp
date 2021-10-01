@@ -3,11 +3,10 @@ import {
     add,
     KColor,
     KeyColor,
-    KList,
+    MDList,
     KObj,
     KPoint,
-    KRect,
-    KVector,
+    KRect, KVector,
     STD_SCOPE
 } from './libs_js/common.js'
 import {checkEqual, force_delete, test_js} from './util.js'
@@ -135,9 +134,9 @@ async function runtests() {
     test_eval('','if true 5',5)
     test_eval('','if (false) { 5 } else { 6 }',6)
 
-    test_eval(scope,'List(0,0,0)',new KList(0,0,0))
-    test_eval(scope, '[0,0,0]', new KList(0,0,0))
-    test_eval(scope,'range(3)',new KList([0,1,2]))
+    test_eval(scope,'List(0,0,0)',new MDList(0,0,0))
+    test_eval(scope, '[0,0,0]', new MDList(0,0,0))
+    test_eval(scope,'range(3)',new MDList(0,1,2))
     // test_eval(scope,`getPart(range(3),'get')`,new KList().get)
     test_eval(scope,'part = 3',3)
     // test_eval(scope,`foo = getPart(range(3),'get')`,new KList().get)
@@ -151,9 +150,9 @@ async function runtests() {
     await test_js(scope,`'foo'`,"foo")
     await test_js(scope,`add(4,5)`,9)
     await test_js(scope, '4.8',4.8)
-    await test_js(scope, 'List(0,1,2)',new KList(0,1,2))
-    await test_js(scope, 'range(3)',new KList(0,1,2))
-    await test_js(scope, `{ let palette = List() palette }`, new KList())
+    await test_js(scope, 'List(0,1,2)',new MDList(0,1,2))
+    await test_js(scope, 'range(3)',new MDList(0,1,2))
+    await test_js(scope, `{ let palette = List() palette }`, new MDList())
     await test_js(scope, `{ let black = Color(0,0,0) black }`, new KColor(0,0,0))
     await test_js(scope, `{ let red = Color(1,0,0) red}`, new KColor(1,0,0))
     await test_js(scope, `{ let black = KeyColor(red:0, blue:0, green:0) black }`, new KeyColor({red:0,blue:0,green:0}))
@@ -169,7 +168,7 @@ async function runtests() {
         let palette = List(black,red,green,blue)
         palette
         }
-        `, new KList(new KColor(0, 0, 0), new KColor(1, 0, 0), new KColor(0, 1, 0), new KColor(0, 0, 1)))
+        `, new MDList(new KColor(0, 0, 0), new KColor(1, 0, 0), new KColor(0, 1, 0), new KColor(0, 0, 1)))
     }
     await test_js(scope, '{let dot = Obj() dot}', new KObj())
     await test_js(scope, '{let dot = Obj() dot.five = 5 dot.five}', 5)
@@ -197,8 +196,8 @@ async function runtests() {
 
     {
         await test_js(scope, `4+2`,6)
-        await test_js(scope, `List(4,4)+List(2,2)`,new KList(6,6))
-        await test_js(scope, `[4,4]+[2,2]`,new KList(6,6))
+        await test_js(scope, `List(4,4)+List(2,2)`,new MDList(6,6))
+        await test_js(scope, `[4,4]+[2,2]`,new MDList(6,6))
         await test_js(scope, `4-2`,2)
         await test_js(scope, `4/2`,2)
         await test_js(scope, `4*2`,8)

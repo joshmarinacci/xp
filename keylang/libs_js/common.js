@@ -16,13 +16,13 @@ export function _NOW() {
 
 export function zip(A, B) {
     let i = 0
-    let out = new KList()
+    let out = new MDList()
     while(true) {
         if(i >= A.length) break
         if(i >= B.length) break
         let a  = A.get(i)
         let b  = B.get(i)
-        out.push(new KList(a,b))
+        out.push(new MDList(a,b))
         i += 1
     }
     // console.log("zip produced",JSON.stringify(out,null,'  '))
@@ -40,63 +40,129 @@ export function makeZipWith(binop) {
 
 const undef = (A) => typeof A === 'undefined'
 
-export function makeBinOp(binop) {
-    return function(A,B) {
-        if(undef(A) || undef(B) ) throw new Error(`cannot do operation on undefined variable ${A} or ${B}`)
-        if(A.data && B.data) return zipWith(A,B,binop)
-        if(A.data && !B.data) return A.map(a => binop(a,B))
-        if(!A.data && B.data) return B.map(b => binop(A,b))
-        return binop(A,B)
-    }
+export function makeBinOp(op) {
+    return function(arr1, arr2) {
+        // console.log("make bin op md",arr1.rank,'op',arr2.rank)
+        if(typeof arr1.rank === 'undefined' && typeof arr2.rank === 'undefined') {
+            console.log("math on scalar",arr1,arr2,op)
+            return op(arr1,arr2)
+        }
+        if(typeof arr1.rank === 'undefined') {
+            if(arr2.rank === 1) {
+                let arr3 = new MDArray(arr2.shape)
+                for(let i=0; i<arr2.shape[0]; i++) {
+                    let a = arr1
+                    let b = arr2.get1(i)
+                    let v = op(a,b)
+                    arr3.set1(i, v)
+                }
+                return arr3
+            }
+            if(arr2.rank === 2) {
+                let arr3 = new MDArray(arr2.shape)
+                for (let i = 0; i < arr2.shape[0]; i++) {
+                    for (let j = 0; j < arr2.shape[1]; j++) {
+                        let a = arr1
+                        let b = arr2.get2(i, j)
+                        let v = op(a, b)
+                        arr3.set2(i, j, v)
+                    }
+                }
+                return arr3
+            }
+        }
+        if(typeof arr2.rank === 'undefined') {
+            if(arr1.rank === 1) {
+                let arr3 = new MDArray(arr1.shape)
+                for (let i = 0; i < arr1.shape[0]; i++) {
+                    let a = arr1.get1(i)
+                    let b = arr2
+                    let v = op(a, b)
+                    arr3.set1(i,v)
+                }
+                return arr3
+            }
+            if(arr1.rank === 2) {
+                // console.log('array vs scalar')
+                let arr3 = new MDArray(arr1.shape)
+                for (let i = 0; i < arr1.shape[0]; i++) {
+                    for (let j = 0; j < arr1.shape[1]; j++) {
+                        let a = arr1.get2(i, j)
+                        let b = arr2
+                        let v = op(a, b)
+                        arr3.set2(i, j, v)
+                    }
+                }
+                return arr3
+            }
+        }
 
+        if(arr1.rank !== arr2.rank) {
+            throw new Error(`cannot multiply arrays of different ranks ${arr1.rank} !== ${arr2.rank}`)
+        }
+        // console.log("arr1 shape is",arr1)
+        let arr3 = new MDArray(arr1.shape)
+        if(arr1.rank === 1) {
+            for(let i=0; i<arr1.shape[0]; i++) {
+                let a = arr1.get1(i)
+                let b = arr2.get1(i)
+                let c= op(a,b)
+                // console.log(i, ' ' ,a,b,c)
+                arr3.set1(i,c)
+            }
+            return arr3
+        }
+        if(arr1.rank === 2) {
+            for (let i = 0; i < arr1.shape[0]; i++) {
+                for (let j = 0; j < arr1.shape[1]; j++) {
+                    let a = arr1.get2(i, j)
+                    let b = arr2.get2(i, j)
+                    let v = op(a, b)
+                    arr3.set2(i, j, v)
+                }
+            }
+        }
+        return arr3
+    }
 }
+function makeBinOpMDAssign(op) {
+    return function(arr1, arr2) {
+        if(typeof arr2.rank === 'undefined') {
+            if(arr1.rank === 1) {
+                for(let i=0; i<arr1.shape[0]; i++) {
+                    let a = arr1.get1(i)
+                    let b = arr2
+                    let c= op(a,b)
+                    // console.log(i, ' ' ,a,b,c)
+                    arr1.set1(i,c)
+                }
+                return
+            }
+            for(let i=0; i<arr1.shape[0]; i++) {
+                for (let j = 0; j < arr1.shape[1]; j++) {
+                    let a = arr1.get2(i, j)
+                    let b = arr2
+                    let v = op(a,b)
+                    // console(i,j, ' ' , a,b,v)
+                    arr1.set2(i, j, v)
+                }
+            }
+            return
+        }
 
-export class KList {
-    constructor(...args) {
-        this.data = []
-        args.forEach(arg => {
-            if(Array.isArray(arg)) {
-                this.data.push(...arg)
-            } else {
-                this.data.push(arg)
+        if(arr1.rank !== arr2.rank) {
+            throw new Error(`cannot multiply arrays of different ranks ${arr1.rank} !== ${arr2.rank}`)
+        }
+
+        for(let i=0; i<arr1.shape[0]; i++) {
+            for(let j=0; j<arr1.shape[1]; j++) {
+                let a = arr1.get2(i,j)
+                let b = arr2.get2(i,j)
+                let v = op(a,b)
+                arr2.set2(i,j,v)
             }
-        })
-        this.get = (index)=>this.data[index]
-        this.set = (index, value) => this.data[index] = value
-    }
-    get length() {
-        return this.data.length
-    }
-    // get(index) {
-    //     console.log(`KList.get(${index})`)
-    //     return this.data[index]
-    // }
-    map(cb) {
-        return new KList(this.data.map(cb))
-    }
-    forEach(cb) {
-        // console.log("calling for each on",this.data)
-        this.data.forEach(cb)
-    }
-    every(cb) {
-        return this.forEach(cb)
-    }
-    push(v) {
-        return this.data.push(v)
-    }
-    flatten() {
-        let arr = []
-        this.data.forEach(el => {
-            if(el.data) {
-                let data = el.flatten()
-                data.forEach(d=>{
-                    arr.push(d)
-                })
-            } else {
-                arr.push(el)
-            }
-        })
-        return new KList(arr)
+        }
+        return
     }
 }
 
@@ -149,7 +215,7 @@ class MDView {
 }
 export class MDArray {
     constructor(shape) {
-        if(shape instanceof KList) {
+        if(shape instanceof MDArray && shape.rank === 1) {
             shape = shape.data
         }
         this.rank = shape.length
@@ -161,7 +227,7 @@ export class MDArray {
         if(this.rank === 0) {
             this.data = 0
         } else {
-            console.log("making",this.rank,this.shape,data_len)
+            console.log(`MDArray making rank=${this.rank} shape=${this.shape} data len=${data_len}`)
             this.data = new Array(data_len)
             this.data.fill(0)
         }
@@ -310,12 +376,12 @@ export class KObj {
     constructor() {
     }
 }
-export class KPoint extends KList {
+export class KPoint extends MDList {
     constructor(x,y) {
         super(x,y)
     }
 }
-export class KVector extends KList{
+export class KVector extends MDList{
     constructor(x,y) {
         super(x,y)
     }
@@ -369,7 +435,7 @@ export class KRect {
         return this.y2
     }
     split(dir,amount) {
-        if (dir === 'h') return new KList(
+        if (dir === 'h') return new MDList(
             new KRect({
                 x:this.x1,
                 y:this.y1,
@@ -381,7 +447,7 @@ export class KRect {
             w:this.x2, h:this.y2,
             })
         )
-        if (dir === 'v') return new KList(
+        if (dir === 'v') return new MDList(
             new KRect({
                 x:this.x1, y:this.y1,
                 w:this.x2, h:lerp(amount, this.y1, this.y2)}),
@@ -485,7 +551,7 @@ export function range(min,max,step) {
     for(let i=min; i<max; i=i+step) {
         arr.push(i)
     }
-    return new KList(arr)
+    return new MDList(...arr)
 }
 export function wait(time) {
     // console.log('waiting for time',time)
@@ -503,7 +569,7 @@ function triple_map(a,b,c,cb) {
         let cc = get_at(c,i)
         res.push(cb(aa,bb,cc))
     }
-    return new KList(res)
+    return new MDList(...res)
 }
 
 export function wrap(val, min, max) {
@@ -579,7 +645,7 @@ export function HSL(h,s,v) {
     return new KColor(rgb8[0]/255,rgb8[1]/255,rgb8[2]/255)
 }
 export const STD_SCOPE = {
-    List:(...args)=> new KList(...args),
+    List:(...args)=> new MDList(...args),
     getPart:(obj,name) => obj[name],
     range,
     add,

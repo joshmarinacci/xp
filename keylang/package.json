@@ -5,7 +5,8 @@
   "type": "module",
   "main": "langtests.js",
   "scripts": {
-    "test": "node langtests.js && node libtests.js"
+    "test": "node langtests.js && node libtests.js",
+    "test-lang": "node langtests.js"
   },
   "author": "",
   "license": "ISC",

@@ -1,6 +1,6 @@
 import fs from 'fs'
 import ohm from 'ohm-js'
-import {KList} from './libs_js/common.js'
+import {MDList} from './libs_js/common.js'
 
 export const AST_TYPES = {
     vardec:'vardec',
@@ -203,7 +203,7 @@ export function eval_ast(ast,scope) {
     }
     if(ast.type === AST_TYPES.listliteral) {
         let f_args = ast.elements.map(arg => eval_ast(arg,scope))
-        return new KList(f_args)
+        return new MDList(...f_args)
     }
     if(ast.type === AST_TYPES.conditional) {
         if(eval_ast(ast.condition)) {

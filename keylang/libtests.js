@@ -1,9 +1,7 @@
 import {
     range,
-    KList,
-    makeBinOp,
     zip,
-    KRect, KObj, KPoint, KVector, STD_SCOPE, MDArray, rangeMD, MDArray_fromList, MDList
+    KRect, KObj, KPoint, KVector, STD_SCOPE, MDArray, rangeMD, MDArray_fromList, MDList, makeBinOp
 } from './libs_js/common.js'
 import {checkEqual, log, test_js} from './util.js'
 
@@ -353,7 +351,7 @@ img.set3(0,0,1, 0)
 img.set3(0,0,2, 0)
 img
 }`, img)
-    }
+     }
 }
 
 Promise.all([
