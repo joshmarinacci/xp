@@ -48,7 +48,7 @@ export function ast_to_js(ast) {
         let args = ast.args.map(a => ast_to_js(a))
         let name = ast_to_js(ast.name)
         if(name === 'wait') {
-            return `await sleep(${args.join(",")})`
+            return `sleep(${args.join(",")})`
         }
         if(ast.form === FUN_CALL_TYPES.keyword) {
             return `${name}({${args.join(',')}})`

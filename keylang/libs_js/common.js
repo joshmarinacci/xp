@@ -283,6 +283,7 @@ export class MDArray {
     fill(val) {
         this.data.fill(val)
     }
+    get(i) { return this.get1(i)}
     get1(i) {
         return this.data[i]
     }
@@ -309,6 +310,20 @@ export class MDArray {
 
     slice(def) {
         return new MDView(this, def)
+    }
+    flatten() {
+        let arr = []
+        this.data.forEach(el => {
+            if (el.data) {
+                let data = el.flatten()
+                data.forEach(d => {
+                    arr.push(d)
+                })
+            } else {
+                arr.push(el)
+            }
+        })
+        return MDArray_fromList(arr,this.shape)
     }
 }
 export function MDArray_fromList(data, shape) {
