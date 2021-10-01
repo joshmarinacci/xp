@@ -346,16 +346,16 @@ export function MDList(...data) {
 }
 
 
-export class KColor {
-    constructor(r,g,b) {
-        this.r = r
-        this.g = g
-        this.b = b
-    }
-    toCSSColor() {
-        return `rgb(${Math.floor(this.r*255)}, ${Math.floor(this.g*255)},${Math.floor(this.b*255)})`
-    }
-}
+// export class KColor {
+//     constructor(r,g,b) {
+//         this.r = r
+//         this.g = g
+//         this.b = b
+//     }
+//     toCSSColor() {
+//         return `rgb(${Math.floor(this.r*255)}, ${Math.floor(this.g*255)},${Math.floor(this.b*255)})`
+//     }
+// }
 export class KeyColor {
     constructor(args) {
         this.red = 0
@@ -387,11 +387,11 @@ export class KeyColor {
     }
 }
 
-export const BLACK = new KColor(0,0,0)
-export const BLUE  = new KColor(0,0,1)
-export const RED   = new KColor(1,0,0)
-export const GREEN = new KColor(0,1,0)
-export const WHITE = new KColor(1,1,1)
+export const BLACK = new KeyColor({})
+export const BLUE  = new KeyColor({b:1})
+export const RED   = new KeyColor({r:1})
+export const GREEN = new KeyColor({g:1})
+export const WHITE = new KeyColor({r:1, g:1, b:1})
 export const PI = Math.PI
 
 export class KObj {
@@ -662,10 +662,10 @@ function hslToRgb(h, s, l){
     return [r,g,b]//, Math.round(g * 255), Math.round(b * 255)];
 }
 
-export function HSL(h,s,v) {
-    let rgb8 = hslToRgb(h,s,v)
-    return new KColor(rgb8[0]/255,rgb8[1]/255,rgb8[2]/255)
-}
+// export function HSL(h,s,v) {
+//     let rgb8 = hslToRgb(h,s,v)
+//     return new KColor(rgb8[0]/255,rgb8[1]/255,rgb8[2]/255)
+// }
 export const STD_SCOPE = {
     List:(...args)=> new MDList(...args),
     getPart:(obj,name) => obj[name],
@@ -687,8 +687,7 @@ export const STD_SCOPE = {
     floor:Math.floor,
     sleep,
     sine1: (v) => remap(Math.sin(v), -1, 1, 0,1),
-    HSL:HSL,
-    Color:(...args) => new KColor(...args),
+    Color:(...args) => new KeyColor(...args),
     KeyColor:(...args) => new KeyColor(...args),
     Canvas:(...args) => new KCanvas(...args),
     Obj:(...args) => new KObj(...args),
