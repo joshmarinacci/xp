@@ -132,7 +132,7 @@ class List:
     def toString(self):
         return ','.join(str(e) for e in self.data)
 
-def range(min, max=None):
+def range(min, max=None, step=1):
 #     print("range",min,max)
     if max == None:
         return range(0,min)
@@ -140,7 +140,7 @@ def range(min, max=None):
     val = min
     while True:
         data.append(val)
-        val = val + 1
+        val = val + step
         if val >= max:
             break
     return data

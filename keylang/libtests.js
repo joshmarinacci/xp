@@ -360,6 +360,7 @@ async function py_lib_tests() {
     await test_raw_py(`import common\nprint(common.List(1,2).toString())`, '1,2')
     await test_raw_py(`import common\nprint(common.range(3).toString())`, '0,1,2')
     await test_raw_py(`import common\nprint(common.range(2,5).toString())`, '2,3,4')
+    await test_raw_py(`import common\nprint(common.range(0,10,3).toString())`, '0,3,6,9')
 
 }
 
