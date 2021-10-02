@@ -29,6 +29,9 @@ export class KCanvas extends KRect {
             let ctx = this.canvas.getContext('2d')
             let x = xy.get(0)
             let y = xy.get(1)
+            ctx.save()
+            ctx.scale(this.scale,this.scale)
+            ctx.translate(0.5,0.5)
             // console.log("drawing at",x,y,color)
             ctx.fillStyle = color.toCSSColor()
             // console.log("fillstyle is",color.toCSSColor())
@@ -37,6 +40,7 @@ export class KCanvas extends KRect {
                 Math.floor(y),
                 1,1
             )
+            ctx.restore()
         }
     }
     fillRect(rect,color) {

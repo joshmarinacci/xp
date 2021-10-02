@@ -42,7 +42,10 @@ const undef = (A) => typeof A === 'undefined'
 
 export function makeBinOp(op) {
     return function(arr1, arr2) {
-        // console.log("make bin op md",arr1.rank,'op',arr2.rank)
+        // console.log("make bin op md",,'op',arr2.rank)
+        if(typeof arr1 === 'undefined') {
+            console.error("arr1 is missing for op",op)
+        }
         if(typeof arr1.rank === 'undefined' && typeof arr2.rank === 'undefined') {
             return op(arr1,arr2)
         }
@@ -249,6 +252,22 @@ export class MDArray {
         return arr
     }
     forEach(cb) {
+        if(this.rank === 1) {
+            for (let i = 0; i < this.shape[0]; i++) {
+                let r = this.get1(i)
+                cb(r,i)
+            }
+            return
+        }
+        if(this.rank === 2) {
+            for (let i = 0; i < this.shape[0]; i++) {
+                for(let j=0; j<this.shape[1]; j++) {
+                    let r = this.get2(i,j)
+                    cb(r,i,j)
+                }
+            }
+            return
+        }
         this.data.forEach(cb)
     }
     every(cb) {
@@ -264,6 +283,7 @@ export class MDArray {
     }
     set2(i,j, v) {
         let n = i + j*this.shape[0]
+        if(n > this.data.length) throw new Error(`index out of range set2(${i},${j}) in shape ${this.shape}`)
         this.data[n] = v
     }
     set3(i,j,k, v) {
@@ -289,6 +309,7 @@ export class MDArray {
     }
     get2(i,j) {
         let n = i + j*this.shape[0]
+        if(n > this.data.length) throw new Error(`index out of range get2(${i},${j}) in shape ${this.shape}`)
         return this.data[n]
     }
 
@@ -393,6 +414,7 @@ export const BLUE  = new KeyColor({b:1})
 export const RED   = new KeyColor({r:1})
 export const GREEN = new KeyColor({g:1})
 export const WHITE = new KeyColor({r:1, g:1, b:1})
+export const GRAY = new KeyColor({r:0.5, g:0.5, b:0.5})
 export const PI = Math.PI
 
 export class KObj {
