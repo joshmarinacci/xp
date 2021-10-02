@@ -29,7 +29,7 @@ import displayio
 from adafruit_matrixportal.matrixportal import MatrixPortal
 import adafruit_fancyled.adafruit_fancyled as fancy
 from adafruit_display_shapes import roundrect
-from common import WHITE, BLACK, RED, GREEN, BLUE, Rect, remap, sine1, floor, System, List, pick
+from common import WHITE, BLACK, RED, GREEN, BLUE, Rect, remap, sine1, floor, System, List, pick, Obj, range, randi, randf, wrap
 from matrix import Canvas
   `.trim()
         }

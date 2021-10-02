@@ -1,10 +1,11 @@
 from common import BLACK
 import displayio
+import math
 import adafruit_fancyled.adafruit_fancyled as fancy
 
 class Canvas(displayio.TileGrid):
     def __init__(self,x,y,w,h):
-        print("making a canvas",x,y,w,h)
+#         print("making a canvas",x,y,w,h)
         self._palette = displayio.Palette(8)
         self._palette.make_transparent(0)
 #        self._palette[0] = (0,0,0) #black
@@ -25,6 +26,17 @@ class Canvas(displayio.TileGrid):
             for j in range(0, h):   # draw the center chunk
                 self._bitmap[i, j] = 1
         super().__init__(self._bitmap, pixel_shader=self._palette, x=x, y=y)
+
+    def get_width(self):
+        return self._bitmap.width
+
+    width = property(get_width)
+
+    def setPixel(self, xy, color):
+        x = math.floor(xy.get1(0))
+        y = math.floor(xy.get1(1))
+#         print("set pixel",x,y,color)
+        self._bitmap[x,y] = color
 
     def fillRect(self,rect,fill):
         for i in range(rect.x1, rect.x2):   # draw the center chunk

@@ -31,6 +31,17 @@ def remap(val, min,max, MIN, MAX):
     t = (val - min) / (max - min)
     return ((MAX - MIN)*t) + MIN
 
+def wrap(val,min,max):
+    if val < min:
+        return val + (max-min)
+    if val > max:
+        return val - (max-min)
+    return val
+
+class Obj:
+    def __init__(self):
+        pass
+
 class Rect:
     def __init__(self, x1, y1, x2, y2):
         self.x1 = floor(x1)
@@ -94,13 +105,38 @@ class List:
         self.data = []
         for val in args:
             self.data.append(val)
+    def append(self,val):
+        self.data.append(val)
 
     def get_length(self):
         return len(self.data)
 
     length = property(get_length)
 
+    def get1(self, n):
+        return self.data[n]
+    def set1(self, n, v):
+        self.data[n] = v
+
+    def map(self, lam):
+        data = List()
+        for val in self.data:
+            data.append(lam(val))
+        return data
+
     def every(self, lam):
+#         print("dots every count",len(self.data))
         for val in self.data:
             lam(val)
+    def dump(self):
+        print("List is",self.data)
 
+def range(min):
+    data  = List()
+    val = 0
+    while True:
+        data.append(val)
+        val = val + 1
+        if val >= min:
+            break
+    return data

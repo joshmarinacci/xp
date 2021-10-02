@@ -2,6 +2,7 @@ import {AST_TYPES} from './grammar.js'
 
 const INDENT = "    "
 const PY_BIN_OPS = {
+    '+':{symbol:'+',name:'add'},
     '==': {symbol: '==', name: 'equals'},
     "or": {symbol: 'or', name:' or'},
     "and": {symbol: 'and', name:' and'},
@@ -157,7 +158,9 @@ export function ast_to_py(ast, out) {
     if (ast.type === AST_TYPES.deref) {
         let before = ast_to_py(ast.before,out)
         let after = ast_to_py(ast.after,out)
-        out.add_variable_reference(before)
+        if(ast.before.type === 'identifier') {
+            out.add_variable_reference(before)
+        }
         return `${before}.${after}`
     }
     if (ast.type === 'literal') {
@@ -230,7 +233,9 @@ export function ast_to_py(ast, out) {
     }
     if (ast.type === 'funcall') {
         let name = ast_to_py(ast.name, out)
-        out.add_variable_reference(name)
+        if(ast.name.type === 'identifier') {
+            out.add_variable_reference(name)
+        }
         let args = ast.args.map(a => ast_to_py(a, out)).join(", ")
         if (name === 'wait') {
             return (`yield ${args}`)
@@ -253,7 +258,7 @@ export function ast_to_py(ast, out) {
         return
     }
     if (ast.type === 'return') {
-        return 'return'
+        return 'return ' + ast_to_py(ast.exp,out)
     }
     if (ast.type === AST_TYPES.keywordarg) return `${ast_to_py(ast.name,out)}=${ast_to_py(ast.value,out)}`
     // console.log('converting to py',ast, JSON.stringify(ast,null,'    '))
