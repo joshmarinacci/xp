@@ -30,6 +30,12 @@ class Canvas(displayio.TileGrid):
     def get_width(self):
         return self._bitmap.width
     width = property(get_width)
+    def get_height(self):
+        return self._bitmap.height
+    height = property(get_height)
+    def get_size(self):
+        return List(self.width,self.height)
+    size = property(get_size)
 
     def fill(self: color):
         for i in range(0, self.w):   # draw the center chunk

@@ -121,7 +121,7 @@ export async function test_raw_py(code, ans) {
         console.log("going to run the python code",pth)
         let {stdout, stderr}  = await exec(`python3 ${pth}`)
         stdout = stdout.trim()
-        console.log(`ret is-${stdout}-`,stderr,'vs answer',ans)
+        console.log(`comparing ${stdout}`,stderr,'vs answer',ans)
         if (!checkEqual(stdout, ans)) throw new Error("not equal")
     } catch (e) {
         console.log("error happened",e)

@@ -398,6 +398,25 @@ list2 = 4
 print(common.subtract(list1,list2).toString())    
     `,'-3,-2,-1')
 
+
+//wrap single value
+    await test_raw_py(`
+import common
+val = -3
+min = 0
+max = 10
+print(common.wrap(val,min,max))    
+    `,'7')
+
+//try wrapping a list
+    await test_raw_py(`
+import common
+val = common.List(-3,13)
+min = common.List(0,0)
+max = common.List(10,10)
+print(common.wrap(val,min,max).toString())    
+    `,'7,3')
+
 }
 
 Promise.all([
