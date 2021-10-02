@@ -3,7 +3,7 @@ import {
     zip,
     KRect, KObj, KPoint, KVector, STD_SCOPE, MDArray, rangeMD, MDArray_fromList, MDList, makeBinOp
 } from './libs_js/common.js'
-import {checkEqual, copy_file, log, test_js, test_raw_py} from './util.js'
+import {checkEqual, copy_file, force_delete, log, test_js, test_raw_py} from './util.js'
 
 function test(res,ans) {
     // console.log("comparing",res,ans)
@@ -427,3 +427,6 @@ Promise.all([
     py_lib_tests()
 ])
     .then(()=>console.log("all tests pass"))
+    .then(()=> {
+        return force_delete("./temp")
+    })

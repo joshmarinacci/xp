@@ -216,7 +216,6 @@ async function runtests() {
         await test_js(scope,`{[1,2].map((x)=>{x*2})}`,MDList(2,4))
     }
 
-    // await force_delete("./temp")
 }
 
 
