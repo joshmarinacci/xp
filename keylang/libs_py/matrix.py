@@ -29,7 +29,7 @@ class Canvas(displayio.TileGrid):
     def fillRect(self,rect,fill):
         for i in range(rect.x1, rect.width):   # draw the center chunk
             for j in range(rect.y1, rect.height):   # draw the center chunk
-                self._bitmap[i, j] = 2
+                self._bitmap[i, j] = fill
 
 
 
