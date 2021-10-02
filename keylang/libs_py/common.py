@@ -99,22 +99,31 @@ class System:
         self.time = self.currentTime - self.startTime
 
 def add(a,b):
+    return binop(a,b, lambda a,b:a+b)
+def subtract(a,b):
+    return binop(a,b, lambda a,b:a-b)
+def multiply(a,b):
+    return binop(a,b, lambda a,b:a*b)
+def divide(a,b):
+    return binop(a,b, lambda a,b:a/b)
+
+def binop(a,b,op):
     if isinstance(a,List) and isinstance(b,List):
         out = List()
         for aa,bb in zip(a.data,b.data):
-            out.append(aa+bb)
+            out.append(op(aa,bb))
         return out
     if not isinstance(a,List) and isinstance(b,List):
         out = List()
         for bb in b.data:
-            out.append(a+bb)
+            out.append(op(a,bb))
         return out
     if isinstance(a,List) and not isinstance(b,List):
         out = List()
         for aa in a.data:
-            out.append(aa+b)
+            out.append(op(aa,b))
         return out
-    return a+b
+    return op(a,b)
 
 
 class List:

@@ -391,6 +391,12 @@ print(common.add(list1,list2).toString())
     `,'5,6,7')
 
 
+    await test_raw_py(`
+import common
+list1 = common.List(1,2,3)
+list2 = 4
+print(common.subtract(list1,list2).toString())    
+    `,'-3,-2,-1')
 
 }
 
