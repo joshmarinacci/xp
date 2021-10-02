@@ -33,11 +33,23 @@ const BIN_OPS = {
 }
 
 function lambdawrap(then_clause, ast) {
+    // console.log("doing lambda wrap",ast,then_clause)
     if(ast && ast.type === 'body') {
         if(ast.body.length > 0) {
             if(ast.body[0].type === 'return') {
                 return `()=>{${then_clause}}`
             }
+        }
+        if(Array.isArray(then_clause)) {
+            // console.log("then is an array", then_clause)
+            let last = then_clause.pop()
+            let rest = then_clause
+            // console.log("rest",rest, 'last',last)
+            let hasreturn = last.startsWith('return')
+            if(hasreturn) last = last.substring('return'.length)
+            let retval = `() => { ${rest.join("\n")}\n return ${last} }`
+            // console.log("making",retval)
+            return retval
         }
     }
     return `()=>{return ${then_clause}}`
