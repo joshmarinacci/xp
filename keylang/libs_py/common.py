@@ -100,3 +100,7 @@ class List:
 
     length = property(get_length)
 
+    def every(self, lam):
+        for val in self.data:
+            lam(val)
+

@@ -46,7 +46,11 @@ export class PyOutput {
     }
 
     add_variable_reference(name) {
-        this.refs.push(name)
+        let n = name.indexOf('.')
+        if(n >= 0) {
+            return this.refs.push(name.substring(0,n))
+        }
+        return this.refs.push(name)
     }
 
     start_fun_def(name, args) {
@@ -77,6 +81,10 @@ export class PyOutput {
     }
 }
 
+function genid(s) {
+    return `${s}_${Math.floor(Math.random()*10000)}`
+}
+
 function button_click(ast, out) {
     let name = ast_to_py(ast.name, out)
     let args = ast.args.map(a => ast_to_py(a), out).join(", ")
@@ -87,8 +95,7 @@ function button_click(ast, out) {
     out.line("# end user code")
     out.outdent()
     out.end_fun_def()
-
-    let wrapper_name = `wrapper_${name}_${Math.floor(Math.random()*10000)}`
+    let wrapper_name = genid('wrapper_'+name)
     out.start_fun_def(wrapper_name,[])
     out.indent()
     out.line("while True:")
@@ -150,6 +157,7 @@ export function ast_to_py(ast, out) {
     if (ast.type === AST_TYPES.deref) {
         let before = ast_to_py(ast.before,out)
         let after = ast_to_py(ast.after,out)
+        out.add_variable_reference(before)
         return `${before}.${after}`
     }
     if (ast.type === 'literal') {
@@ -200,9 +208,12 @@ export function ast_to_py(ast, out) {
     }
     if (ast.type === 'lambda') {
         let args = ast.args.map(a => ast_to_py(a,out)).flat()
+        let name = genid('lambda')
+        out.line(`def ${name}(${args}):`)
+        out.indent()
         let body = ast_to_py(ast.body,out)
-        console.log("skipping lambda generation")
-        return
+        out.outdent()
+        return name
     }
     if (ast.type === 'fundef') {
         let name = ast_to_py(ast.name, out)
@@ -219,6 +230,7 @@ export function ast_to_py(ast, out) {
     }
     if (ast.type === 'funcall') {
         let name = ast_to_py(ast.name, out)
+        out.add_variable_reference(name)
         let args = ast.args.map(a => ast_to_py(a, out)).join(", ")
         if (name === 'wait') {
             return (`yield ${args}`)
