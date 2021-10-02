@@ -15,7 +15,7 @@ class Canvas(displayio.TileGrid):
         self._palette[4] = (0,0,255) #blue
         self._palette[5] = (255,255,0) #yellow
         self._palette[6] = (255,0,255) #magenta
-        #self._palette[7] = (255,128,0) #orange
+        self._palette[7] = (255,128,0) #orange
         #self._palette[8] = (0,75,200) #
         #self._palette[9] = (0,75,200) #
 

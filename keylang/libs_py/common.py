@@ -1,7 +1,6 @@
 import time
 import math
 import random
-import displayio
 
 WHITE = (255,0,255)
 BLACK = (0,0,0)
