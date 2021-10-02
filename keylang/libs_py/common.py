@@ -98,6 +98,24 @@ class System:
         self.currentTime = time.monotonic()
         self.time = self.currentTime - self.startTime
 
+def add(a,b):
+    if isinstance(a,List) and isinstance(b,List):
+        out = List()
+        for aa,bb in zip(a.data,b.data):
+            out.append(aa+bb)
+        return out
+    if not isinstance(a,List) and isinstance(b,List):
+        out = List()
+        for bb in b.data:
+            out.append(a+bb)
+        return out
+    if isinstance(a,List) and not isinstance(b,List):
+        out = List()
+        for aa in a.data:
+            out.append(aa+b)
+        return out
+    return a+b
+
 
 class List:
     def __init__(self, *args):

@@ -363,6 +363,35 @@ async function py_lib_tests() {
     await test_raw_py(`import common\nprint(common.range(0,10,3).toString())`, '0,3,6,9')
     await test_raw_py(`import common\nprint(common.wrap(-2,0,10))`,'8')
     await test_raw_py(`import common\nprint(common.wrap(12,0,10))`,'2')
+
+    //list addition
+    await test_raw_py(`
+import common
+list1 = 4
+list2 = 2
+print(common.add(list1,list2))    
+    `,'6')
+    await test_raw_py(`
+import common
+list1 = common.List(1,2,3)
+list2 = common.List(1,2,3)
+print(common.add(list1,list2).toString())    
+    `,'2,4,6')
+    await test_raw_py(`
+import common
+list1 = 4
+list2 = common.List(1,2,3)
+print(common.add(list1,list2).toString())    
+    `,'5,6,7')
+    await test_raw_py(`
+import common
+list1 = common.List(1,2,3)
+list2 = 4
+print(common.add(list1,list2).toString())    
+    `,'5,6,7')
+
+
+
 }
 
 Promise.all([
