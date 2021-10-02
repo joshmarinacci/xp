@@ -202,7 +202,16 @@ async function runtests() {
         await test_js(scope, `4*2`,8)
     }
 
-    await force_delete("./temp")
+    {
+        await test_js(scope,`if(true) {4} else {5}`,4)
+        await test_js(scope,`if(true) {4}`,4)
+        await test_js(scope,`if(not true) {4} else {5}`,5)
+        await test_js(scope,`if(true) {return 5}`,5)
+        await test_js(scope,`{[1,2]}`,MDList(1,2))
+        await test_js(scope,`{[1,2].map((x)=>{x*2})}`,MDList(2,4))
+    }
+
+    // await force_delete("./temp")
 }
 
 

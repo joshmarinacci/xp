@@ -1,4 +1,5 @@
 import {AST_TYPES} from './grammar.js'
+import {genid} from './util.js'
 
 const INDENT = "    "
 const PY_BIN_OPS = {
@@ -80,10 +81,6 @@ export class PyOutput {
         this.lines.unshift(...last.lines)
         return this.lines.join("\n") + "\n" + "\n" + this.afters.join("\n")
     }
-}
-
-function genid(s) {
-    return `${s}_${Math.floor(Math.random()*10000)}`
 }
 
 function button_click(ast, out) {

@@ -32,6 +32,17 @@ const BIN_OPS = {
     }
 }
 
+function lambdawrap(then_clause, ast) {
+    if(ast && ast.type === 'body') {
+        if(ast.body.length > 0) {
+            if(ast.body[0].type === 'return') {
+                return `()=>{${then_clause}}`
+            }
+        }
+    }
+    return `()=>{return ${then_clause}}`
+}
+
 export function ast_to_js(ast) {
     if (ast.type === 'comment') {
         return ""
@@ -114,12 +125,19 @@ export function ast_to_js(ast) {
         if (op) return `${op.name}(${ast_to_js(ast.exp)})`
     }
     if (ast.type === AST_TYPES.conditional) {
-        let then = ast_to_js(ast.then_block)
-        if(Array.isArray(then)) then = ind(then).join("\n")
-        return `if(${ast_to_js(ast.condition)}) {\n`
-            + then
-            + "}\n"
-            + (ast.has_else ? ' else {\n ' + ast_to_js(ast.else_block) + " }\n " : "")
+        let then_ret = false
+        let cond = ast_to_js(ast.condition)
+        let then_clause = ast_to_js(ast.then_block)
+        //wrap it
+        then_clause = lambdawrap(then_clause, ast.then_block)
+        if(ast.has_else) {
+            let else_clause = ast_to_js(ast.else_block)
+            else_clause = lambdawrap(else_clause, ast.else_block)
+            return `ifcond(${cond}, ${then_clause}, ${else_clause})`
+        } else {
+            let else_clause = lambdawrap('null',null)
+            return `ifcond(${cond}, ${then_clause},${else_clause})`
+        }
     }
     if (ast.type === 'return') return `return ${ast_to_js(ast.exp)}`
     if (ast.type === AST_TYPES.keywordarg) return `${ast_to_js(ast.name)}:${ast_to_js(ast.value)}`

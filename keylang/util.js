@@ -4,6 +4,7 @@ import {ast_to_js} from './generate_js.js'
 import {STD_SCOPE} from './libs_js/common.js'
 import {make_grammar_semantics} from './grammar.js'
 import {promisify} from 'util'
+
 const exec = promisify(child_process.exec);
 
 const getMethods = (obj) => {
@@ -127,4 +128,8 @@ export async function test_raw_py(code, ans) {
         console.log("error happened",e)
         throw e
     }
+}
+
+export function genid(s) {
+    return `${s}_${Math.floor(Math.random() * 10000)}`
 }

@@ -721,6 +721,15 @@ export const STD_SCOPE = {
     Rect:(...args) => new KRect(...args),
     Circle:(...args) => new KCircle(...args),
     MDArray:(...args) => new MDArray(...args),
+    NOTHING:Symbol('nothing'),
+    RETURN:Symbol('return'),
+    ifcond:(p,t,e) => {
+        if(p) {
+            return t()
+        }  else {
+            return e()
+        }
+    }
 }
 
 export class TaskManager {
