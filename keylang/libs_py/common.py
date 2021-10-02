@@ -2,19 +2,16 @@ import time
 import math
 import random
 
-WHITE = (255,0,255)
-BLACK = (0,0,0)
-AQUA  = (0,75,200)
-RED   = (255,0,0)
-BLUE    = (  0,  0,255)
-GREEN   = (  0,255,  0)
-COLOR = (255,80,0)
-YELLOW = (255,255,0)
-HOTPINK = (255, 105, 180)
-PURPLE = (255,0,255)
-ORANGE = (255,128,0)
+WHITE   = (255,0,255)
+BLACK   = (0,0,0)
+RED     = (255,   0,   0)
+BLUE    = (  0,   0, 255)
+GREEN   = (  0, 255,   0)
+YELLOW  = (255, 255,   0)
+MAGENTA = (255,   0, 255)
+CYAN    = (  0, 255, 255)
 
-ALL_COLORS = [BLACK, RED, GREEN, BLUE, GREEN, YELLOW, HOTPINK, PURPLE, ORANGE]
+ALL_COLORS = [BLACK, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN]
 
 def randf(min,max):
     return random.uniform(min,max)
