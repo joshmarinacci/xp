@@ -1,7 +1,10 @@
 import fs from 'fs'
+import child_process from 'child_process'
 import {ast_to_js} from './generate_js.js'
 import {STD_SCOPE} from './libs_js/common.js'
 import {make_grammar_semantics} from './grammar.js'
+import {promisify} from 'util'
+const exec = promisify(child_process.exec);
 
 const getMethods = (obj) => {
     let properties = new Set()
@@ -103,6 +106,23 @@ doit()
         let fres = mod.doit()
         console.log("comparing", fres, ans)
         if (!checkEqual(fres, ans)) throw new Error("not equal")
+    } catch (e) {
+        console.log("error happened",e)
+        throw e
+    }
+}
+
+export async function test_raw_py(code, ans) {
+    await mkdirs("temp")
+    console.log('generated source is',code)
+    let pth = `temp/generated_${Math.floor(Math.random()*10000)}.py`
+    await write_to_file(pth, code)
+    try {
+        console.log("going to run the python code",pth)
+        let {stdout, stderr}  = await exec(`python3 ${pth}`)
+        stdout = stdout.trim()
+        console.log(`ret is-${stdout}-`,stderr,'vs answer',ans)
+        if (!checkEqual(stdout, ans)) throw new Error("not equal")
     } catch (e) {
         console.log("error happened",e)
         throw e

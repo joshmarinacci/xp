@@ -3,7 +3,7 @@ import {
     zip,
     KRect, KObj, KPoint, KVector, STD_SCOPE, MDArray, rangeMD, MDArray_fromList, MDList, makeBinOp
 } from './libs_js/common.js'
-import {checkEqual, log, test_js} from './util.js'
+import {checkEqual, copy_file, log, test_js, test_raw_py} from './util.js'
 
 function test(res,ans) {
     // console.log("comparing",res,ans)
@@ -354,10 +354,20 @@ img
      }
 }
 
+async function py_lib_tests() {
+    await copy_file('libs_py/common.py','temp/common.py')
+    await test_raw_py(`print(42)`, '42')
+    await test_raw_py(`import common\nprint(common.List(1,2).toString())`, '1,2')
+    await test_raw_py(`import common\nprint(common.range(3).toString())`, '0,1,2')
+    await test_raw_py(`import common\nprint(common.range(2,5).toString())`, '2,3,4')
+
+}
+
 Promise.all([
     // list_tests(),
     // math_tests(),
-    mdarray_tests(),
-    md_image_tests(),
+    // mdarray_tests(),
+    // md_image_tests(),
+    py_lib_tests()
 ])
     .then(()=>console.log("all tests pass"))

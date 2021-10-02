@@ -75,7 +75,7 @@ export class PyOutput {
     }
 
     generate() {
-        // console.log("generating", this)
+        console.log("generating", this)
         let last = this.children.pop()
         this.lines.unshift(...last.lines)
         return this.lines.join("\n") + "\n" + "\n" + this.afters.join("\n")

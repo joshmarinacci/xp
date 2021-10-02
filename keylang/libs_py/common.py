@@ -129,13 +129,18 @@ class List:
             lam(val)
     def dump(self):
         print("List is",self.data)
+    def toString(self):
+        return ','.join(str(e) for e in self.data)
 
-def range(min):
+def range(min, max=None):
+#     print("range",min,max)
+    if max == None:
+        return range(0,min)
     data  = List()
-    val = 0
+    val = min
     while True:
         data.append(val)
         val = val + 1
-        if val >= min:
+        if val >= max:
             break
     return data
