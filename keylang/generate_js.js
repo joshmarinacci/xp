@@ -26,6 +26,9 @@ const BIN_OPS = {
     },
     '==': {
         name: 'equal'
+    },
+    'or':{
+        name: 'or'
     }
 }
 

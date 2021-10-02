@@ -69,6 +69,13 @@ export class KCanvas extends KRect {
             ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
         }
     }
+    fill(color) {
+        if(isBrowser()) {
+            let ctx = this.canvas.getContext('2d')
+            ctx.fillStyle = color.toCSSColor()
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        }
+    }
 
     drawPolyLine(line,color) {
         let ctx = this.canvas.getContext('2d')

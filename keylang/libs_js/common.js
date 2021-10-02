@@ -514,6 +514,7 @@ export const greaterthan = makeBinOp((a,b)=>a>b)
 export const lessthanorequal = makeBinOp((a,b)=>a<=b)
 export const greaterthanorequal = makeBinOp((a,b)=>a>=b)
 export const equal = makeBinOp((a,b)=>a===b)
+export const or    = makeBinOp((a,b)=>a||b)
 export const not   = (a) => !a
 
 
@@ -679,6 +680,7 @@ export const STD_SCOPE = {
     greaterthan,
     equal,
     not,
+    or,
     randi,
     randf,
     choose,
