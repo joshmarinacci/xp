@@ -39,6 +39,18 @@ from matrix import Canvas
         before:`import {Trellis} from './trellis.js'
         let trellis = new Trellis(8,4)`,
         standard_cycle:true,
+        python:{
+            libs:[
+                'common',
+                'tasks',
+                'trellis',
+                'lists',
+            ],
+            imports:`
+from lists import List
+            `,
+            template_path:'templates/trellis.py'
+        }
     },
     "trinkey":{
         name:"trinkey",
@@ -46,7 +58,8 @@ from matrix import Canvas
         standard_cycle:true,
         python: {
             libs:[
-                'libs_py/common.py',
+                'common',
+                'tasks',
             ],
             imports:`
             `,
@@ -261,8 +274,11 @@ async function compile_py(opts) {
     console.log(`writing ${outfile}`)
     await write_to_file(outfile, template)
 
-    await copy_file("libs_py/tasks.py",path.join(outdir,'tasks.py'))
-    await copy_file("libs_py/common.py",path.join(outdir,'common.py'))
+    console.log('doing libs for board',board.python.libs)
+    for(let name of board.python.libs) {
+        await copy_file(`libs_py/${name}.py`,path.join(outdir,`${name}.py`))
+        console.log("doing library",name)
+    }
 
     // let CP_ROOT = "/Users/josh/Desktop/Hardware\ Hacking/MatrixPortal/adafruit-circuitpython-bundle-6.x-mpy-20210903"
     // let src_lib = path.join(CP_ROOT,'lib','neopixel.mpy')

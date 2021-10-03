@@ -1,6 +1,7 @@
 import time
 
 class TaskMaster:
+    starts_complete = False
     def __init__(self):
         self.MODES = []
         self.EVENTS = []
@@ -15,6 +16,8 @@ class TaskMaster:
             "gen":0,
             "start":time.monotonic(),
             "delay":0,
+            "type":"mode",
+            "restart":True,
         })
 
     def register_start(self, name, runner):
@@ -24,6 +27,8 @@ class TaskMaster:
             "gen":0,
             "start":time.monotonic(),
             "delay":0,
+            "restart":False,
+            "type":"start",
         })
 
     def register_loop(self, name, runner):
@@ -33,6 +38,8 @@ class TaskMaster:
             "gen":0,
             "start":time.monotonic(),
             "delay":0,
+            "type":"loop",
+            "restart":True,
         })
 
     def register_event(self, name, runner):
@@ -42,6 +49,8 @@ class TaskMaster:
             "gen":0,
             "start":time.monotonic(),
             "delay":0,
+            "type":"event",
+            "restart":True,
         })
 
     def getCurrentMode(self):
@@ -52,11 +61,10 @@ class TaskMaster:
         self.current = 0
         # only run starts once
         for start in self.STARTS:
-            start['runner']()
+            start['gen'] = start['runner']()
         # the rest use generators
         for loop in self.LOOPS:
             loop['gen'] = loop['runner']()
-            print("initting",loop['gen'])
         # don't start modes. they are started on demand
 #         for mode in self.MODES:
 #             mode['gen'] = mode['runner']()
@@ -104,26 +112,37 @@ class TaskMaster:
             try:
                 event['delay'] = next(event['gen'])
             except StopIteration:
-                event['gen'] = event['runner']()
+                if event['type'] == 'start':
+                    self.starts_complete = True
+                if event['restart']:
+                     event['gen'] = event['runner']()
             except TypeError:
-                event['gen'] = event['runner']()
+                if event['type'] == 'start':
+                    self.starts_complete = True
+                if event['restart']:
+                     event['gen'] = event['runner']()
             event['start'] = now
 
     def cycleLoop(self,loop):
         next(loop['gen'])
 
     def cycle(self, rate):
-        # run event handlers first
-        for event in self.EVENTS:
-            self.cycleThing(event)
-        # run permanent loops next
-        for loop in self.LOOPS:
-            self.cycleThing(loop)
+        # run start handlers first
+        for start in self.STARTS:
+            self.cycleThing(start)
+#         print(self.starts_complete)
+        if self.starts_complete:
+            # run event handlers first
+            for event in self.EVENTS:
+                self.cycleThing(event)
+            # run permanent loops next
+            for loop in self.LOOPS:
+                self.cycleThing(loop)
 
-        # now cycle the current mode
-        # start the current mode
-        if len(self.MODES) > 0:
-            self.cycleMode(self.getCurrentMode())
+            # now cycle the current mode
+            # start the current mode
+            if len(self.MODES) > 0:
+                self.cycleMode(self.getCurrentMode())
         time.sleep(rate)
 
 
