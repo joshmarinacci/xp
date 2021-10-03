@@ -37,21 +37,21 @@ keylang {
         | "var" ident --dec
 
     Deref = Exp "." ident
-    FunctionCall = PositionalFunCall | KeywordFunCall
-    PositionalFunCall = Exp "(" ListOf<Exp,","> ")"
-    KeywordFunCall = Exp "(" ListOf<KeywordArg,","> ")"
+    PositionalFunCall = Exp "(" ListOf<SoloExp,","> ")"
     KeywordArg = ident ":" Exp
+    KeywordFunCall = Exp "(" ListOf<KeywordArg,","> ")"
+    FunctionCall = PositionalFunCall | KeywordFunCall
     FunctionDef  = "fun" ident "(" ListOf<ident,","> ")" Block
     CondExp
-        = "if" + ParenExp Block ("else" Block)? --full
-        | "if" SoloExp SoloExp --slim
+        = "if" SoloExp SoloExp --slim
+        | "if" ParenExp Block ("else" Block)? --full
 
     Lambda = "(" ListOf<ident,","> ")" "=>" Block
 
-    SoloExp = Return | Lambda | BinExp | ParenExp | UnExp | Literal | ident | comment
+    SoloExp = FunctionCall | Return | Lambda | BinExp | ParenExp | UnExp | Deref | Literal | ident | comment
     Return = "return" SoloExp
     Directive = "@" ident "(" ListOf<Exp,","> ")"
 
     Block = "{" Exp* "}"
-    Exp = Directive | FunctionDef | VarDec | Assignment | CondExp | Deref | FunctionCall | SoloExp | Block
+    Exp = Directive | FunctionDef | VarDec | CondExp | Assignment | SoloExp | Block
 }

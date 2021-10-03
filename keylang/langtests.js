@@ -19,7 +19,7 @@ async function runtests() {
     function test_parse(code,res) {
         // console.log(`parsing: "${code}"`)
         let result = grammar.match(code,'Exp')
-        if(!result.succeeded()) throw new Error("failed parsing")
+        if(!result.succeeded()) throw new Error(`failed parsing ${code}`)
         let ast = semantics(result).ast()
         // console.log('result is',ast)
     }
@@ -234,6 +234,9 @@ async function runtests() {
         await test_js(scope, 'if(true) 42',42)
         await test_js(scope,'add(4,2)',6)
         await test_js(scope,'return add(4,2)',6)
+        await test_js(scope,'if(true) { return add(4,2 ) }',6)
+        await test_js(scope,'if true 42',42)
+        await test_js(scope,'if true add(4,2)',6)
     }
 
 }
