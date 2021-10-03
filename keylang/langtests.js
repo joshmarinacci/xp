@@ -237,6 +237,7 @@ async function runtests() {
         await test_js(scope,'if(true) { return add(4,2 ) }',6)
         await test_js(scope,'if true 42',42)
         await test_js(scope,'if true add(4,2)',6)
+        await test_js(scope, `{ if (true) {return 5} else {7} return 6}`, 5)
     }
 
 }

@@ -1,4 +1,5 @@
 import {AST_TYPES, FUN_CALL_TYPES} from './grammar.js'
+import {genid} from './util.js'
 
 const UN_OPS = {
     'not':{
@@ -48,7 +49,7 @@ function lambdawrap(then_clause, ast) {
     return `()=>{return ${unreturn(then_clause)}}`
 }
 
-function unreturn(str) {
+export function unreturn(str) {
     if(str.startsWith('return')) return str.substring('return'.length)
     return str
 }
@@ -139,16 +140,28 @@ export function ast_to_js(ast) {
     if (ast.type === AST_TYPES.conditional) {
         let cond = ast_to_js(ast.condition)
         let then_clause = ast_to_js(ast.then_block)
-        //wrap it
-        then_clause = lambdawrap(then_clause, ast.then_block)
-        if(ast.has_else) {
-            let else_clause = ast_to_js(ast.else_block)
-            else_clause = lambdawrap(else_clause, ast.else_block)
-            return `ifcond(${cond}, ${then_clause}, ${else_clause})`
-        } else {
-            let else_clause = lambdawrap('null',null)
-            return `ifcond(${cond}, ${then_clause},${else_clause})`
+        let else_clause = 'null';//lambdawrap('null',null)
+        if(ast.has_else)  else_clause = ast_to_js(ast.else_block)
+        let retval = genid('retval')
+        let last = then_clause
+        let rest = ""
+        if(Array.isArray(then_clause)) {
+            last = then_clause.pop()
+            rest = then_clause.join("\n")
         }
+        if(!last.startsWith('return')) {
+            last = `${retval} = ${last}`
+        }
+        return [
+            `let ${retval} = null`,
+            `if(${cond}) {`,
+                rest,
+                last,
+            '} else {',
+                `${retval} = ${else_clause}`,
+            '}',
+            retval
+        ]
     }
     if (ast.type === 'return') return `return ${unreturn(ast_to_js(ast.exp))}`
     if (ast.type === AST_TYPES.keywordarg) return `${ast_to_js(ast.name)}:${ast_to_js(ast.value)}`

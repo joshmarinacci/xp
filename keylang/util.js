@@ -1,6 +1,7 @@
 import fs from 'fs'
+import path from 'path'
 import child_process from 'child_process'
-import {ast_to_js} from './generate_js.js'
+import {ast_to_js, unreturn} from './generate_js.js'
 import {STD_SCOPE} from './libs_js/common.js'
 import {make_grammar_semantics} from './grammar.js'
 import {promisify} from 'util'
@@ -81,7 +82,7 @@ export async function test_js(scope, code, ans) {
     // console.log("initial res is",res)
     if(Array.isArray(res)) {
         let last = res[res.length-1]
-        last = 'return '+last
+        last = 'return '+unreturn(last)
         // console.log('last is',last)
         res[res.length-1] = last
         res = res.join("\n")
@@ -106,9 +107,10 @@ doit()
         let mod = await import("./"+pth)
         let fres = mod.doit()
         console.log("comparing", fres, ans)
-        if (!checkEqual(fres, ans)) throw new Error("not equal")
+        if (!checkEqual(fres, ans)) throw new Error(`not equal in file ${pth}`)
     } catch (e) {
         console.log("error happened",e)
+        console.log('file://'+path.resolve(pth))
         throw e
     }
 }
