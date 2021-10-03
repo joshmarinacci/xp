@@ -44,6 +44,14 @@ from matrix import Canvas
         name:"trinkey",
         before:`import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'`,
         standard_cycle:true,
+        python: {
+            libs:[
+                'libs_py/common.py',
+            ],
+            imports:`
+            `,
+            template_path:'templates/trinkey.py'
+        }
     },
     "thumby":{
         name:"thumby",
@@ -152,9 +160,7 @@ async function prep(outdir) {
 async function web_template(src, out_dir, board) {
     console.log("doing html template for",board)
     let TEMPLATE_PATH = "templates/web_template.html"
-    if(board.template_path) {
-        TEMPLATE_PATH = board.template_path
-    }
+    if(board.template_path) TEMPLATE_PATH = board.template_path
     console.log("using template",TEMPLATE_PATH)
     let name = path.basename(src,'.key')
     let templ = await file_to_string(TEMPLATE_PATH)
@@ -245,6 +251,8 @@ async function compile_py(opts) {
     // console.log("end result is",out)
     let generated_src = out.generate()
     let TEMPLATE_PATH = "circuitpython_template.py"
+    if(board.python.template_path) TEMPLATE_PATH = board.python.template_path
+    console.log("using template path", TEMPLATE_PATH)
     let template = await file_to_string(TEMPLATE_PATH)
     template = template.replace("${BOARD_IMPORTS}",board.python.imports)
     template = template.replace("${USER_VARIABLES}","")
@@ -252,6 +260,9 @@ async function compile_py(opts) {
     let outfile = path.join(outdir, generated_src_out_name)
     console.log(`writing ${outfile}`)
     await write_to_file(outfile, template)
+
+    await copy_file("libs_py/tasks.py",path.join(outdir,'tasks.py'))
+    await copy_file("libs_py/common.py",path.join(outdir,'common.py'))
 
     // let CP_ROOT = "/Users/josh/Desktop/Hardware\ Hacking/MatrixPortal/adafruit-circuitpython-bundle-6.x-mpy-20210903"
     // let src_lib = path.join(CP_ROOT,'lib','neopixel.mpy')
@@ -261,9 +272,9 @@ async function compile_py(opts) {
 }
 
 async function copy_py_libs(outdir) {
-    await copy_file("libs_py/tasks.py",path.join(outdir,'tasks.py'))
-    await copy_file("libs_py/common.py",path.join(outdir,'common.py'))
-    await copy_file("libs_py/matrix.py",path.join(outdir,'matrix.py'))
+    // await copy_file("libs_py/tasks.py",path.join(outdir,'tasks.py'))
+    // await copy_file("libs_py/common.py",path.join(outdir,'common.py'))
+    // await copy_file("libs_py/matrix.py",path.join(outdir,'matrix.py'))
 }
 
 export async function build(opts) {
