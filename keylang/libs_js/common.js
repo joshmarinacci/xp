@@ -700,6 +700,8 @@ export const STD_SCOPE = {
     multiply,
     lessthan,
     greaterthan,
+    lessthanorequal,
+    greaterthanorequal,
     equal,
     not,
     or,

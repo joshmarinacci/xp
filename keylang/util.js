@@ -74,7 +74,7 @@ export async function test_js(scope, code, ans) {
     const [grammar, semantics] = await make_grammar_semantics()
     // console.log(`parsing: "${code}"`)
     let result = grammar.match(code, 'Exp')
-    if (!result.succeeded()) throw new Error("failed parsing")
+    if (!result.succeeded()) throw new Error(`failed parsing: ${code}`)
     await mkdirs("temp")
     let ast = semantics(result).ast()
     let res = ast_to_js(ast)
@@ -86,7 +86,7 @@ export async function test_js(scope, code, ans) {
         res[res.length-1] = last
         res = res.join("\n")
     } else {
-        res = 'return ' + res
+        if(!res.startsWith('return')) res = 'return ' + res
     }
     let imports = Object.keys(STD_SCOPE).map(key => {
         return `const ${key} = lib.STD_SCOPE.${key}`

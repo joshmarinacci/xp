@@ -9,7 +9,8 @@ export const AST_TYPES = {
     listliteral: 'listliteral',
     funcall: 'funcall',
     keywordarg: 'keywordarg',
-    deref: 'deref'
+    deref: 'deref',
+    binexp: 'binexp'
 }
 export const FUN_CALL_TYPES = {
     positional: 'positional',

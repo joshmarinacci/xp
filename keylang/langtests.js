@@ -52,6 +52,11 @@ async function runtests() {
     test_parse('dot = true')
     test_parse('dot = tod')
 
+    //operations
+    test_parse('4<5')
+    test_parse('4<=5')
+    test_parse('5>=4')
+
     //function call with positional arguments
     test_parse('foo()')
     test_parse('foo(5)')
@@ -149,6 +154,13 @@ async function runtests() {
     await test_js(scope,`'foo'`,"foo")
     await test_js(scope,`add(4,5)`,9)
     await test_js(scope, '4.8',4.8)
+
+    // operations
+    await test_js(scope,'4<5',true)
+    await test_js(scope,'4<=5',true)
+    await test_js(scope, '5>=4', true)
+
+    //functions
     await test_js(scope, 'List(0,1,2)',new MDList(0,1,2))
     await test_js(scope, 'range(3)',new MDList(0,1,2))
     await test_js(scope, `{ let palette = List() palette }`, new MDList())
@@ -202,6 +214,7 @@ async function runtests() {
         await test_js(scope, `4*2`,8)
     }
 
+    // conditionals
     {
         await test_js(scope,`if(true) {4} else {5}`,4)
         await test_js(scope,`if(true) {4}`,4)
@@ -214,6 +227,13 @@ async function runtests() {
         }`,9)
         await test_js(scope,`{[1,2]}`,MDList(1,2))
         await test_js(scope,`{[1,2].map((x)=>{x*2})}`,MDList(2,4))
+    }
+    //returns
+    {
+        await test_js(scope,'if(true) return 42',42)
+        await test_js(scope, 'if(true) 42',42)
+        await test_js(scope,'add(4,2)',6)
+        await test_js(scope,'return add(4,2)',6)
     }
 
 }

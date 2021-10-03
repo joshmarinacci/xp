@@ -26,7 +26,7 @@ keylang {
     comment = space* "//" toEOL
     toEOL = (~"\n" any)* "\n"
 
-    binop = "+" | "-" | "*" | "/" | "<" | ">" | "==" | "and" | "or"
+    binop = "+" | "-" | "*" | "/" | ">=" | "<=" | "<" | ">" | "==" | "and" | "or"
     BinExp = Exp binop Exp
     unop = "not"
     UnExp  = unop Exp
@@ -44,13 +44,14 @@ keylang {
     FunctionDef  = "fun" ident "(" ListOf<ident,","> ")" Block
     CondExp
         = "if" + ParenExp Block ("else" Block)? --full
-        | "if" Exp Exp --slim
+        | "if" SoloExp SoloExp --slim
 
     Lambda = "(" ListOf<ident,","> ")" "=>" Block
-    Return = "return" Exp
+
+    SoloExp = Return | Lambda | BinExp | ParenExp | UnExp | Literal | ident | comment
+    Return = "return" SoloExp
     Directive = "@" ident "(" ListOf<Exp,","> ")"
 
     Block = "{" Exp* "}"
-
-    Exp = Directive | Return | FunctionDef | Lambda | VarDec | Assignment | CondExp | Deref | FunctionCall | BinExp | ParenExp | UnExp | Literal | ident | Block | comment
+    Exp = Directive | FunctionDef | VarDec | Assignment | CondExp | Deref | FunctionCall | SoloExp | Block
 }

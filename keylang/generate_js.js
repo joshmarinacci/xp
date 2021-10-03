@@ -27,32 +27,30 @@ const BIN_OPS = {
     '==': {
         name: 'equal'
     },
+    '<=': {
+        name:'lessthanorequal'
+    },
+    '>=': {
+        name:'greaterthanorequal'
+    },
     'or':{
         name: 'or'
     }
 }
 
 function lambdawrap(then_clause, ast) {
-    // console.log("doing lambda wrap",ast,then_clause)
     if(ast && ast.type === 'body') {
-        if(ast.body.length > 0) {
-            if(ast.body[0].type === 'return') {
-                return `()=>{${then_clause}}`
-            }
-        }
         if(Array.isArray(then_clause)) {
-            // console.log("then is an array", then_clause)
             let last = then_clause.pop()
-            let rest = then_clause
-            // console.log("rest",rest, 'last',last)
-            let hasreturn = last.startsWith('return')
-            if(hasreturn) last = last.substring('return'.length)
-            let retval = `() => { ${rest.join("\n")}\n return ${last} }`
-            // console.log("making",retval)
-            return retval
+            return `() => { ${then_clause.join("\n")}\n return ${unreturn(last)} }`
         }
     }
-    return `()=>{return ${then_clause}}`
+    return `()=>{return ${unreturn(then_clause)}}`
+}
+
+function unreturn(str) {
+    if(str.startsWith('return')) return str.substring('return'.length)
+    return str
 }
 
 export function ast_to_js(ast) {
@@ -114,6 +112,8 @@ export function ast_to_js(ast) {
         let last = ""
         if (body.length > 1) {
             last = body.pop()
+            let hasreturn = last.startsWith('return')
+            if(hasreturn) last = last.substring('return'.length)
         } else {
             last = body
             body = []
@@ -128,7 +128,7 @@ export function ast_to_js(ast) {
         let after = ast_to_js(ast.after)
         return `${before}.${after}`
     }
-    if (ast.type === 'binexp') {
+    if (ast.type === AST_TYPES.binexp) {
         let op = BIN_OPS[ast.op]
         if (op) return `${op.name}(${ast_to_js(ast.exp1)},${ast_to_js(ast.exp2)})`
     }
@@ -137,7 +137,6 @@ export function ast_to_js(ast) {
         if (op) return `${op.name}(${ast_to_js(ast.exp)})`
     }
     if (ast.type === AST_TYPES.conditional) {
-        let then_ret = false
         let cond = ast_to_js(ast.condition)
         let then_clause = ast_to_js(ast.then_block)
         //wrap it
@@ -151,8 +150,12 @@ export function ast_to_js(ast) {
             return `ifcond(${cond}, ${then_clause},${else_clause})`
         }
     }
-    if (ast.type === 'return') return `return ${ast_to_js(ast.exp)}`
+    if (ast.type === 'return') return `return ${unreturn(ast_to_js(ast.exp))}`
     if (ast.type === AST_TYPES.keywordarg) return `${ast_to_js(ast.name)}:${ast_to_js(ast.value)}`
     console.log('converting to js', ast)
     throw new Error(`unknown AST node ${ast.type}`)
+}
+
+function print(...args) {
+    console.log(...args)
 }
