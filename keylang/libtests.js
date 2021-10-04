@@ -356,65 +356,73 @@ img
 
 async function py_lib_tests() {
     await copy_file('libs_py/common.py','temp/common.py')
+    await copy_file('libs_py/lists.py','temp/lists.py')
     await test_raw_py(`print(42)`, '42')
-    await test_raw_py(`import common\nprint(common.List(1,2).toString())`, '1,2')
-    await test_raw_py(`import common\nprint(common.range(3).toString())`, '0,1,2')
-    await test_raw_py(`import common\nprint(common.range(2,5).toString())`, '2,3,4')
-    await test_raw_py(`import common\nprint(common.range(0,10,3).toString())`, '0,3,6,9')
-    await test_raw_py(`import common\nprint(common.wrap(-2,0,10))`,'8')
-    await test_raw_py(`import common\nprint(common.wrap(12,0,10))`,'2')
+    await test_raw_py(`import lists\nprint(lists.List(1,2).toString())`, '1,2')
+    await test_raw_py(`import lists\nprint(lists.range(3).toString())`, '0,1,2')
+    await test_raw_py(`import lists\nprint(lists.range(2,5).toString())`, '2,3,4')
+    await test_raw_py(`import lists\nprint(lists.range(0,10,3).toString())`, '0,3,6,9')
+    await test_raw_py(`import lists\nprint(lists.wrap(-2,0,10))`,'8')
+    await test_raw_py(`import lists\nprint(lists.wrap(12,0,10))`,'2')
 
     //list addition
     await test_raw_py(`
 import common
+import lists
 list1 = 4
 list2 = 2
-print(common.add(list1,list2))    
+print(lists.add(list1,list2))    
     `,'6')
     await test_raw_py(`
 import common
-list1 = common.List(1,2,3)
-list2 = common.List(1,2,3)
-print(common.add(list1,list2).toString())    
+import lists
+list1 = lists.List(1,2,3)
+list2 = lists.List(1,2,3)
+print(lists.add(list1,list2).toString())    
     `,'2,4,6')
     await test_raw_py(`
 import common
+import lists
 list1 = 4
-list2 = common.List(1,2,3)
-print(common.add(list1,list2).toString())    
+list2 = lists.List(1,2,3)
+print(lists.add(list1,list2).toString())    
     `,'5,6,7')
     await test_raw_py(`
 import common
-list1 = common.List(1,2,3)
+import lists
+list1 = lists.List(1,2,3)
 list2 = 4
-print(common.add(list1,list2).toString())    
+print(lists.add(list1,list2).toString())    
     `,'5,6,7')
 
 
     await test_raw_py(`
 import common
-list1 = common.List(1,2,3)
+import lists
+list1 = lists.List(1,2,3)
 list2 = 4
-print(common.subtract(list1,list2).toString())    
+print(lists.subtract(list1,list2).toString())    
     `,'-3,-2,-1')
 
 
 //wrap single value
     await test_raw_py(`
 import common
+import lists
 val = -3
 min = 0
 max = 10
-print(common.wrap(val,min,max))    
+print(lists.wrap(val,min,max))    
     `,'7')
 
 //try wrapping a list
     await test_raw_py(`
 import common
-val = common.List(-3,13)
-min = common.List(0,0)
-max = common.List(10,10)
-print(common.wrap(val,min,max).toString())    
+import lists
+val = lists.List(-3,13)
+min = lists.List(0,0)
+max = lists.List(10,10)
+print(lists.wrap(val,min,max).toString())    
     `,'7,3')
 
 }

@@ -107,3 +107,18 @@ class Rect:
                     ),
             ]
 
+
+def wrapop(val,min,max):
+    if val < min:
+        return val + (max-min)
+    if val > max:
+        return val - (max-min)
+    return val
+
+def wrap(val,min,max):
+    if isinstance(val,List):
+        out = List()
+        for aa,bb,cc in zip(val.data,min.data,max.data):
+            out.append(wrapop(aa,bb,cc))
+        return out
+    return wrapop(val,min,max)

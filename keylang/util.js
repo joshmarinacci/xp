@@ -128,6 +128,7 @@ export async function test_raw_py(code, ans) {
         if (!checkEqual(stdout, ans)) throw new Error("not equal")
     } catch (e) {
         console.log("error happened",e)
+        console.log("from code",code)
         throw e
     }
 }

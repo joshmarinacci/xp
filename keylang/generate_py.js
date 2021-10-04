@@ -20,7 +20,8 @@ export class PyOutput {
         this.children = [{
             name: "top",
             args: [],
-            lines: []
+            lines: [],
+            refs:[]
         }]
         this.afters = []
     }
@@ -49,10 +50,9 @@ export class PyOutput {
 
     add_variable_reference(name) {
         let n = name.indexOf('.')
-        if(n >= 0) {
-            return this.refs.push(name.substring(0,n))
-        }
-        return this.refs.push(name)
+        if(n >= 0) name = name.substring(0,n)
+        let last = this.children[this.children.length-1]
+        last.refs.push(name)
     }
 
     start_fun_def(name, args) {
@@ -60,6 +60,7 @@ export class PyOutput {
         this.children.push({
             name: name,
             args: args,
+            refs:[],
             lines: []
         })
     }
@@ -67,7 +68,8 @@ export class PyOutput {
     end_fun_def(name) {
         let last = this.children.pop()
         this.lines.push(`def ${last.name}(${last.args}):`)
-        this.lines.push(...this.refs.map(l => INDENT + 'global ' + l))
+        let refs = [...new Set(last.refs)]
+        this.lines.push(...refs.map(l => INDENT + 'global ' + l))
         // this.refs = []
         this.lines.push(...last.lines)
         this.lines.push(`# end ${last.name}`)
