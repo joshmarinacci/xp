@@ -73,41 +73,41 @@ def range(min, max=None, step=1):
     return data
 
 
-class Rect:
-    def __init__(self, x1, y1, x2, y2):
-        self.x1 = floor(x1)
-        self.y1 = floor(y1)
-        self.x2 = floor(x2)
-        self.y2 = floor(y2)
-        self.width = self.x2 - self.x1
-        self.height = self.y2 - self.y1
-
-    def split(self, dir, amount):
-        print("splitting",dir,amount)
-        if dir == 'h':
-            return [
-                Rect(
-                    self.x1, self.y1,
-                    lerp(amount, self.x1, self.x2), self.y2,
-                    ),
-                Rect(
-                    lerp(amount, self.x1, self.x2),self.y1,
-                    self.x2, self.y2,
-                    ),
-            ]
-        if dir == 'v':
-            return [
-                Rect(
-                    self.x1, self.y1,
-                    self.x2, lerp(amount, self.y1, self.y2),
-                    ),
-                Rect(
-                    self.x1, lerp(amount, self.y1, self.y2),
-                    self.x2, self.y2,
-                    ),
-            ]
-
-
+# class Rect:
+#     def __init__(self, x1, y1, x2, y2):
+#         self.x1 = floor(x1)
+#         self.y1 = floor(y1)
+#         self.x2 = floor(x2)
+#         self.y2 = floor(y2)
+#         self.width = self.x2 - self.x1
+#         self.height = self.y2 - self.y1
+#
+#     def split(self, dir, amount):
+#         print("splitting",dir,amount)
+#         if dir == 'h':
+#             return [
+#                 Rect(
+#                     self.x1, self.y1,
+#                     lerp(amount, self.x1, self.x2), self.y2,
+#                     ),
+#                 Rect(
+#                     lerp(amount, self.x1, self.x2),self.y1,
+#                     self.x2, self.y2,
+#                     ),
+#             ]
+#         if dir == 'v':
+#             return [
+#                 Rect(
+#                     self.x1, self.y1,
+#                     self.x2, lerp(amount, self.y1, self.y2),
+#                     ),
+#                 Rect(
+#                     self.x1, lerp(amount, self.y1, self.y2),
+#                     self.x2, self.y2,
+#                     ),
+#             ]
+#
+#
 def wrapop(val,min,max):
     if val < min:
         return val + (max-min)

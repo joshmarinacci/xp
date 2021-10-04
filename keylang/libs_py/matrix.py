@@ -1,4 +1,5 @@
-from common import BLACK
+from common import BLACK, WHITE, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN
+from lists import List
 import displayio
 import math
 import adafruit_fancyled.adafruit_fancyled as fancy

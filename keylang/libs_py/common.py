@@ -2,8 +2,8 @@ import time
 import math
 import random
 
-WHITE   = (255,0,255)
-BLACK   = (0,0,0)
+WHITE   = (255,   0, 255)
+BLACK   = (0,     0,   0)
 RED     = (255,   0,   0)
 BLUE    = (  0,   0, 255)
 GREEN   = (  0, 255,   0)
@@ -13,12 +13,15 @@ CYAN    = (  0, 255, 255)
 
 ALL_COLORS = [BLACK, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN]
 
+def is_list(obj):
+    return hasattr(obj,'data')
+
 def randf(min,max):
     return random.uniform(min,max)
 def randi(min,max):
     return random.randrange(min,max)
 def pick(seq):
-    if isinstance(seq,List):
+    if is_list(seq):
         return random.choice(seq.data)
     return random.choice(seq)
 def lerp(t,min,max):

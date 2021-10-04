@@ -3,7 +3,7 @@ import {genid} from './util.js'
 
 const INDENT = "    "
 const PY_BIN_OPS = {
-    '+':{symbol:'+',name:'add'},
+    '+':{symbol:'+',name:'add', fun:'add'},
     '==': {symbol: '==', name: 'equals'},
     "or": {symbol: 'or', name:' or'},
     "and": {symbol: 'and', name:' and'},
@@ -175,7 +175,8 @@ export function ast_to_py(ast, out) {
     if (ast.type === 'binexp') {
         let A = ast_to_py(ast.exp1, out)
         let B = ast_to_py(ast.exp2, out)
-        return `${A} ${PY_BIN_OPS[ast.op].symbol} ${B}`
+        let name = PY_BIN_OPS[ast.op].fun
+        return `${name}(${A},${B})`
     }
     if (ast.type === AST_TYPES.unexp) {
         let A = ast_to_py(ast.exp, out)

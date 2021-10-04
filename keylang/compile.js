@@ -6,73 +6,8 @@ import {STD_SCOPE} from './libs_js/common.js'
 import express from "express"
 import {ast_to_js} from './generate_js.js'
 import {ast_to_py, PyOutput} from './generate_py.js'
+import {BOARDS} from './boards.js'
 
-const BOARDS = {
-    "canvas":{
-        name:"canvas",
-        before:`import {KCanvas} from './canvas.js'`,
-        standard_cycle:true,
-    },
-    "matrix":{
-        name:"matrix",
-        before:`
-        import {KCanvas} from './matrixportal.js'
-        let screen = new KCanvas(0,0,64,32)`,
-        standard_cycle:true,
-        python:{
-            libs:[
-                'libs_py/common.py',
-                'libs_py/matrix.py',
-            ],
-            imports: `
-import displayio
-from adafruit_matrixportal.matrixportal import MatrixPortal
-import adafruit_fancyled.adafruit_fancyled as fancy
-from adafruit_display_shapes import roundrect
-from common import WHITE, BLACK, RED, GREEN, BLUE, Rect, remap, sine1, floor, System, List, pick, Obj, range, randi, randf, wrap
-from matrix import Canvas
-  `.trim()
-        }
-    },
-    "trellis":{
-        name:"trellis",
-        before:`import {Trellis} from './trellis.js'
-        let trellis = new Trellis(8,4)`,
-        standard_cycle:true,
-        python:{
-            libs:[
-                'common',
-                'tasks',
-                'trellis',
-                'lists',
-            ],
-            imports:`
-from lists import List
-            `,
-            template_path:'templates/trellis.py'
-        }
-    },
-    "trinkey":{
-        name:"trinkey",
-        before:`import {board, Button, NeoPixel, print, GREEN, RED, BLACK, WHITE, BLUE, TaskManager, _NOW} from './trinkey.js'`,
-        standard_cycle:true,
-        python: {
-            libs:[
-                'common',
-                'tasks',
-            ],
-            imports:`
-            `,
-            template_path:'templates/trinkey.py'
-        }
-    },
-    "thumby":{
-        name:"thumby",
-        before:`import {board, ThumbyCanvas, Button, DPad} from './thumby.js'`,
-        standard_cycle:true,
-        template_path:'templates/thumby.html'
-    },
-}
 function strip_directives(ast) {
     let directives = ast.body.filter(c => c.type === 'directive')
     ast.body = ast.body.filter(c => c.type !== 'directive')
