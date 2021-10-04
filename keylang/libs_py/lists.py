@@ -60,6 +60,11 @@ class List:
     def toString(self):
         return ','.join(str(e) for e in self.data)
 
+class MDArray:
+    def __init__(self, shape):
+        print("making MD array of shape",shape)
+        self.shape = shape
+
 def range(min, max=None, step=1):
 #     print("range",min,max)
     if max == None:

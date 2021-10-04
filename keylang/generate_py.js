@@ -4,7 +4,11 @@ import {genid} from './util.js'
 const INDENT = "    "
 const PY_BIN_OPS = {
     '+':{symbol:'+',name:'add', fun:'add'},
+    '-':{symbol:'-',name:'subtract', fun:'subtract'},
+    '/':{symbol:'/',name:"divide",fun:'divide'},
     '==': {symbol: '==', name: 'equals'},
+    '>': {symbol: '>', name: 'greaterthan'},
+    '>=': {symbol: '>=', name: 'greaterthanorequals'},
     "or": {symbol: 'or', name:' or'},
     "and": {symbol: 'and', name:' and'},
 }
@@ -68,7 +72,11 @@ export class PyOutput {
     end_fun_def(name) {
         let last = this.children.pop()
         this.lines.push(`def ${last.name}(${last.args}):`)
-        let refs = [...new Set(last.refs)]
+        let refs_set = new Set(last.refs)
+        last.args.split(",").map(arg => arg.trim()).forEach(arg => {
+            if(refs_set.has(arg)) refs_set.delete(arg)
+        })
+        let refs = [...refs_set]
         this.lines.push(...refs.map(l => INDENT + 'global ' + l))
         // this.refs = []
         this.lines.push(...last.lines)
@@ -175,6 +183,7 @@ export function ast_to_py(ast, out) {
     if (ast.type === 'binexp') {
         let A = ast_to_py(ast.exp1, out)
         let B = ast_to_py(ast.exp2, out)
+        if(!PY_BIN_OPS[ast.op]) throw new Error(`missing python binop ${ast.op} function`)
         let name = PY_BIN_OPS[ast.op].fun
         return `${name}(${A},${B})`
     }

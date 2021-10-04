@@ -19,7 +19,7 @@ def is_list(obj):
 def randf(min,max):
     return random.uniform(min,max)
 def randi(min,max):
-    return random.randrange(min,max)
+    return random.randrange(math.floor(min),math.floor(max))
 def pick(seq):
     if is_list(seq):
         return random.choice(seq.data)

@@ -6,7 +6,7 @@ from adafruit_matrixportal.matrixportal import MatrixPortal
 from tasks import TaskMaster
 from digitalio import DigitalInOut, Pull
 from common import WHITE, BLACK, RED, GREEN, BLUE, remap, sine1, floor, System, pick, Obj, randi, randf
-from lists import List, range, wrap, add, Rect
+from lists import List, range, wrap, add, subtract, divide, multiply, Rect, MDArray
 from matrix import Canvas
 
 ${BOARD_IMPORTS}
