@@ -19,15 +19,7 @@ export const BOARDS = {
                 'matrix',
                 'lists',
             ],
-            imports: `
-import displayio
-from adafruit_matrixportal.matrixportal import MatrixPortal
-import adafruit_fancyled.adafruit_fancyled as fancy
-from adafruit_display_shapes import roundrect
-from common import WHITE, BLACK, RED, GREEN, BLUE, remap, sine1, floor, System, pick, Obj, randi, randf
-from lists import List, range, wrap, add
-from matrix import Canvas
-  `.trim(),
+            imports: ``.trim(),
             template_path:'templates/matrix_template.py'
         }
     },
