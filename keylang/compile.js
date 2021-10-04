@@ -191,6 +191,7 @@ async function compile_py(opts) {
         if(dir.name.name === 'board') {
             board = BOARDS[dir.args[0].value]
         }
+
     })
     console.log("board",board)
     // console.log("ast is",ast)
@@ -204,7 +205,38 @@ async function compile_py(opts) {
     let template = await file_to_string(TEMPLATE_PATH)
     template = template.replace("${BOARD_IMPORTS}",board.python.imports)
     template = template.replace("${USER_VARIABLES}","")
-    template = template.replace("${USER_FUNCTIONS}",generated_src)
+    let after = []
+    directives.forEach(dir => {
+        console.log("dirs",dir)
+        if (dir.name.name === 'type') {
+            if (dir.args[0].value === 'start') {
+                // console.log("got a setup directive",dir)
+                let name = dir.args[1].name
+                after.push(`tm.register_start("${name}",${name})`)
+            }
+            if (dir.args[0].value === 'loop') {
+                // console.log("got a loop directive")
+                let name = dir.args[1].name
+                after.push(`tm.register_loop("${name}",${name})`)
+            }
+            if (dir.args[0].value === 'event') {
+                // console.log("got an event directive",dir)
+                let name = dir.args[1].name
+                let fun = dir.args[2].name
+                after.push(`const event_wrapper = ()=> {
+                    if(${name}.wasClicked()) {
+                       ${fun}()
+                    }
+                    ${name}.clear()
+                }`)
+                after.push(`tm.register_event("${name}",event_wrapper)`)
+            }
+        }
+    })
+
+    template = template.replace("${USER_FUNCTIONS}",generated_src + '\n' + after.join("\n"))
+
+
     let outfile = path.join(outdir, generated_src_out_name)
     console.log(`writing ${outfile}`)
     await write_to_file(outfile, template)

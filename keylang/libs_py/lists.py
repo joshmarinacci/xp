@@ -62,13 +62,26 @@ class List:
 
 class MDArray:
     def __init__(self, shape):
-        print("making MD array of shape",shape)
         self.shape = shape
+        w = shape.get1(0)
+        h = shape.get1(1)
+        self.length = w * h
+        print("making MD array of shape",w,h, self.length)
+        self.data = []
+        for n in range(self.length):
+            self.data.append(0)
+    def fill(self, val):
+        for n in range(self.length):
+            self.data[n] = val
+    def index(self, x,y):
+        return x + y*self.shape.get1(0)
+    def set2(self, x,y,v):
+        self.data[self.index(x,y)] = v
 
-def range(min, max=None, step=1):
-#     print("range",min,max)
+
+def listrange(min, max=None, step=1):
     if max == None:
-        return range(0,min)
+        return listrange(0,min)
     data  = List()
     val = min
     while True:
@@ -79,41 +92,41 @@ def range(min, max=None, step=1):
     return data
 
 
-class Rect:
-    def __init__(self, x1, y1, x2, y2):
-        self.x1 = floor(x1)
-        self.y1 = floor(y1)
-        self.x2 = floor(x2)
-        self.y2 = floor(y2)
-        self.width = self.x2 - self.x1
-        self.height = self.y2 - self.y1
-
-    def split(self, dir, amount):
-        print("splitting",dir,amount)
-        if dir == 'h':
-            return [
-                Rect(
-                    self.x1, self.y1,
-                    lerp(amount, self.x1, self.x2), self.y2,
-                    ),
-                Rect(
-                    lerp(amount, self.x1, self.x2),self.y1,
-                    self.x2, self.y2,
-                    ),
-            ]
-        if dir == 'v':
-            return [
-                Rect(
-                    self.x1, self.y1,
-                    self.x2, lerp(amount, self.y1, self.y2),
-                    ),
-                Rect(
-                    self.x1, lerp(amount, self.y1, self.y2),
-                    self.x2, self.y2,
-                    ),
-            ]
-
-
+# class Rect:
+#     def __init__(self, x1, y1, x2, y2):
+#         self.x1 = floor(x1)
+#         self.y1 = floor(y1)
+#         self.x2 = floor(x2)
+#         self.y2 = floor(y2)
+#         self.width = self.x2 - self.x1
+#         self.height = self.y2 - self.y1
+#
+#     def split(self, dir, amount):
+#         print("splitting",dir,amount)
+#         if dir == 'h':
+#             return [
+#                 Rect(
+#                     self.x1, self.y1,
+#                     lerp(amount, self.x1, self.x2), self.y2,
+#                     ),
+#                 Rect(
+#                     lerp(amount, self.x1, self.x2),self.y1,
+#                     self.x2, self.y2,
+#                     ),
+#             ]
+#         if dir == 'v':
+#             return [
+#                 Rect(
+#                     self.x1, self.y1,
+#                     self.x2, lerp(amount, self.y1, self.y2),
+#                     ),
+#                 Rect(
+#                     self.x1, lerp(amount, self.y1, self.y2),
+#                     self.x2, self.y2,
+#                     ),
+#             ]
+#
+#
 def wrapop(val,min,max):
     if val < min:
         return val + (max-min)

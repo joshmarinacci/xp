@@ -7,8 +7,8 @@ const PY_BIN_OPS = {
     '-':{symbol:'-',name:'subtract', fun:'subtract'},
     '/':{symbol:'/',name:"divide",fun:'divide'},
     '==': {symbol: '==', name: 'equals'},
-    '>': {symbol: '>', name: 'greaterthan'},
-    '>=': {symbol: '>=', name: 'greaterthanorequals'},
+    '>': {symbol: '>', name: 'greaterthan', fun:'greaterthan'},
+    '>=': {symbol: '>=', name: 'greaterthanorequals',fun:'greaterthanorequals'},
     "or": {symbol: 'or', name:' or'},
     "and": {symbol: 'and', name:' and'},
 }
@@ -123,6 +123,7 @@ function button_click(ast, out) {
 }
 
 function setup_block(ast, out) {
+    console.log("generating a setup block")
     let name = ast_to_py(ast.name, out)
     let args = ast.args.map(a => ast_to_py(a), out).join(", ")
     out.start_fun_def(name, args)
@@ -136,6 +137,7 @@ function setup_block(ast, out) {
 }
 
 function forever_loop(ast, out) {
+    print('generating a forever loop')
     let name = ast_to_py(ast.name, out)
     let args = ast.args.map(a => ast_to_py(a), out).join(", ")
     out.start_fun_def(name, args)
