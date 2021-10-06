@@ -1,4 +1,4 @@
-import {eval_ast, make_grammar_semantics} from './grammar.js'
+import {eval_ast, make_grammar_semantics} from '../grammar.js'
 import {
     add,
     KeyColor,
@@ -7,8 +7,8 @@ import {
     KPoint,
     KRect, KVector,
     STD_SCOPE
-} from './libs_js/common.js'
-import {checkEqual, file_to_string, force_delete, test_js} from './util.js'
+} from '../libs_js/common.js'
+import {checkEqual, file_to_string, force_delete, test_js} from '../util.js'
 import path from 'path'
 import fs from 'fs'
 

@@ -2,8 +2,8 @@ import {
     range,
     zip,
     KRect, KObj, KPoint, KVector, STD_SCOPE, MDArray, rangeMD, MDArray_fromList, MDList, makeBinOp
-} from './libs_js/common.js'
-import {checkEqual, copy_file, force_delete, log, test_js, test_raw_py} from './util.js'
+} from '../libs_js/common.js'
+import {checkEqual, copy_file, force_delete, log, test_js, test_raw_py} from '../util.js'
 
 function test(res,ans) {
     // console.log("comparing",res,ans)

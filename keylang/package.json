@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "langtests.js",
+  "main": "tests/langtests.js",
   "scripts": {
-    "test": "node langtests.js && node libtests.js",
-    "test-lang": "node langtests.js"
+    "test": "node tests/langtests.js && node tests/libtests.js && node tests/gentests.js",
+    "test-lang": "node tests/langtests.js",
+    "test-gen": "node tests/gentests.js"
   },
   "author": "",
   "license": "ISC",
