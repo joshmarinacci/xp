@@ -6,6 +6,8 @@ WAITING = 3
 ERROR   = 4
 class TaskMaster:
     starts_complete = False
+    count = 0
+    dur = 0
     def __init__(self):
         self.MODES = []
         self.EVENTS = []
@@ -162,6 +164,12 @@ class TaskMaster:
             # start the current mode
             if len(self.MODES) > 0:
                 self.cycleMode(self.getCurrentMode())
+        self.count = self.count + 1
+        if self.count % 10 == 0:
+            now = time.monotonic()
+            diff = now - self.dur
+            print("fps",10/diff)
+            self.dur = now
         time.sleep(rate)
 
 
