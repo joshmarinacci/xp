@@ -8,13 +8,15 @@ import {
     KRect, KVector,
     STD_SCOPE
 } from './libs_js/common.js'
-import {checkEqual, force_delete, test_js} from './util.js'
+import {checkEqual, file_to_string, force_delete, test_js} from './util.js'
+import path from 'path'
+import fs from 'fs'
 
 
 const scope = STD_SCOPE
 
 
-async function runtests() {
+async function unit_tests() {
     const [grammar, semantics] = await make_grammar_semantics()
     function test_parse(code,res) {
         // console.log(`parsing: "${code}"`)
@@ -242,5 +244,37 @@ async function runtests() {
 
 }
 
+async function test_demo(code) {
+    const [grammar, semantics] = await make_grammar_semantics()
+    code = "\n{\n" + code + "\n}\n" //add the implicit block braces
+    // console.log(`parsing: "${code}"`)
+    let result = grammar.match(code, 'Exp')
+    if(!result.succeeded()) {
+        console.log(result.shortMessage)
+        console.log(result.message)
+        throw new Error(`failed parsing`)
+    }
+}
 
-runtests().then(()=>console.log("all tests pass"))
+async function dir_list(dir) {
+    return await fs.promises.readdir(dir)
+}
+
+async function demo_tests() {
+    //test parse all demos/canvas/*
+    let files = await dir_list('demos/canvas')
+    for(let file of files) {
+        console.log("parsing",file)
+        let code = await file_to_string(path.join('demos/canvas',file))
+        await test_demo(code)
+    }
+
+}
+
+async function all_tests() {
+    await unit_tests()
+    await demo_tests()
+}
+
+
+all_tests().then(()=>console.log("all tests pass"))
