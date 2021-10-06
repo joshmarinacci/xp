@@ -1,4 +1,6 @@
 import time
+import gc
+import math
 
 STOPPED = 1
 RUNNING = 2
@@ -168,7 +170,12 @@ class TaskMaster:
         if self.count % 10 == 0:
             now = time.monotonic()
             diff = now - self.dur
-            print("fps",10/diff)
+            mf = gc.mem_free()
+            frmem = gc.mem_free()/1024
+            almem = gc.mem_alloc()/1024
+            fps = 10/diff
+
+            print(f'fps {fps:2.0f}',f'free mem {frmem:5.1f}KB', f' allo mem {almem:5.1f}KB')
             self.dur = now
         time.sleep(rate)
 
