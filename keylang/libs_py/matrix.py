@@ -64,7 +64,7 @@ class Canvas(displayio.TileGrid):
         y = math.floor(xy.get1(1))
         self._bitmap[x,y] = c
 
-    def fillRect(self,rect,color):
+    def fillRect(self,rect,col):
         c = self.pal.index(col)
         x1 = math.floor(rect.x1)
         x2 = math.floor(rect.x2)
