@@ -2,6 +2,7 @@ import child_process from 'child_process'
 import {promisify} from 'util'
 import path from 'path'
 import fs from 'fs'
+import {mkdirs} from './util.js'
 
 async function compile_artlang(input, output) {
     debug('compiling artlang',input,'to',output)
@@ -40,20 +41,34 @@ async function compile_mpy(input, out_dir) {
     }
 }
 
+async function mkdir(input) {
+    for(let dir of input) {
+        await mkdirs(dir)
+    }
+}
+
+const IN_FILE = "demo/matrix/snow.key"
+const BOARD = "@matrix"
+// const OUTDIR = "/Volumes/CIRCUITPY"
+const OUTDIR = "./tempo"
 const targets = {
     'project': {
-        inputs:['@code', '@matrix'],
+        inputs:['@prep','@code', BOARD],
+    },
+    '@prep': {
+        inputs:[OUTDIR],
+        process:[mkdir]
     },
     '@code': {
-        inputs:['demo/matrix/snow.key'],
-        output:'/Volumes/CIRCUITPY/code.py',
+        inputs:[IN_FILE],
+        output:path.join(OUTDIR,'code.py'),
         process: [compile_artlang],
     },
     '@matrix': {
-        inputs:['libs_py/tasks.py',
+        inputs:['@prep','libs_py/tasks.py',
             'libs_py/matrix.py',
             'libs_py/common.py'],
-        output:'/Volumes/CIRCUITPY/',
+        output:OUTDIR,
         process:[compile_mpy],
     },
 }
@@ -67,7 +82,8 @@ function do_process(info) {
     if(info.process) {
         info.process.forEach(proc => {
             // console.log('calling',proc)
-            proc(info.inputs,info.output)
+            proc(info.inputs.filter(i => !i.startsWith('@'))
+                ,info.output)
         })
     }
 }
