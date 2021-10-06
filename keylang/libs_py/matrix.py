@@ -11,7 +11,23 @@ class Canvas(displayio.TileGrid):
         #print("making a canvas",x,y,w,h)
         self.w = w
         self.h = h
-        self.pal = [0, WHITE, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN, BLACK]
+        self.pal = [0,
+        0xffffff,
+        0xffff00,
+        0xff6500,
+        0xdc0000,
+        0xff0097,
+        0x360097,
+        0x0000ca,
+        0x0097ff,
+        0x00a800,
+        0x006500,
+        0x976536,
+        0xb9b9b9,
+        0x868686,
+        0x454545,
+        0x000000]
+
         colors = len(self.pal)
         self._palette = displayio.Palette(colors)
         self._palette.make_transparent(0)
