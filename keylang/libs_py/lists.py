@@ -7,6 +7,12 @@ def multiply(a,b):
     return binop(a,b, lambda a,b:a*b)
 def divide(a,b):
     return binop(a,b, lambda a,b:a/b)
+def equals(a,b):
+    return binop(a,b, lambda a,b:a==b)
+def greaterthanorequals(a,b):
+    return binop(a,b, lambda a,b:a>=b)
+def greaterthan(a,b):
+    return binop(a,b, lambda a,b:a>b)
 
 def binop(a,b,op):
     if isinstance(a,List) and isinstance(b,List):
@@ -67,7 +73,7 @@ class MDArray:
         h = shape.get1(1)
         self.length = w * h
         print("making MD array of shape",w,h, self.length)
-        self.data = []
+        self.data = bytearray()
         for n in range(self.length):
             self.data.append(0)
     def fill(self, val):
@@ -75,8 +81,17 @@ class MDArray:
             self.data[n] = val
     def index(self, x,y):
         return x + y*self.shape.get1(0)
+    def fromIndex(self, n):
+        return (n%self.shape.get1(0), floor(n/self.shape.get1(0)))
     def set2(self, x,y,v):
         self.data[self.index(x,y)] = v
+    def get2(self, x,y):
+        return self.data[self.index(x,y)]
+    def every(self, lam):
+        for n in range(self.length):
+            (x,y) = self.fromIndex(n)
+            v = self.data[n]
+            lam(v,x,y)
 
 
 def listrange(min, max=None, step=1):

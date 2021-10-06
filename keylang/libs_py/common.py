@@ -2,20 +2,18 @@ import time
 import math
 import random
 
-WHITE   = (255,   0, 255)
-BLACK   = (0,     0,   0)
-RED     = (255,   0,   0)
-BLUE    = (  0,   0, 255)
-GREEN   = (  0, 255,   0)
-YELLOW  = (255, 255,   0)
-MAGENTA = (255,   0, 255)
-CYAN    = (  0, 255, 255)
-
-ALL_COLORS = [BLACK, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN]
+WHITE   = 0xffffff
+BLACK   = 0x000000
+RED     = 0xff0000
+GREEN   = 0x00ff00
+BLUE    = 0x0000ff
+GRAY    = 0x454545
+# YELLOW  = (255, 255,   0)
+# MAGENTA = (255,   0, 255)
+# CYAN    = (  0, 255, 255)
 
 def is_list(obj):
     return hasattr(obj,'data')
-
 def randf(min,max):
     return random.uniform(min,max)
 def randi(min,max):

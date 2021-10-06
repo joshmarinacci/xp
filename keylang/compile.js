@@ -167,10 +167,10 @@ async function start_filewatcher(src,outdir, cb) {
     // await compile(src,outdir)
 }
 
-async function compile_py(opts) {
+export async function compile_py(opts) {
     let src_path = opts.src
     let outdir = opts.outdir
-    console.log("processing",src_path,'to python')
+    console.log("processing",src_path,'to python dir',outdir)
     let src = await file_to_string(src_path)
     src = "\n{\n" + src + "\n}\n" //add the implicit block braces
     let generated_src_prefix = path.basename(src_path,'.key')
@@ -207,7 +207,7 @@ async function compile_py(opts) {
     template = template.replace("${USER_VARIABLES}","")
     let after = []
     directives.forEach(dir => {
-        console.log("dirs",dir)
+        // console.log("dirs",dir)
         if (dir.name.name === 'type') {
             if (dir.args[0].value === 'start') {
                 // console.log("got a setup directive",dir)

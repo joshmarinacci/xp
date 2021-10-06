@@ -1,4 +1,4 @@
-from common import BLACK, WHITE, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN
+from common import BLACK, WHITE, RED, BLUE, GREEN, GRAY
 from lists import List
 import displayio
 import math
@@ -12,21 +12,24 @@ class Canvas(displayio.TileGrid):
         self.w = w
         self.h = h
         self.pal = [0,
-        0xffffff,
+        WHITE,
         0xffff00,
         0xff6500,
-        0xdc0000,
+        RED,
         0xff0097,
         0x360097,
         0x0000ca,
-        0x0097ff,
-        0x00a800,
+        #0x0097ff,
+        BLUE,
+        #0x00a800,
+        GREEN,
         0x006500,
         0x976536,
         0xb9b9b9,
         0x868686,
-        0x454545,
-        0x000000]
+        #0x454545,
+        GRAY,
+        BLACK]
 
         colors = len(self.pal)
         self._palette = displayio.Palette(colors)
@@ -50,24 +53,26 @@ class Canvas(displayio.TileGrid):
     size = property(get_size)
 
     def fill(self, col):
-        n = self.pal.index(col)
+        c = self.pal.index(col)
         for i in range(0, self.w):   # draw the center chunk
             for j in range(0, self.h):   # draw the center chunk
-                self._bitmap[i, j] = n
+                self._bitmap[i, j] = c
 
-    def setPixel(self, xy, color):
+    def setPixel(self, xy, col):
+        c = self.pal.index(col)
         x = math.floor(xy.get1(0))
         y = math.floor(xy.get1(1))
-        self._bitmap[x,y] = color
+        self._bitmap[x,y] = c
 
     def fillRect(self,rect,color):
+        c = self.pal.index(col)
         x1 = math.floor(rect.x1)
         x2 = math.floor(rect.x2)
         y1 = math.floor(rect.y1)
         y2 = math.floor(rect.y2)
         for i in range(x1,x2):   # draw the center chunk
             for j in range(y1,y2):   # draw the center chunk
-                self._bitmap[i, j] = color
+                self._bitmap[i, j] = c
 
 
 

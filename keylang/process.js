@@ -4,15 +4,48 @@ import util, {promisify} from 'util'
 import path from 'path'
 import fs from 'fs'
 import {mkdirs} from './util.js'
+import {compile_py} from './compile.js'
 
 const SETTINGS = {
-    info:false,  // brief description of what each command is doing
+    info:true,  // brief description of what each command is doing
     exec:true,  // prints the commands as they are executed
-    debug:false
+    debug:true,
+    // OUTDIR:`./tempo`,
+    OUTDIR:'/Volumes/CIRCUITPY',
+    IN_FILE: `demos/matrix/snow.key`,
+    OUTNAME: "./code.py",
+}
+const BOARD = "@matrix"
+const targets = {
+    '@project': {
+        inputs:['@prep','@code', BOARD],
+    },
+    '@prep': {
+        inputs:[SETTINGS.OUTDIR],
+        process:[mkdir]
+    },
+    '@code': {
+        inputs:['@prep',SETTINGS.IN_FILE],
+        output:SETTINGS.OUTDIR,
+        process: [compile_artlang],
+    },
+    '@matrix': {
+        inputs:['@prep','libs_py/tasks.py',
+            'libs_py/matrix.py',
+            'libs_py/common.py'],
+        output:SETTINGS.OUTDIR,
+        process:[compile_mpy],
+    },
 }
 
 async function compile_artlang(input, output) {
-    debug('compiling artlang',input,'to',output)
+    info('compiling artlang',input,'to',output)
+    await compile_py({
+        src:input[0],
+        outdir:output,
+        outfile:SETTINGS.OUTNAME,
+    })
+    // await copy_py_libs(opts.outdir)
 }
 async function copy_files(input, output) {
     debug('copying',input,'to',output)
@@ -95,31 +128,6 @@ async function mkdir(input) {
     }
 }
 
-const IN_FILE = "demo/matrix/snow.key"
-const BOARD = "@matrix"
-// const OUTDIR = "/Volumes/CIRCUITPY"
-const OUTDIR = "./tempo"
-const targets = {
-    'project': {
-        inputs:['@prep','@code', BOARD],
-    },
-    '@prep': {
-        inputs:[OUTDIR],
-        process:[mkdir]
-    },
-    '@code': {
-        inputs:[IN_FILE],
-        output:path.join(OUTDIR,'code.py'),
-        process: [compile_artlang],
-    },
-    '@matrix': {
-        inputs:['@prep','libs_py/tasks.py',
-            'libs_py/matrix.py',
-            'libs_py/common.py'],
-        output:OUTDIR,
-        process:[compile_mpy],
-    },
-}
 
 function debug(...args) {
     if(!SETTINGS.debug) return
@@ -139,7 +147,7 @@ function print_exec(opts,cmd,args) {
 
 function info(...args) {
     if(!SETTINGS.info) return
-    console.log(args.map(a => util.inspect(a)).map(chalk.yellowBright).join(" -- "))
+    console.log(args.map(a => util.inspect(a)).map(chalk.green).join(" \n "))
 }
 
 function do_process(info) {
@@ -168,4 +176,4 @@ function make_target(targets, target, opts) {
     // debug(info)
 }
 
-make_target(targets,'@matrix',{debug:true})
+make_target(targets,'@code',{debug:true})

@@ -5,8 +5,8 @@ import displayio
 from adafruit_matrixportal.matrixportal import MatrixPortal
 from tasks import TaskMaster
 from digitalio import DigitalInOut, Pull
-from common import WHITE, BLACK, RED, GREEN, BLUE, remap, sine1, floor, System, pick, Obj, randi, randf
-from lists import List, wrap, add, subtract, divide, multiply, MDArray, listrange
+from common import WHITE, BLACK, RED, GREEN, BLUE, GRAY, remap, sine1, floor, System, pick, Obj, randi, randf
+from lists import List, wrap, add, subtract, divide, multiply, equals, greaterthan, greaterthanorequals, MDArray, listrange
 from matrix import Canvas
 
 ${BOARD_IMPORTS}
