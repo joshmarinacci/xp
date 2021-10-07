@@ -111,7 +111,7 @@ export function ast_to_js(ast) {
         let args = ast.args.map(a => ast_to_js(a)).flat()
         let body = ast_to_js(ast.body)
         let last = ""
-        if (body.length > 1) {
+        if (Array.isArray(body) && body.length > 1) {
             last = body.pop()
             let hasreturn = last.startsWith('return')
             if(hasreturn) last = last.substring('return'.length)

@@ -122,11 +122,25 @@ export async function make_grammar_semantics() {
                 after:after.ast()
             }
         },
-        Lambda:(c1, args, c2, arrow, body) => {
+        Lambda_full:(at,p1, args, p2, arrow, body) => {
             return {
                 type:'lambda',
                 args:args.asIteration().children.map(arg => arg.ast()),
-                body:body.ast(),
+                body:body.ast()
+            }
+        },
+        Lambda_slim:(at, arg, arrow, exp) => {
+            return {
+                type:'lambda',
+                args:[arg.ast()],
+                body:exp.ast()
+            }
+        },
+        Lambda_superslim:(at, exp) => {
+            return {
+                type:'lambda',
+                args:[],
+                body:exp.ast()
             }
         },
         EmptyListOf:() => {

@@ -46,7 +46,11 @@ keylang {
         = "if" SoloExp SoloExp --slim
         | "if" ParenExp Block ("else" Block)? --full
 
-    Lambda = "(" ListOf<ident,","> ")" "=>" Block
+    Lambda
+       =  "@" "(" ListOf<ident,","> ")" "=>" Block   --full
+       |  "@" ident "=>" SoloExp                     --slim
+       |  "@" SoloExp                                --superslim
+
 
     SoloExp = FunctionCall | Return | Lambda | BinExp | ParenExp | UnExp | Deref | Literal | ident | comment
     Return = "return" SoloExp

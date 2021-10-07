@@ -110,6 +110,9 @@ async function syntax_tests() {
     //lambda syntax
     test_parse('var foo = 42')
     test_parse('var foo = @(x)=>{x+42}')
+    test_parse('var foo = @x=>x+42')
+    test_parse('var foo = @it+42')
+    test_parse('var foo = @print(it)')
 
     //complex edge cases
     test_parse('r.x = 5')
@@ -211,8 +214,8 @@ async function unit_tests() {
         await test_js(scope, '{let screen = Rect(0,0,64,32) screen}',new KRect({w:64, h:32}))
     }
     {
-        await test_js(scope, `{range(10).map(()=>{5}).length}`, 10)
-        await test_js(scope, `{let dots = range(20).map( ()=>{Obj()} ) dots.length}`, 20)
+        await test_js(scope, `{range(10).map(@5).length}`, 10)
+        await test_js(scope, `{let dots = range(20).map(@Obj()) dots.length}`, 20)
     }
 
     {
@@ -236,7 +239,7 @@ async function unit_tests() {
             return 9
         }`,9)
         await test_js(scope,`{[1,2]}`,MDList(1,2))
-        await test_js(scope,`{[1,2].map((x)=>{x*2})}`,MDList(2,4))
+        await test_js(scope,`{[1,2].map(@(x)=>{x*2})}`,MDList(2,4))
     }
     //returns
     {
@@ -272,8 +275,9 @@ async function demo_tests() {
     //test parse all demos/canvas/*
     let files = await dir_list('demos/canvas')
     for(let file of files) {
-        console.log("parsing",file)
-        let code = await file_to_string(path.join('demos/canvas',file))
+        let filepath = path.join('demos/canvas',file)
+        console.log("parsing",filepath)
+        let code = await file_to_string(filepath)
         await test_demo(code)
     }
 
