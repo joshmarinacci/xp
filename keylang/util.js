@@ -68,7 +68,11 @@ export function checkEqual(A, B) {
 }
 
 export async function force_delete(tempOutDir) {
-    await fs.promises.rm(tempOutDir, {recursive: true})
+    try {
+        await fs.promises.rm(tempOutDir, {recursive: true})
+    } catch (e) {
+
+    }
 }
 
 export async function test_js(scope, code, ans) {

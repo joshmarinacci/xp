@@ -236,6 +236,7 @@ async function mdarray_tests() {
         test(arr.toJSFlatArray(),[88,0,0,  0,0,0,  0,0,0,  0,0,88])
     }
     {
+        //multiply two arrays
         let arr1 = new MDArray([2,2])
         arr1.fill(5)
         let arr2 = new MDArray([2,2])
@@ -244,6 +245,7 @@ async function mdarray_tests() {
         test(arr3.toJSFlatArray(),[30,30,30,30])
     }
     {
+        //check slice values
         let arr1 = new MDArray([4,4])
         arr1.fillWith((i,j)=>i*j)
         //look at the first row
@@ -303,17 +305,19 @@ async function mdarray_tests() {
         incrementMD(slice,4)
         // test(arr.toJSFlatArray(),[1,6, 3,8, 5,10])
     }
-    /*
+
     {
         //an array of rects
-        let rects = range(3).map((i)=>new KRect({x:i,w:10}))
-        let arr = MDArray.fromList(rects,3,1)
-        test(arr.slice('x').asJSFlatArray(),[0,1,2])
-        test(arr.slice('y').asJSFlatArray(),[0,0,0])
-        test(arr.slice('w').asJSFlatArray(),[10,10,10])
-        increment(arr.slice('y'),5)
-        test(arr.slice('y').asJSFlatArray(),[5,5,5])
+        let arr = range(3).map((i)=>new KRect({x:i,w:10}))
+        test(arr.propslice('x').toJSFlatArray(),[0,1,2])
+        test(arr.propslice('y').toJSFlatArray(),[0,0,0])
+        test(arr.propslice('w').toJSFlatArray(),[10,10,10])
+        let arr2 = range(3).map(i => i)
+        test(add(arr.propslice('x'),arr2).toJSFlatArray(),[0,2,4])
+        // increment(arr.slice('y'),5)
+        // test(arr.slice('y').asJSFlatArray(),[5,5,5])
     }
+    /*
     {
         //make a 5x5 image of black
         let img1 = MDArray(5,5,3).fill(0)
@@ -430,9 +434,9 @@ print(lists.wrap(val,min,max).toString())
 Promise.all([
     // list_tests(),
     // math_tests(),
-    // mdarray_tests(),
+    mdarray_tests(),
     // md_image_tests(),
-    py_lib_tests()
+    // py_lib_tests()
 ])
     .then(()=>console.log("all tests pass"))
     .then(()=> {

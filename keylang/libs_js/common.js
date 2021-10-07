@@ -168,6 +168,26 @@ function makeBinOpMDAssign(op) {
     }
 }
 
+class MDPropView {
+    constructor(array, name) {
+        this.array = array
+        this.shape = [array.length]
+        this.rank = 1
+        this.propname = name
+    }
+    toJSFlatArray() {
+        let out = []
+        for(let i=0; i<this.array.shape[0]; i++) {
+            let v = this.array.get1(i)
+            out.push(v[this.propname])
+        }
+        return out
+    }
+    get1(i) {
+        let v = this.array.get1(i)
+        return v[this.propname]
+    }
+}
 class MDView {
     constructor(array, def) {
         // console.log("making a slice view",array,def)
@@ -331,6 +351,10 @@ export class MDArray {
 
     slice(def) {
         return new MDView(this, def)
+    }
+    propslice(name) {
+        if(this.rank !== 1) throw new Error(`cannot take a property slice of an array of rank ${this.rank}`)
+        return new MDPropView(this,name)
     }
     flatten() {
         let arr = []
