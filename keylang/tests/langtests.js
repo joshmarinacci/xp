@@ -16,7 +16,7 @@ import fs from 'fs'
 const scope = STD_SCOPE
 
 
-async function unit_tests() {
+async function syntax_tests() {
     const [grammar, semantics] = await make_grammar_semantics()
     function test_parse(code,res) {
         // console.log(`parsing: "${code}"`)
@@ -30,16 +30,6 @@ async function unit_tests() {
         let result = grammar.match(code,'Exp')
         if(result.succeeded()) throw new Error("failed parsing")
     }
-    function test_eval(scope,code,ans) {
-        // console.log(`parsing: "${code}"`)
-        let result = grammar.match(code,'Exp')
-        if(!result.succeeded()) throw new Error("failed parsing")
-        let ast = semantics(result).ast()
-        let res = eval_ast(ast,scope)
-        // console.log("comparing",res,ans)
-        if(!checkEqual(res,ans)) throw new Error("not equal")
-    }
-
     test_parse('4')
     test_parse('-4')
     test_parse('4.8')
@@ -117,11 +107,29 @@ async function unit_tests() {
     test_parse('[4+5,5,"foo"]')
 
 
+    //lambda syntax
+    test_parse('var foo = 42')
+    test_parse('var foo = @(x)=>{x+42}')
+
     //complex edge cases
     test_parse('r.x = 5')
     test_parse('(4)/2')
     test_parse('(screen.width - r.w)/2')
     test_parse('r.x = (screen.width - r.w)/2')
+}
+async function unit_tests() {
+    const [grammar, semantics] = await make_grammar_semantics()
+    function test_eval(scope,code,ans) {
+        // console.log(`parsing: "${code}"`)
+        let result = grammar.match(code,'Exp')
+        if(!result.succeeded()) throw new Error("failed parsing")
+        let ast = semantics(result).ast()
+        let res = eval_ast(ast,scope)
+        // console.log("comparing",res,ans)
+        if(!checkEqual(res,ans)) throw new Error("not equal")
+    }
+
+
 
     //evaluations
     test_eval('','4',4)
@@ -272,6 +280,7 @@ async function demo_tests() {
 }
 
 async function all_tests() {
+    await syntax_tests()
     await unit_tests()
     await demo_tests()
 }

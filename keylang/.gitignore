@@ -2,3 +2,5 @@ build
 node_modules
 temp
 temp_out_dir
+tempo
+circuitpython
