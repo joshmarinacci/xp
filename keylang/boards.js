@@ -88,7 +88,7 @@ from lists import List
                 'tasks',
             ],
             imports:``,
-            template_path:'templates/pygamer.py'
+            template_path:'templates/pygamer_template.py'
         }
     }
 }
