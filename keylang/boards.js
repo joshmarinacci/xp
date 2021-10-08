@@ -65,6 +65,30 @@ from lists import List
         name:"thumby",
         before:`import {board, ThumbyCanvas, Button, DPad} from './thumby.js'`,
         standard_cycle:true,
-        template_path:'templates/thumby.html'
+        template_path:'templates/thumby.html',
+        python: {
+            libs:[
+                'common',
+                'tasks',
+            ],
+            imports:``,
+            template_path:'templates/thumby.py'
+        }
     },
+
+
+    "pygamer":{
+        name:"pygamer",
+        before:`import {board, PygamerCanvas, Button, DPad} from './pygamer.js'`,
+        standard_cycle:true,
+        template_path:'templates/pygamer.html',
+        python: {
+            libs:[
+                'common',
+                'tasks',
+            ],
+            imports:``,
+            template_path:'templates/pygamer.py'
+        }
+    }
 }
