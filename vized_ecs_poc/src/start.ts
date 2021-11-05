@@ -214,8 +214,11 @@ interface RenderingSystem extends System {
     render(ctx: CanvasRenderingContext2D, node: TreeNode):void
 }
 
+const RectRendererSystemName = 'RectRendererSystemName'
 class RectRendererSystem implements RenderingSystem {
-    name: "RECT_RENDERER_SYSTEM";
+    constructor() {
+        this.name = RectRendererSystemName
+    }
 
     render(ctx: CanvasRenderingContext2D, node: TreeNode): void {
         if(has_component(node,BoundedShapeName)) {
@@ -233,6 +236,8 @@ class RectRendererSystem implements RenderingSystem {
             ctx.fillRect(rect.x,rect.y,rect.w,rect.h)
         }
     }
+
+    name: string;
 }
 const CircleRendererSystemName = 'CircleRendererSystemName'
 class CircleRendererSystem implements RenderingSystem {
