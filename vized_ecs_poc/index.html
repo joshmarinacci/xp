@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="src/start.css">
+</head>
+<body>
+<script type="module">
+    import {make_default_tree, make_gui, setup_state} from "./src/start.js"
+
+    let state = setup_state()
+    let tree = make_default_tree(state)
+    console.log("thre tree is",tree)
+    document.body.append(make_gui(tree,state))
+
+</script>
+</body>
+</html>

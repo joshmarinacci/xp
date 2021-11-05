@@ -1,0 +1,27 @@
+.main {
+    border: 5px solid red;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+}
+
+.pane {
+    min-height: 20rem;
+    min-width: 10rem;
+    border: 1px solid blue;
+}
+
+.tree-view {
+}
+.canvas-view {
+}
+.props-view {
+
+}
+
+
+.tree-view .tree-node {
+    border:1px solid gold;
+    padding:1em;
+    list-style: none;
+    margin: 0;
+}
