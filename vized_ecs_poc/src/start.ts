@@ -1,127 +1,26 @@
-class Rect {
-    constructor(x: number, y: number, w: number, h: number) {
-        this.x = x
-        this.y = y
-        this.w = w
-        this.h = h
-    }
-    x:number
-    y:number
-    w:number
-    h:number
-}
-class Point {
-    x:number
-    y:number
-    constructor(x: number, y: number) {
-        this.x = x
-        this.y = y
-    }
-}
+import {CircleRendererSystem, CircleShape, CircleShapeObject} from "./circle_powerup.js";
+import {
+    BoundedShape,
+    BoundedShapeName,
+    BoundedShapeObject,
+    FilledShape,
+    FilledShapeName,
+    FilledShapeObject,
+    get_component,
+    has_component,
+    Point,
+    Rect,
+    RenderingSystem,
+    SelectionSystem,
+    TreeNode,
+    TreeNodeImpl
+} from "./common";
 
-interface Component {
-    name:string,
-}
-
-function has_component(node:TreeNode, name:string):boolean {
-    let comps = node.components.find(comp => comp.name === name)
-    if(comps) return true
-    return false
-}
-function get_component(node: TreeNode, name: string):Component {
-    return node.components.find(comp => comp.name === name)
-}
-
-type TreeNode = {
-    id:string,
-    parent:TreeNode,
-    children:TreeNode[],
-    components:Component[],
-}
-
-const FilledShapeName = "FilledShapeName"
-interface FilledShape extends Component {
-    get_color():string
-}
-class FilledShapeObject implements FilledShape {
-    name: string;
-    private readonly color: string;
-    constructor(color:string) {
-        this.name = FilledShapeName
-        this.color = color
-    }
-
-    get_color(): string {
-        return this.color
-    }
-
-}
-const BoundedShapeName = "BoundedShapeName";
-interface BoundedShape extends Component  {
-    get_bounds():Rect
-}
-class BoundedShapeObject implements BoundedShape {
-    name: string;
-    private readonly rect: Rect;
-    constructor(rect:Rect) {
-        this.name = BoundedShapeName
-        this.rect = rect
-    }
-    get_bounds(): Rect {
-        return this.rect
-    }
-
-}
-
-const CircleShapeName = "CircleShapeName"
-interface CircleShape extends Component {
-    get_position():Point
-    get_radius():number
-}
-class CircleShapeObject implements CircleShape {
-    name: string;
-    private readonly pos: Point;
-    private readonly radius: number;
-    constructor(pos:Point, radius:number) {
-        this.name = CircleShapeName
-        this.pos = pos
-        this.radius = radius
-    }
-
-    get_position(): Point {
-        return this.pos
-    }
-
-    get_radius(): number {
-        return this.radius
-    }
-
-}
-
-//indicates shape can be moved
-interface Movable extends Component {
-    get_position():Point,
-}
-interface Resizable extends Component {
-    get_size():Point,
-}
 
 //make sure parent and child are compatible, then add the child to the parent
 function add_child_to_parent(child:TreeNode, parent:TreeNode):void {
     parent.children.push(child)
     child.parent = parent
-
-}
-function set_color(child:TreeNode):void {
-
-}
-function delete_child_from_parent(child:TreeNode, parent:TreeNode):void {
-
-}
-function export_to_SVG(root:TreeNode) {
-
-}
-function to_JSON(root:TreeNode) {
 
 }
 
@@ -188,7 +87,6 @@ function make_tree_view(root:TreeNode, state:GlobalState) {
     return elem
 }
 
-
 function draw_node(ctx: CanvasRenderingContext2D, root: TreeNode, state: GlobalState) {
     state.renderers.forEach((rend)=> rend.render(ctx, root,state))
     root.children.forEach(ch => draw_node(ctx, ch, state))
@@ -228,13 +126,6 @@ export function make_gui(root:TreeNode, state:GlobalState) {
     return DIV(['main'],[v1,v2,v3])
 }
 
-interface System {
-    name:string
-}
-interface RenderingSystem extends System {
-    render(ctx: CanvasRenderingContext2D, node: TreeNode, state:GlobalState):void
-}
-
 const RectRendererSystemName = 'RectRendererSystemName'
 class RectRendererSystem implements RenderingSystem {
     constructor() {
@@ -262,64 +153,6 @@ class RectRendererSystem implements RenderingSystem {
     }
 
     name: string;
-}
-const CircleRendererSystemName = 'CircleRendererSystemName'
-class CircleRendererSystem implements RenderingSystem {
-    name: string
-
-    constructor() {
-        this.name = CircleRendererSystemName
-    }
-
-    render(ctx: CanvasRenderingContext2D, node: TreeNode, state:GlobalState): void {
-        if(has_component(node,CircleShapeName)) {
-            console.log("drawing circle shape")
-            let shape:CircleShape = <CircleShape>get_component(node, CircleShapeName)
-            if(has_component(node,FilledShapeName)) {
-                let color: FilledShape = <FilledShape>get_component(node, FilledShapeName)
-                ctx.fillStyle = color.get_color()
-                console.log("using color",color.get_color())
-            } else {
-                ctx.fillStyle = 'magenta'
-            }
-            ctx.beginPath()
-            ctx.arc(shape.get_position().x, shape.get_position().y,shape.get_radius(),0,Math.PI*2)
-            ctx.fill()
-            if(state.selection.has(node)) {
-                ctx.strokeStyle = 'magenta'
-                ctx.lineWidth = 3.5
-                ctx.stroke()
-            }
-
-        }
-    }
-
-}
-
-const SelectionSystemName  = 'SelectionSystemName'
-class SelectionSystem {
-    private selection: Set<TreeNode>;
-    constructor() {
-        this.selection = new Set<TreeNode>()
-    }
-
-    add(nodes:TreeNode[]) {
-        nodes.forEach(n => this.selection.add(n))
-    }
-    set(nodes:TreeNode[]) {
-        this.selection.clear()
-        nodes.forEach(n => this.selection.add(n))
-    }
-    clear() {
-        this.selection.clear()
-    }
-    get():TreeNode[]{
-        return Array.from(this.selection.values())
-    }
-
-    has(nd: TreeNode) {
-        return this.selection.has(nd)
-    }
 }
 
 type Callback = (any) => void
@@ -379,18 +212,6 @@ export function setup_state():GlobalState {
     return state
 }
 
-class TreeNodeImpl implements TreeNode{
-    id: string
-    parent: TreeNode
-    children: TreeNode[]
-    components: Component[]
-    constructor() {
-        this.id = "tree_node_"+Math.floor(Math.random()*1000000)
-        this.children = []
-        this.components = []
-    }
-}
-
 export function make_default_tree(state:GlobalState) {
     let root:TreeNode = new TreeNodeImpl()
     {
@@ -419,12 +240,7 @@ export function make_default_tree(state:GlobalState) {
 
     return root
 }
-// create a tree structure. root w/ three children. two rects and one circle
-// build the gui using the tree structure
-// tree view should show the current tree structure
-// canvas view should render the tree
-// add a notion of a single selected element
-// props view should render the currently selected elem
+
 
 // [ ] canvas click to set selection
 // [x] tree view click to set selection
