@@ -1,4 +1,9 @@
-import {CircleRendererSystem, CircleShape, CircleShapeObject} from "./circle_powerup.js";
+import {
+    CirclePickSystem,
+    CircleRendererSystem,
+    CircleShape,
+    CircleShapeObject
+} from "./circle_powerup.js";
 import {
     BoundedShape,
     BoundedShapeName,
@@ -7,14 +12,14 @@ import {
     FilledShapeName,
     FilledShapeObject,
     get_component,
-    has_component,
+    has_component, PickingSystem,
     Point,
     Rect,
     RenderingSystem,
     SelectionSystem,
     TreeNode,
     TreeNodeImpl
-} from "./common";
+} from "./common.js";
 
 
 //make sure parent and child are compatible, then add the child to the parent
@@ -98,6 +103,20 @@ function make_canvas_view(root:TreeNode, state:GlobalState) {
     canvas.width = 300
     canvas.height = 300
 
+
+    canvas.addEventListener('click',(e) => {
+        let target:HTMLElement = <HTMLElement>e.target
+        let br = target.getBoundingClientRect()
+        console.log("clicked on ",br)
+        let pt = new Point(e.clientX-br.x, e.clientY - br.y)
+        console.log("canvas point",pt)
+        let shapes = []
+        state.pickers.forEach(pk => shapes.push(...pk.pick(pt,state)))
+        console.log("picked shapes",shapes)
+        state.selection.set(shapes)
+        state.dispatch('refresh',{})
+    })
+
     function refresh() {
         let ctx = canvas.getContext('2d')
         ctx.fillStyle = 'black'
@@ -155,16 +174,43 @@ class RectRendererSystem implements RenderingSystem {
     name: string;
 }
 
+const RectPickSystemName = 'RectPickSystemName';
+class RectPickSystem implements PickingSystem {
+    name: string;
+    constructor() {
+        this.name = RectPickSystemName
+    }
+
+    pick(pt: Point, state: GlobalState): TreeNode[] {
+        let picked = []
+        this._test_node(pt,state.get_root(),picked)
+        return picked
+    }
+
+    private _test_node(pt:Point, node: TreeNode, collect:TreeNode[]) {
+        if(has_component(node,BoundedShapeName)) {
+            let rect = (<BoundedShape> get_component(node,BoundedShapeName)).get_bounds()
+            if(rect.contains(pt)) collect.push(node)
+        }
+        node.children.forEach((ch:TreeNode) => {
+            this._test_node(pt,ch,collect)
+        })
+    }
+}
+
+
 type Callback = (any) => void
 export class GlobalState {
     systems:any[]
     renderers:RenderingSystem[]
     selection:SelectionSystem
+    pickers:PickingSystem[]
     private root: TreeNode;
     private listeners:Map<string,Callback[]>
     constructor() {
         this.systems = []
         this.renderers = []
+        this.pickers = []
         this.selection = new SelectionSystem()
         this.listeners = new Map<string, Callback[]>()
     }
@@ -202,13 +248,20 @@ export class GlobalState {
     private log(...args) {
         console.log("GLOBAL:",...args)
     }
+
+    get_root():TreeNode {
+        return this.root
+    }
 }
+
 
 
 export function setup_state():GlobalState {
     let state:GlobalState = new GlobalState()
     state.renderers.push(new RectRendererSystem())
     state.renderers.push(new CircleRendererSystem())
+    state.pickers.push(new RectPickSystem())
+    state.pickers.push(new CirclePickSystem())
     return state
 }
 

@@ -1,5 +1,23 @@
 import {GlobalState} from "./start.js";
 
+export class Point {
+    x: number
+    y: number
+
+    constructor(x: number, y: number) {
+        this.x = x
+        this.y = y
+    }
+
+    subtract(pt: Point) {
+        return new Point(pt.x-this.x, pt.y-this.y)
+    }
+
+    magnitude() {
+        return Math.sqrt(this.x * this.x + this.y * this.y)
+    }
+}
+
 export class Rect {
     constructor(x: number, y: number, w: number, h: number) {
         this.x = x
@@ -12,17 +30,16 @@ export class Rect {
     y: number
     w: number
     h: number
-}
 
-export class Point {
-    x: number
-    y: number
-
-    constructor(x: number, y: number) {
-        this.x = x
-        this.y = y
+    contains(pt: Point):boolean {
+        if(pt.x < this.x) return false
+        if(pt.y < this.y) return false
+        if(pt.x > this.x+this.w) return false
+        if(pt.y > this.y+this.h) return false
+        return true
     }
 }
+
 
 export interface Component {
     name: string,
@@ -68,6 +85,9 @@ export interface System {
 
 export interface RenderingSystem extends System {
     render(ctx: CanvasRenderingContext2D, node: TreeNode, state: GlobalState): void
+}
+export interface PickingSystem extends System {
+    pick(pt:Point, state:GlobalState): TreeNode[]
 }
 
 export class TreeNodeImpl implements TreeNode {

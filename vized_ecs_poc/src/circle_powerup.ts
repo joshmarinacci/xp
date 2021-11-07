@@ -1,8 +1,10 @@
 import {
+    BoundedShape,
+    BoundedShapeName,
     Component,
     FilledShape, FilledShapeName,
     get_component,
-    has_component, Point,
+    has_component, PickingSystem, Point,
     RenderingSystem,
     TreeNode
 } from "./common.js";
@@ -66,4 +68,34 @@ export class CircleRendererSystem implements RenderingSystem {
         }
     }
 
+}
+
+
+const CirclePickSystemName = 'CirclePickSystemName';
+export class CirclePickSystem implements PickingSystem {
+    name: string;
+    constructor() {
+        this.name = CirclePickSystemName
+    }
+
+    pick(pt: Point, state: GlobalState): TreeNode[] {
+        let picked = []
+        this._test_node(pt,state.get_root(),picked)
+        return picked
+    }
+
+    private _test_node(pt:Point, node: TreeNode, collect:TreeNode[]) {
+        if(has_component(node,CircleShapeName)) {
+            let circle = (<CircleShape> get_component(node,CircleShapeName))
+            let dist = circle.get_position().subtract(pt)
+            console.log("distance is",dist)
+            if(dist.magnitude() < circle.get_radius()) {
+                collect.push(node)
+            }
+            // if(circl.contains(pt)) collect.push(node)
+        }
+        node.children.forEach((ch:TreeNode) => {
+            this._test_node(pt,ch,collect)
+        })
+    }
 }
