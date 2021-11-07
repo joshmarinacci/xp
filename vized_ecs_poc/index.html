@@ -11,8 +11,9 @@
 
     let state = setup_state()
     let tree = make_default_tree(state)
-    console.log("thre tree is",tree)
+    state.set_root(tree)
     document.body.append(make_gui(tree,state))
+    state.dispatch('refresh',{})
 
 </script>
 </body>
