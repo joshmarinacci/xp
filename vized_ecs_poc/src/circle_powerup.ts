@@ -2,9 +2,18 @@ import {
     BoundedShape,
     BoundedShapeName,
     Component,
-    FilledShape, FilledShapeName,
+    DIV,
+    FilledShape,
+    FilledShapeName,
     get_component,
-    has_component, Movable, MovableName, PickingSystem, Point,
+    has_component,
+    LABEL,
+    Movable,
+    MovableName,
+    NUMBER_INPUT,
+    PickingSystem,
+    Point,
+    PropRenderingSystem,
     RenderingSystem,
     TreeNode
 } from "./common.js";
@@ -14,11 +23,12 @@ const CircleShapeName = "CircleShapeName"
 export interface CircleShape extends Component {
     get_position():Point
     get_radius():number
+    set_radius(v:number): void;
 }
 export class CircleShapeObject implements CircleShape {
     name: string;
-    private readonly pos: Point;
-    private readonly radius: number;
+    private pos: Point;
+    private radius: number;
     constructor(pos:Point, radius:number) {
         this.name = CircleShapeName
         this.pos = pos
@@ -31,6 +41,10 @@ export class CircleShapeObject implements CircleShape {
 
     get_radius(): number {
         return this.radius
+    }
+
+    set_radius(v:number) {
+        this.radius = v
     }
 
 }
@@ -109,4 +123,39 @@ export class MovableCircleObject implements Movable {
         circle.get_position().x += pt.x
         circle.get_position().y += pt.y
     }
+}
+
+
+export class CirclePropRendererSystem implements PropRenderingSystem {
+    name: string;
+    private state: GlobalState;
+    constructor(state:GlobalState) {
+        this.state = state
+    }
+
+    render_view(comp: Component): HTMLElement {
+        let circle = (comp as CircleShape)
+        let x = LABEL("x")
+        let xbox = NUMBER_INPUT(circle.get_position().x,(v)=>{
+            circle.get_position().x = v
+            this.state.dispatch("refresh", {})
+        })
+        let y = LABEL("y")
+        let ybox = NUMBER_INPUT(circle.get_position().y,(v)=>{
+            circle.get_position().y = v
+            this.state.dispatch("refresh", {})
+        })
+        let r = LABEL("radius")
+        let rbox = NUMBER_INPUT(circle.get_radius(),(v)=>{
+            circle.set_radius(v)
+            this.state.dispatch("refresh", {})
+        })
+        return DIV(["prop-group"],[x,xbox,y,ybox,r,rbox])
+    }
+
+    supports(name: string): any {
+        if(name === CircleShapeName) return true
+        return false
+    }
+
 }

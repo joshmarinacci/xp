@@ -1,5 +1,5 @@
 import {
-    CirclePickSystem,
+    CirclePickSystem, CirclePropRendererSystem,
     CircleRendererSystem,
     CircleShape,
     CircleShapeObject,
@@ -192,6 +192,7 @@ export function setup_state():GlobalState {
     state.pickers.push(new CirclePickSystem())
     state.svgexporters.push(new RectSVGExporter())
     state.props_renderers.push(new RectPropRendererSystem(state))
+    state.props_renderers.push(new CirclePropRendererSystem(state))
     return state
 }
 

@@ -1,13 +1,24 @@
 import {
     BoundedShape,
-    BoundedShapeName, Component, DIV, ELEM,
+    BoundedShapeName,
+    Component,
+    DIV,
     FilledShape,
     FilledShapeName,
-    get_component, Handle,
-    has_component, Movable, MovableName,
+    get_component,
+    Handle,
+    has_component,
+    LABEL,
+    Movable,
+    MovableName,
+    NUMBER_INPUT,
     PickingSystem,
-    Point, PropRenderingSystem,
-    RenderingSystem, Resizable, ResizableName, SVGExporter,
+    Point,
+    PropRenderingSystem,
+    RenderingSystem,
+    Resizable,
+    ResizableName,
+    SVGExporter,
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./state";
@@ -145,21 +156,6 @@ export class ResizableRectObject implements Resizable {
         this.handle.update_from_node()
         return this.handle
     }
-}
-
-function LABEL(text: string) {
-    return ELEM('label',[],[text])
-}
-
-function NUMBER_INPUT(value: number, cb: (v) => void) {
-    let input = document.createElement('input')
-    input.setAttribute('type','number')
-    input.setAttribute('value',value+"")
-    input.addEventListener('change',(e)=>{
-        let el:HTMLInputElement = <HTMLInputElement>e.target
-        if(!Number.isNaN(el.valueAsNumber)) cb(el.valueAsNumber)
-    })
-    return input
 }
 
 export class RectPropRendererSystem implements PropRenderingSystem {

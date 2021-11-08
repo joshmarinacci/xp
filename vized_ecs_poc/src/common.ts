@@ -230,3 +230,18 @@ export interface MouseGestureDelegate {
 
     release(e: MouseEvent)
 }
+
+export function LABEL(text: string) {
+    return ELEM('label', [], [text])
+}
+
+export function NUMBER_INPUT(value: number, cb: (v) => void) {
+    let input = document.createElement('input')
+    input.setAttribute('type', 'number')
+    input.setAttribute('value', value + "")
+    input.addEventListener('change', (e) => {
+        let el: HTMLInputElement = <HTMLInputElement>e.target
+        if (!Number.isNaN(el.valueAsNumber)) cb(el.valueAsNumber)
+    })
+    return input
+}
