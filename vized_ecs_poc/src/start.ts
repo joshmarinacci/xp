@@ -12,11 +12,11 @@ import {
     Point,
     Rect,
     RenderingSystem,
-    SelectionSystem,
+    SelectionSystem, SVGExporter,
     TreeNode,
     TreeNodeImpl
 } from "./common.js";
-import {RectPickSystem, RectRendererSystem} from "./rect_powerup.js";
+import {RectPickSystem, RectRendererSystem, RectSVGExporter} from "./rect_powerup.js";
 
 
 //make sure parent and child are compatible, then add the child to the parent
@@ -137,11 +137,61 @@ function BUTTON(caption: string, cb:any) {
     return elem
 }
 
-function make_toolbar() {
+function treenode_to_POJO(root: TreeNode) {
+    let obj = {
+    }
+    Object.keys(root).forEach(key => {
+        if(key === 'parent') return
+        if(key === 'children') {
+            obj[key] = root.children.map(ch => treenode_to_POJO(ch))
+            return
+        }
+        obj[key] = root[key]
+    })
+    return obj
+}
+
+function export_JSON(root: TreeNode) {
+    console.log("exporting to JSON",root)
+    let obj = treenode_to_POJO(root)
+    console.log("obj is",obj)
+    let str = JSON.stringify(obj,null,'  ')
+    console.log(str)
+}
+
+function treenode_to_SVG(node: TreeNode, state:GlobalState) {
+    let exp = state.svgexporters.find(exp => exp.canExport(node))
+    if(!exp) return ""
+    return exp.toSVG(node)
+}
+
+function export_SVG(root: TreeNode, state:GlobalState) {
+    console.log("exporting to SVG",root)
+    let chs = root.children.map(ch => treenode_to_SVG(ch,state))
+    let template = `<?xml version="1.0" standalone="no"?>
+    <svg width="400" height="400" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    ${chs.join("\n")}
+    </svg>
+    `
+    console.log("template output",template)
+    let blog = new Blob([template.toString()])
+    forceDownloadBlob('demo.svg',blog)
+}
+function forceDownloadBlob(title,blob) {
+    console.log("forcing download of",title)
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = title
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+}
+// canvasToPNGBlob(canvas).then((blob)=> forceDownloadBlob(`${doc.title}@${scale}.png`,blob))
+
+function make_toolbar(state:GlobalState) {
     let chi = [
-        BUTTON("export JSON",()=>{
-            console.log("going to do something")
-        })
+        BUTTON("export JSON",()=> export_JSON(state.get_root())),
+        BUTTON("export SVG",()=> export_SVG(state.get_root(), state)),
     ]
     let elem = DIV(['toolbar'],chi)
     return elem
@@ -152,15 +202,18 @@ export function make_gui(root:TreeNode, state:GlobalState) {
     let v1 = make_tree_view(root,state)
     let v2 = make_canvas_view(root,state)
     let v3 = make_props_view()
-    let v4 = make_toolbar()
+    let v4 = make_toolbar(state)
     return DIV(['main'],[v4,v1,v2,v3])
 }
+
+
 
 
 type Callback = (any) => void
 export class GlobalState {
     systems:any[]
     renderers:RenderingSystem[]
+    svgexporters:SVGExporter[]
     selection:SelectionSystem
     pickers:PickingSystem[]
     private root: TreeNode;
@@ -169,6 +222,7 @@ export class GlobalState {
         this.systems = []
         this.renderers = []
         this.pickers = []
+        this.svgexporters = []
         this.selection = new SelectionSystem()
         this.listeners = new Map<string, Callback[]>()
     }
@@ -220,6 +274,7 @@ export function setup_state():GlobalState {
     state.renderers.push(new CircleRendererSystem())
     state.pickers.push(new RectPickSystem())
     state.pickers.push(new CirclePickSystem())
+    state.svgexporters.push(new RectSVGExporter())
     return state
 }
 

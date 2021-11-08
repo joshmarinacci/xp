@@ -90,6 +90,12 @@ export interface PickingSystem extends System {
     pick(pt:Point, state:GlobalState): TreeNode[]
 }
 
+export interface SVGExporter extends System {
+    canExport(node:TreeNode):boolean
+    toSVG(node:TreeNode):string
+}
+
+
 export class TreeNodeImpl implements TreeNode {
     id: string
     parent: TreeNode

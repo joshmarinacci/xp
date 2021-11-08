@@ -7,7 +7,7 @@ import {
     has_component,
     PickingSystem,
     Point,
-    RenderingSystem,
+    RenderingSystem, SVGExporter,
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./start.js";
@@ -66,4 +66,33 @@ export class RectPickSystem implements PickingSystem {
             this._test_node(pt, ch, collect)
         })
     }
+}
+
+export class RectSVGExporter implements SVGExporter {
+    name: string;
+
+    canExport(node: TreeNode): boolean {
+        console.log("looking at",node)
+        if(has_component(node,BoundedShapeName)) return true
+        return false;
+    }
+
+    toSVG(node: TreeNode): string {
+        let bd: BoundedShape = <BoundedShape>get_component(node, BoundedShapeName)
+        let rect = bd.get_bounds()
+        let color: FilledShape = <FilledShape>get_component(node, FilledShapeName)
+        let obj = {
+            x:rect.x,
+            y:rect.y,
+            width:rect.w,
+            height:rect.w,
+            fill:color.get_color()
+        }
+        let strs = Object.keys(obj).map(key => {
+            return `${key}='${obj[key]}'`
+        })
+        return '<rect ' + strs.join(" ") + "/>"
+        // return `<rect width='${rect.w}' height='${rect.h}' fill='${color.get_color()}'/>`;
+    }
+
 }

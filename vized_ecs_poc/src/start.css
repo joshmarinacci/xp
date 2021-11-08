@@ -1,3 +1,6 @@
+html {
+    background-color: #333;
+}
 .main {
     border: 5px solid red;
     display: grid;
