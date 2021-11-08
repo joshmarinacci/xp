@@ -4,7 +4,7 @@ import {
     Component,
     FilledShape, FilledShapeName,
     get_component,
-    has_component, PickingSystem, Point,
+    has_component, Movable, MovableName, PickingSystem, Point,
     RenderingSystem,
     TreeNode
 } from "./common.js";
@@ -47,12 +47,10 @@ export class CircleRendererSystem implements RenderingSystem {
 
     render(ctx: CanvasRenderingContext2D, node: TreeNode, state:GlobalState): void {
         if(has_component(node,CircleShapeName)) {
-            console.log("drawing circle shape")
             let shape:CircleShape = <CircleShape>get_component(node, CircleShapeName)
             if(has_component(node,FilledShapeName)) {
                 let color: FilledShape = <FilledShape>get_component(node, FilledShapeName)
                 ctx.fillStyle = color.get_color()
-                console.log("using color",color.get_color())
             } else {
                 ctx.fillStyle = 'magenta'
             }
@@ -97,5 +95,20 @@ export class CirclePickSystem implements PickingSystem {
         node.children.forEach((ch:TreeNode) => {
             this._test_node(pt,ch,collect)
         })
+    }
+}
+
+
+export class MovableCircleObject implements Movable {
+    name: string;
+    private readonly node: TreeNode;
+    constructor(node:TreeNode) {
+        this.node = node
+        this.name = MovableName
+    }
+    moveBy(pt: Point): void {
+        let circle:CircleShape = <CircleShape>get_component(this.node, CircleShapeName)
+        circle.get_position().x += pt.x
+        circle.get_position().y += pt.y
     }
 }

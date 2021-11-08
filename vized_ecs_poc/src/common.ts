@@ -10,7 +10,7 @@ export class Point {
     }
 
     subtract(pt: Point) {
-        return new Point(pt.x-this.x, pt.y-this.y)
+        return new Point(this.x-pt.x, this.y-pt.y)
     }
 
     magnitude() {
@@ -71,8 +71,9 @@ export interface BoundedShape extends Component {
 }
 
 //indicates shape can be moved
-interface Movable extends Component {
-    get_position(): Point,
+export const MovableName = "MovableName"
+export interface Movable extends Component {
+    moveBy(pt:Point):void
 }
 
 interface Resizable extends Component {

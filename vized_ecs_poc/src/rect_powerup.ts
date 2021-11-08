@@ -4,7 +4,7 @@ import {
     FilledShape,
     FilledShapeName,
     get_component,
-    has_component,
+    has_component, Movable, MovableName,
     PickingSystem,
     Point,
     RenderingSystem, SVGExporter,
@@ -90,4 +90,18 @@ export class RectSVGExporter implements SVGExporter {
         return '<rect ' + pairs.join(" ") + "/>"
     }
 
+}
+
+export class MovableRectObject implements Movable {
+    name: string;
+    private node: TreeNode;
+    constructor(node:TreeNode) {
+        this.node = node
+        this.name = MovableName
+    }
+    moveBy(pt: Point): void {
+        let bd:BoundedShape = <BoundedShape>get_component(this.node, BoundedShapeName)
+        bd.get_bounds().x += pt.x
+        bd.get_bounds().y += pt.y
+    }
 }

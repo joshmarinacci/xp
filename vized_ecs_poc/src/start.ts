@@ -2,12 +2,12 @@ import {
     CirclePickSystem,
     CircleRendererSystem,
     CircleShape,
-    CircleShapeObject
+    CircleShapeObject, MovableCircleObject
 } from "./circle_powerup.js";
 import {
     BoundedShape,
     BoundedShapeObject,
-    FilledShapeObject,
+    FilledShapeObject, get_component, has_component, Movable, MovableName,
     PickingSystem,
     Point,
     Rect,
@@ -16,7 +16,12 @@ import {
     TreeNode,
     TreeNodeImpl
 } from "./common.js";
-import {RectPickSystem, RectRendererSystem, RectSVGExporter} from "./rect_powerup.js";
+import {
+    MovableRectObject,
+    RectPickSystem,
+    RectRendererSystem,
+    RectSVGExporter
+} from "./rect_powerup.js";
 
 
 //make sure parent and child are compatible, then add the child to the parent
@@ -91,6 +96,10 @@ function draw_node(ctx: CanvasRenderingContext2D, root: TreeNode, state: GlobalS
     root.children.forEach(ch => draw_node(ctx, ch, state))
 }
 
+function log(...args) {
+    console.log(...args)
+}
+
 function make_canvas_view(root:TreeNode, state:GlobalState) {
     let elem = DIV(['pane','canvas-view'],[])
     let canvas:HTMLCanvasElement = <HTMLCanvasElement>ELEM('canvas', ['drawing-surface'])
@@ -109,6 +118,36 @@ function make_canvas_view(root:TreeNode, state:GlobalState) {
         console.log("picked shapes",shapes)
         state.selection.set(shapes)
         state.dispatch('refresh',{})
+    })
+
+    function toCanvasPoint(e: MouseEvent) {
+        let target:HTMLElement = <HTMLElement>e.target
+        let bounds = target.getBoundingClientRect()
+        return new Point(e.clientX - bounds.x, e.clientY - bounds.y)
+    }
+
+    let press_point
+    canvas.addEventListener('mousedown',e => {
+        press_point = toCanvasPoint(e)
+        let shapes = []
+        state.pickers.forEach(pk => shapes.push(...pk.pick(press_point,state)))
+        state.selection.set(shapes)
+        state.dispatch('refresh',{})
+    })
+    canvas.addEventListener('mousemove',e => {
+        if(!press_point) return
+        let drag_point = toCanvasPoint(e)
+        let diff = drag_point.subtract(press_point)
+        press_point = drag_point
+        let movables:TreeNode[] = state.selection.get().filter(sh => has_component(sh,MovableName))
+        movables.forEach(node => {
+            let mov:Movable = <Movable>get_component(node, MovableName)
+            mov.moveBy(diff)
+        })
+        state.dispatch('refresh',{})
+    })
+    canvas.addEventListener('mouseup',e => {
+        press_point = null
     })
 
     function refresh() {
@@ -251,7 +290,7 @@ export class GlobalState {
     }
 
     dispatch(type: string, payload: any) {
-        this.log("dispatching",type,payload)
+        // this.log("dispatching",type,payload)
         this._get_listeners(type).forEach(cb => cb(payload))
     }
 
@@ -284,6 +323,7 @@ export function make_default_tree(state:GlobalState) {
         rect1.components.push(bds)
         let fill = new FilledShapeObject("red")
         rect1.components.push(fill)
+        rect1.components.push(new MovableRectObject(rect1))
         add_child_to_parent(rect1, root)
     }
 
@@ -292,13 +332,15 @@ export function make_default_tree(state:GlobalState) {
         let rect2: TreeNode = new TreeNodeImpl()
         rect2.components.push(new BoundedShapeObject(new Rect(200, 30, 50, 50)))
         rect2.components.push(new FilledShapeObject('blue'))
+        rect2.components.push(new MovableRectObject(rect2))
         add_child_to_parent(rect2, root)
     }
     {
         let circ1: TreeNode = new TreeNodeImpl()
         circ1.components.push(new FilledShapeObject('green'))
-        let circs_hape:CircleShape = new CircleShapeObject(new Point(100,100),20)
-        circ1.components.push(circs_hape)
+        let circle_shape:CircleShape = new CircleShapeObject(new Point(100,100),20)
+        circ1.components.push(circle_shape)
+        circ1.components.push(new MovableCircleObject(circ1))
         add_child_to_parent(circ1, root)
     }
 
