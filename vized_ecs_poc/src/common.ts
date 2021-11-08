@@ -180,6 +180,9 @@ export abstract class Handle extends Rect {
     protected constructor(x, y) {
         super(x,y,10,10);
     }
+    update_from_node() {
+
+    }
 
     moveBy(diff: Point) {
 
