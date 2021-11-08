@@ -77,7 +77,8 @@ function make_tree_view(root:TreeNode, state:GlobalState) {
         let ch_div = UL(['tree-node'],[B('child')])
         ch_div.dataset.nodeid = ch.id
         ch_div.addEventListener('click',(e)=>{
-            state.selection.set([ch])
+            let sel = state.selection
+            e.shiftKey?sel.add([ch]):sel.set([ch])
             state.dispatch('refresh',{})
         })
         ch.components.forEach(comp => {
@@ -107,18 +108,6 @@ function make_canvas_view(root:TreeNode, state:GlobalState) {
     canvas.height = 300
 
 
-    canvas.addEventListener('click',(e) => {
-        let target:HTMLElement = <HTMLElement>e.target
-        let br = target.getBoundingClientRect()
-        console.log("clicked on ",br)
-        let pt = new Point(e.clientX-br.x, e.clientY - br.y)
-        console.log("canvas point",pt)
-        let shapes = []
-        state.pickers.forEach(pk => shapes.push(...pk.pick(pt,state)))
-        console.log("picked shapes",shapes)
-        state.selection.set(shapes)
-        state.dispatch('refresh',{})
-    })
 
     function toCanvasPoint(e: MouseEvent) {
         let target:HTMLElement = <HTMLElement>e.target
@@ -131,7 +120,7 @@ function make_canvas_view(root:TreeNode, state:GlobalState) {
         press_point = toCanvasPoint(e)
         let shapes = []
         state.pickers.forEach(pk => shapes.push(...pk.pick(press_point,state)))
-        state.selection.set(shapes)
+        e.shiftKey?state.selection.add(shapes):state.selection.set(shapes)
         state.dispatch('refresh',{})
     })
     canvas.addEventListener('mousemove',e => {
