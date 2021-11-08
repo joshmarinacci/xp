@@ -3,11 +3,11 @@ import {
     BoundedShapeName,
     FilledShape,
     FilledShapeName,
-    get_component,
+    get_component, Handle,
     has_component, Movable, MovableName,
     PickingSystem,
     Point,
-    RenderingSystem, SVGExporter,
+    RenderingSystem, Resizable, ResizableName, SVGExporter,
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./start.js";
@@ -103,5 +103,46 @@ export class MovableRectObject implements Movable {
         let bd:BoundedShape = <BoundedShape>get_component(this.node, BoundedShapeName)
         bd.get_bounds().x += pt.x
         bd.get_bounds().y += pt.y
+    }
+}
+
+class RectHandle extends Handle {
+    private node: TreeNode;
+    constructor(node: TreeNode) {
+        super(0,0);
+        this.node = node
+    }
+    update_from_node() {
+        let bd:BoundedShape = <BoundedShape>get_component(this.node, BoundedShapeName)
+        this.x = bd.get_bounds().x + bd.get_bounds().w - 5
+        this.y = bd.get_bounds().y + bd.get_bounds().h - 5
+    }
+    override moveBy(diff: Point) {
+        this.x += diff.x
+        this.y += diff.y
+        this.update_to_node()
+    }
+
+
+    private update_to_node() {
+        let bd:BoundedShape = <BoundedShape>get_component(this.node, BoundedShapeName)
+        let bdd = bd.get_bounds()
+        bdd.w = this.x - bdd.x + this.w/2
+        bdd.h = this.y - bdd.y + this.h/2
+    }
+}
+
+export class ResizableRectObject implements Resizable {
+    private handle: RectHandle;
+    name: string;
+    private node: TreeNode;
+    constructor(node:TreeNode) {
+        this.node = node
+        this.name = ResizableName
+        this.handle = new RectHandle(this.node)
+    }
+    get_handle(): Handle {
+        this.handle.update_from_node()
+        return this.handle
     }
 }

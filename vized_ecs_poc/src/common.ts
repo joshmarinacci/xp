@@ -76,8 +76,9 @@ export interface Movable extends Component {
     moveBy(pt:Point):void
 }
 
-interface Resizable extends Component {
-    get_size(): Point,
+export const ResizableName = "ResizableName"
+export interface Resizable extends Component {
+    get_handle(): Handle,
 }
 
 export interface System {
@@ -173,4 +174,34 @@ export class SelectionSystem {
     has(nd: TreeNode) {
         return this.selection.has(nd)
     }
+}
+
+export abstract class Handle extends Rect {
+    protected constructor(x, y) {
+        super(x,y,10,10);
+    }
+
+    moveBy(diff: Point) {
+
+    }
+}
+
+export function DIV(classes: string[], children: any[]) {
+    let elem = document.createElement('div')
+    classes.forEach(cls => elem.classList.add(cls))
+    elem.append(...children)
+    return elem
+}
+
+export function ELEM(name: string, classes: string[], children?: any[]): HTMLElement {
+    let elem = document.createElement(name)
+    classes.forEach(cls => elem.classList.add(cls))
+    if (children) elem.append(...children)
+    return elem
+}
+
+export function BUTTON(caption: string, cb: any) {
+    let elem = ELEM('button', [], [caption])
+    elem.addEventListener('click', cb)
+    return elem
 }
