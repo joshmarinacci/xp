@@ -258,7 +258,11 @@ export class FilledShapePropRenderer implements PropRenderingSystem {
     constructor(state:GlobalState) {
         this.name = "FilledShapePropRenderer"
         this.state = state
-        this.colors = ['red','green','blue']
+        this.colors = [
+            '#ff00ff','#ff0000',
+            '#ffff00','#00ff00',
+            '#00ffff','#0000ff',
+            '#ffffff','#000000']
     }
 
     render_view(comp: Component): HTMLElement {
