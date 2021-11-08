@@ -8,9 +8,7 @@ import {
     RenderingSystem,
     TreeNode
 } from "./common.js";
-import {
-    GlobalState
-} from "./start.js";
+import {GlobalState} from "./state";
 
 const CircleShapeName = "CircleShapeName"
 export interface CircleShape extends Component {

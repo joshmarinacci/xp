@@ -1,4 +1,4 @@
-import {GlobalState} from "./start.js";
+import {GlobalState} from "./state";
 
 export class Point {
     x: number
@@ -204,4 +204,18 @@ export function BUTTON(caption: string, cb: any) {
     let elem = ELEM('button', [], [caption])
     elem.addEventListener('click', cb)
     return elem
+}
+
+export function toCanvasPoint(e: MouseEvent) {
+    let target: HTMLElement = <HTMLElement>e.target
+    let bounds = target.getBoundingClientRect()
+    return new Point(e.clientX - bounds.x, e.clientY - bounds.y)
+}
+
+export interface MouseGestureDelegate {
+    press(e: MouseEvent)
+
+    move(e: MouseEvent)
+
+    release(e: MouseEvent)
 }

@@ -12,19 +12,8 @@ import {
     DIV,
     ELEM,
     FilledShapeObject,
-    get_component,
-    Handle,
-    has_component,
-    Movable,
-    MovableName,
-    PickingSystem,
     Point,
     Rect,
-    RenderingSystem,
-    Resizable,
-    ResizableName,
-    SelectionSystem,
-    SVGExporter,
     TreeNode,
     TreeNodeImpl
 } from "./common.js";
@@ -35,13 +24,14 @@ import {
     RectSVGExporter,
     ResizableRectObject
 } from "./rect_powerup.js";
+import {GlobalState} from "./state.js";
+import {CanvasView} from "./canvas.js";
 
 
 //make sure parent and child are compatible, then add the child to the parent
 function add_child_to_parent(child:TreeNode, parent:TreeNode):void {
     parent.children.push(child)
     child.parent = parent
-
 }
 
 function B(text:string) {
@@ -92,157 +82,11 @@ function make_tree_view(root:TreeNode, state:GlobalState) {
     return elem
 }
 
-function draw_node(ctx: CanvasRenderingContext2D, root: TreeNode, state: GlobalState) {
-    state.renderers.forEach((rend)=> rend.render(ctx, root,state))
-    root.children.forEach(ch => draw_node(ctx, ch, state))
-}
-
-function draw_handles(ctx:CanvasRenderingContext2D, state:GlobalState) {
-    state.active_handles.forEach(hand => {
-        ctx.fillStyle = 'yellow'
-        ctx.fillRect(hand.x,hand.y,hand.w,hand.h)
-    })
-}
-
 function log(...args) {
     console.log(...args)
 }
 
-interface MouseGestureDelegate {
-    press(e:MouseEvent)
-    move(e:MouseEvent)
-    release(e:MouseEvent)
-}
 
-class MouseMoveDelegate implements MouseGestureDelegate {
-    press_point:Point
-    private state: GlobalState;
-    constructor(state:GlobalState) {
-        this.state = state
-    }
-
-    press(e: MouseEvent) {
-        this.press_point = toCanvasPoint(e)
-        let shapes = []
-        this.state.pickers.forEach(pk => shapes.push(...pk.pick(this.press_point,this.state)))
-        e.shiftKey?this.state.selection.add(shapes):this.state.selection.set(shapes)
-        shapes.forEach(shape => {
-            if(has_component(shape,ResizableName)) {
-                let res:Resizable = <Resizable>get_component(shape, ResizableName)
-                this.state.active_handles.push(res.get_handle())
-            }
-        })
-        this.state.dispatch('refresh',{})
-    }
-
-    move(e: MouseEvent) {
-        if(!this.press_point) return
-        let drag_point = toCanvasPoint(e)
-        let diff = drag_point.subtract(this.press_point)
-        this.press_point = drag_point
-        let movables:TreeNode[] = this.state.selection.get().filter(sh => has_component(sh,MovableName))
-        movables.forEach(node => {
-            let mov:Movable = <Movable>get_component(node, MovableName)
-            mov.moveBy(diff)
-        })
-        this.state.dispatch('refresh',{})
-    }
-    release(e: MouseEvent) {
-        this.press_point = null
-    }
-
-}
-
-class HandleMoveDelegate implements  MouseGestureDelegate {
-    private state: GlobalState;
-    private handle: Handle;
-    private start: Point;
-    constructor(state: GlobalState, hand: Handle) {
-        this.state = state
-        this.handle = hand
-    }
-
-    press(e: MouseEvent) {
-        this.log("pressed on handle")
-        this.start = toCanvasPoint(e)
-    }
-    move(e: MouseEvent) {
-        let curr = toCanvasPoint(e)
-        let diff = curr.subtract(this.start)
-        this.handle.moveBy(diff)
-        this.start = curr
-        this.state.dispatch('refresh',{})
-    }
-
-
-    release(e: MouseEvent) {
-        this.start = null
-    }
-
-    private log(...args) {
-        console.log("HandleMouseDelegate:",...args)
-    }
-}
-
-function toCanvasPoint(e: MouseEvent) {
-    let target:HTMLElement = <HTMLElement>e.target
-    let bounds = target.getBoundingClientRect()
-    return new Point(e.clientX - bounds.x, e.clientY - bounds.y)
-}
-
-
-class CanvasView {
-    private dom: HTMLDivElement;
-    constructor(root:TreeNode, state:GlobalState) {
-        let elem = DIV(['pane','canvas-view'],[])
-        let canvas:HTMLCanvasElement = <HTMLCanvasElement>ELEM('canvas', ['drawing-surface'])
-        canvas.width = 300
-        canvas.height = 300
-        let delegate
-
-        function over_handle(e: MouseEvent) {
-            let pt = toCanvasPoint(e)
-            let hand = state.active_handles.find(hand => hand.contains(pt))
-            return hand
-        }
-
-        canvas.addEventListener('mousedown',e => {
-            //check if pressed on a handle
-            let hand:Handle = over_handle(e)
-            if(hand) {
-                delegate = new HandleMoveDelegate(state,hand)
-            } else {
-                delegate = new MouseMoveDelegate(state)
-            }
-            delegate.press(e)
-        })
-        canvas.addEventListener('mousemove',e => {
-            if(delegate) delegate.move(e)
-        })
-        canvas.addEventListener('mouseup',e => {
-            if(delegate) delegate.release(e)
-            delegate = null
-        })
-
-        function refresh() {
-            let ctx = canvas.getContext('2d')
-            ctx.fillStyle = 'black'
-            ctx.fillRect(0,0,canvas.width,canvas.height)
-            draw_node(ctx,root,state)
-            draw_handles(ctx,state)
-        }
-
-        state.on("refresh",() => {
-            refresh()
-        })
-
-        elem.append(canvas)
-        this.dom = elem
-    }
-    get_dom() {
-        return this.dom
-    }
-}
 function make_canvas_view(root:TreeNode, state:GlobalState) {
     let canvas = new CanvasView(root,state)
     return canvas.get_dom()
@@ -319,70 +163,6 @@ export function make_gui(root:TreeNode, state:GlobalState) {
     let v4 = make_toolbar(state)
     return DIV(['main'],[v4,v1,v2,v3])
 }
-
-
-
-
-type Callback = (any) => void
-export class GlobalState {
-    systems:any[]
-    renderers:RenderingSystem[]
-    svgexporters:SVGExporter[]
-    selection:SelectionSystem
-    pickers:PickingSystem[]
-    private root: TreeNode;
-    private listeners:Map<string,Callback[]>
-    active_handles: Handle[];
-    constructor() {
-        this.systems = []
-        this.renderers = []
-        this.pickers = []
-        this.svgexporters = []
-        this.selection = new SelectionSystem()
-        this.active_handles = []
-        this.listeners = new Map<string, Callback[]>()
-    }
-    lookup_treenode(id:string):TreeNode {
-        return this.search_treenode_by_id(this.root,id)
-    }
-
-    set_root(tree: TreeNode) {
-        this.root = tree
-    }
-
-    private search_treenode_by_id(root: TreeNode, id: string):TreeNode {
-        if(root.id === id) return root
-        for(let ch of root.children) {
-            let ret = this.search_treenode_by_id(ch,id)
-            if(ret) return ret
-        }
-        return undefined
-    }
-
-    on(type: string, cb:Callback) {
-        this._get_listeners(type).push(cb)
-    }
-
-    private _get_listeners(type: string) {
-        if(!this.listeners.has(type)) this.listeners.set(type,[])
-        return this.listeners.get(type)
-    }
-
-    dispatch(type: string, payload: any) {
-        // this.log("dispatching",type,payload)
-        this._get_listeners(type).forEach(cb => cb(payload))
-    }
-
-    private log(...args) {
-        console.log("GLOBAL:",...args)
-    }
-
-    get_root():TreeNode {
-        return this.root
-    }
-}
-
-
 
 export function setup_state():GlobalState {
     let state:GlobalState = new GlobalState()

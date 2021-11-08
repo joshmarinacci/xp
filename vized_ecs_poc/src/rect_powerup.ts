@@ -10,7 +10,7 @@ import {
     RenderingSystem, Resizable, ResizableName, SVGExporter,
     TreeNode
 } from "./common.js";
-import {GlobalState} from "./start.js";
+import {GlobalState} from "./state";
 
 const RectRendererSystemName = 'RectRendererSystemName'
 
