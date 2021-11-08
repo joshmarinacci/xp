@@ -161,8 +161,7 @@ function export_JSON(root: TreeNode) {
 
 function treenode_to_SVG(node: TreeNode, state:GlobalState) {
     let exp = state.svgexporters.find(exp => exp.canExport(node))
-    if(!exp) return ""
-    return exp.toSVG(node)
+    return exp?exp.toSVG(node):""
 }
 
 function export_SVG(root: TreeNode, state:GlobalState) {
@@ -178,7 +177,7 @@ function export_SVG(root: TreeNode, state:GlobalState) {
     forceDownloadBlob('demo.svg',blog)
 }
 function forceDownloadBlob(title,blob) {
-    console.log("forcing download of",title)
+    // console.log("forcing download of",title)
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = title
@@ -186,7 +185,6 @@ function forceDownloadBlob(title,blob) {
     a.click()
     document.body.removeChild(a)
 }
-// canvasToPNGBlob(canvas).then((blob)=> forceDownloadBlob(`${doc.title}@${scale}.png`,blob))
 
 function make_toolbar(state:GlobalState) {
     let chi = [

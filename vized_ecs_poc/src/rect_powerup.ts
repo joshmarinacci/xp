@@ -72,9 +72,7 @@ export class RectSVGExporter implements SVGExporter {
     name: string;
 
     canExport(node: TreeNode): boolean {
-        console.log("looking at",node)
-        if(has_component(node,BoundedShapeName)) return true
-        return false;
+        return has_component(node,BoundedShapeName)
     }
 
     toSVG(node: TreeNode): string {
@@ -88,11 +86,8 @@ export class RectSVGExporter implements SVGExporter {
             height:rect.w,
             fill:color.get_color()
         }
-        let strs = Object.keys(obj).map(key => {
-            return `${key}='${obj[key]}'`
-        })
-        return '<rect ' + strs.join(" ") + "/>"
-        // return `<rect width='${rect.w}' height='${rect.h}' fill='${color.get_color()}'/>`;
+        let pairs = Object.keys(obj).map(k => `${k}='${obj[k]}'`)
+        return '<rect ' + pairs.join(" ") + "/>"
     }
 
 }
