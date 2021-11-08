@@ -50,6 +50,7 @@ class MouseMoveDelegate implements MouseGestureDelegate {
 
     release(e: MouseEvent) {
         this.press_point = null
+        this.state.dispatch('object-changed',{})
     }
 
     private refresh_handles(shapes: any[]) {
@@ -89,6 +90,7 @@ class HandleMoveDelegate implements MouseGestureDelegate {
 
     release(e: MouseEvent) {
         this.start = null
+        this.state.dispatch('object-changed',{})
     }
 
     private log(...args) {
@@ -134,6 +136,7 @@ export class CanvasView {
 
         state.on("refresh", () => this.refresh())
         state.on("selection-change", ()=>this.refresh())
+        state.on("prop-change",()=>this.refresh())
         elem.append(this.canvas)
         this.dom = elem
         this.root = root

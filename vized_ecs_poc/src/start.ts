@@ -95,8 +95,7 @@ function make_canvas_view(root:TreeNode, state:GlobalState) {
 
 function make_props_view(state: GlobalState) {
     let div = DIV(['pane','props-view'],[])
-    state.on("selection-change",() => {
-        console.log("selection changed", state.selection)
+    const rebuild = () => {
         while(div.firstChild) div.removeChild(div.firstChild)
         if(state.selection.isEmpty()) {
             div.append(B("Nothing Selecte"))
@@ -113,7 +112,12 @@ function make_props_view(state: GlobalState) {
                 }
             })
         }
+    }
+    state.on("selection-change",() => {
+        console.log("selection changed", state.selection)
+        rebuild()
     })
+    state.on("object-changed", () => rebuild())
     return div
 }
 

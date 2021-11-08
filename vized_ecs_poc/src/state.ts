@@ -8,7 +8,7 @@ import {
 } from "./common.js";
 
 export type Callback = (any) => void
-export type EVENT_TYPES = "refresh" | "selection-change"
+export type EVENT_TYPES = "refresh" | "selection-change" | "prop-change" | "object-changed"
 export class GlobalState {
     systems: any[]
     renderers: RenderingSystem[]
