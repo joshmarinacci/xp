@@ -11,7 +11,7 @@ import {
     BUTTON,
     DIV,
     ELEM,
-    FilledShapeObject,
+    FilledShapeObject, FilledShapePropRenderer,
     Point, PropRenderingSystem,
     Rect,
     TreeNode,
@@ -98,7 +98,7 @@ function make_props_view(state: GlobalState) {
     const rebuild = () => {
         while(div.firstChild) div.removeChild(div.firstChild)
         if(state.selection.isEmpty()) {
-            div.append(B("Nothing Selecte"))
+            div.append(B("Nothing Selected"))
         } else {
             let node = state.selection.get()[0]
             let panel = DIV(['group'],['its a node'])
@@ -113,10 +113,7 @@ function make_props_view(state: GlobalState) {
             })
         }
     }
-    state.on("selection-change",() => {
-        console.log("selection changed", state.selection)
-        rebuild()
-    })
+    state.on("selection-change",() =>  rebuild())
     state.on("object-changed", () => rebuild())
     return div
 }
@@ -197,6 +194,8 @@ export function setup_state():GlobalState {
     state.svgexporters.push(new RectSVGExporter())
     state.props_renderers.push(new RectPropRendererSystem(state))
     state.props_renderers.push(new CirclePropRendererSystem(state))
+    state.props_renderers.push(new FilledShapePropRenderer(state))
+
     return state
 }
 

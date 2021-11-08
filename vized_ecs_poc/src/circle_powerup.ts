@@ -98,11 +98,9 @@ export class CirclePickSystem implements PickingSystem {
         if(has_component(node,CircleShapeName)) {
             let circle = (<CircleShape> get_component(node,CircleShapeName))
             let dist = circle.get_position().subtract(pt)
-            console.log("distance is",dist)
             if(dist.magnitude() < circle.get_radius()) {
                 collect.push(node)
             }
-            // if(circl.contains(pt)) collect.push(node)
         }
         node.children.forEach((ch:TreeNode) => {
             this._test_node(pt,ch,collect)

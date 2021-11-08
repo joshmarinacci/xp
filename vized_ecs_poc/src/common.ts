@@ -64,6 +64,7 @@ export type TreeNode = {
 
 export interface FilledShape extends Component {
     get_color(): string
+    set_color(color:string):void
 }
 
 export interface BoundedShape extends Component {
@@ -119,7 +120,7 @@ export const FilledShapeName = "FilledShapeName"
 
 export class FilledShapeObject implements FilledShape {
     name: string;
-    private readonly color: string;
+    private color: string;
 
     constructor(color: string) {
         this.name = FilledShapeName
@@ -128,6 +129,9 @@ export class FilledShapeObject implements FilledShape {
 
     get_color(): string {
         return this.color
+    }
+    set_color(color: string) {
+        this.color = color
     }
 
 }
@@ -244,4 +248,68 @@ export function NUMBER_INPUT(value: number, cb: (v) => void) {
         if (!Number.isNaN(el.valueAsNumber)) cb(el.valueAsNumber)
     })
     return input
+}
+
+export class FilledShapePropRenderer implements PropRenderingSystem {
+    name: string;
+    private state:GlobalState
+    private colors: string[];
+
+    constructor(state:GlobalState) {
+        this.name = "FilledShapePropRenderer"
+        this.state = state
+        this.colors = ['red','green','blue']
+    }
+
+    render_view(comp: Component): HTMLElement {
+        let size = 20
+        let w = 100
+        let wrap = Math.floor(w/size)
+        const n2xy = (n) => ({
+            x:n%wrap * size,
+            y:Math.floor(n/wrap) * 20
+        })
+        const xy2n = (xy) => {
+            let x = Math.floor(xy.x/size)
+            let y = Math.floor(xy.y/size)
+            return x + y*wrap
+        }
+        let fill:FilledShape = comp as FilledShape
+        let canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = w
+
+        const redraw = () => {
+            let ctx = canvas.getContext('2d')
+            ctx.fillStyle = 'white'
+            ctx.fillRect(0,0,canvas.width,canvas.height)
+            this.colors.forEach((color,i)=>{
+                ctx.fillStyle = color
+                let pt = n2xy(i)
+                ctx.fillRect(pt.x,pt.y,20,20)
+                if(color === fill.get_color()) {
+                    ctx.strokeStyle = 'black'
+                    ctx.strokeRect(pt.x,pt.y,20,20)
+                }
+            })
+        }
+        canvas.addEventListener('click',(e)=>{
+            let pt = toCanvasPoint(e)
+            let n = xy2n(pt)
+            if(n >= 0 && n < this.colors.length) {
+                let color = this.colors[n]
+                fill.set_color(color)
+                this.state.dispatch("prop-change", {})
+                redraw()
+            }
+        })
+        redraw()
+        return canvas
+    }
+
+    supports(name: string): any { return name === FilledShapeName }
+}
+
+export function COLOR_PICKER(colors:string[],cb:(v)=>void) {
+
 }
