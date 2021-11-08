@@ -12,14 +12,14 @@ import {
     DIV,
     ELEM,
     FilledShapeObject,
-    Point,
+    Point, PropRenderingSystem,
     Rect,
     TreeNode,
     TreeNodeImpl
 } from "./common.js";
 import {
     MovableRectObject,
-    RectPickSystem,
+    RectPickSystem, RectPropRendererSystem,
     RectRendererSystem,
     RectSVGExporter,
     ResizableRectObject
@@ -69,7 +69,7 @@ function make_tree_view(root:TreeNode, state:GlobalState) {
         ch_div.addEventListener('click',(e)=>{
             let sel = state.selection
             e.shiftKey?sel.add([ch]):sel.set([ch])
-            state.dispatch('refresh',{})
+            state.dispatch('selection-change',{})
         })
         ch.components.forEach(comp => {
             ch_div.append(LI(['component'],[comp.name]))
@@ -79,6 +79,7 @@ function make_tree_view(root:TreeNode, state:GlobalState) {
     elem.append(root_div)
     refresh()
     state.on("refresh",refresh)
+    state.on("selection-change", refresh)
     return elem
 }
 
@@ -92,9 +93,28 @@ function make_canvas_view(root:TreeNode, state:GlobalState) {
     return canvas.get_dom()
 }
 
-function make_props_view() {
-    let elem = DIV(['pane','props-view'],[])
-    return elem
+function make_props_view(state: GlobalState) {
+    let div = DIV(['pane','props-view'],[])
+    state.on("selection-change",() => {
+        console.log("selection changed", state.selection)
+        while(div.firstChild) div.removeChild(div.firstChild)
+        if(state.selection.isEmpty()) {
+            div.append(B("Nothing Selecte"))
+        } else {
+            let node = state.selection.get()[0]
+            let panel = DIV(['group'],['its a node'])
+            div.append(panel)
+            node.components.forEach(comp => {
+                let pr:PropRenderingSystem = state.props_renderers.find(pr => pr.supports(comp.name))
+                if(pr) {
+                    let comp_div = DIV(['group'],[`${comp.name}`])
+                    comp_div.append(pr.render_view(comp))
+                    div.append(comp_div)
+                }
+            })
+        }
+    })
+    return div
 }
 
 function treenode_to_POJO(root: TreeNode) {
@@ -159,7 +179,7 @@ function make_toolbar(state:GlobalState) {
 export function make_gui(root:TreeNode, state:GlobalState) {
     let v1 = make_tree_view(root,state)
     let v2 = make_canvas_view(root,state)
-    let v3 = make_props_view()
+    let v3 = make_props_view(state)
     let v4 = make_toolbar(state)
     return DIV(['main'],[v4,v1,v2,v3])
 }
@@ -171,6 +191,7 @@ export function setup_state():GlobalState {
     state.pickers.push(new RectPickSystem())
     state.pickers.push(new CirclePickSystem())
     state.svgexporters.push(new RectSVGExporter())
+    state.props_renderers.push(new RectPropRendererSystem(state))
     return state
 }
 

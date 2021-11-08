@@ -1,17 +1,18 @@
 import {
     Handle,
-    PickingSystem,
+    PickingSystem, PropRenderingSystem,
     RenderingSystem,
     SelectionSystem,
     SVGExporter,
     TreeNode
 } from "./common.js";
 
-type Callback = (any) => void
-
+export type Callback = (any) => void
+export type EVENT_TYPES = "refresh" | "selection-change"
 export class GlobalState {
     systems: any[]
     renderers: RenderingSystem[]
+    props_renderers:PropRenderingSystem[]
     svgexporters: SVGExporter[]
     selection: SelectionSystem
     pickers: PickingSystem[]
@@ -24,6 +25,7 @@ export class GlobalState {
         this.renderers = []
         this.pickers = []
         this.svgexporters = []
+        this.props_renderers = []
         this.selection = new SelectionSystem()
         this.active_handles = []
         this.listeners = new Map<string, Callback[]>()
@@ -46,7 +48,7 @@ export class GlobalState {
         return undefined
     }
 
-    on(type: string, cb: Callback) {
+    on(type: EVENT_TYPES, cb: Callback) {
         this._get_listeners(type).push(cb)
     }
 
@@ -55,7 +57,7 @@ export class GlobalState {
         return this.listeners.get(type)
     }
 
-    dispatch(type: string, payload: any) {
+    dispatch(type: EVENT_TYPES, payload: any) {
         // this.log("dispatching",type,payload)
         this._get_listeners(type).forEach(cb => cb(payload))
     }

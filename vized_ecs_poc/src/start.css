@@ -1,5 +1,6 @@
 html {
     background-color: #333;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 .main {
     border: 5px solid red;
@@ -34,4 +35,23 @@ html {
 
 .tree-node.selected {
     background-color: red;
+}
+
+.props-view .group {
+    background-color: #aaa;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    margin: 0.25em;
+}
+
+.prop-group {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+}
+.prop-group input {
+    max-width: 5em;
+}
+.prop-group label {
+    text-align: right;
+    padding-right: 1em;
 }

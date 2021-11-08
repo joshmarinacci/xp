@@ -1,12 +1,12 @@
 import {
     BoundedShape,
-    BoundedShapeName,
+    BoundedShapeName, Component, DIV, ELEM,
     FilledShape,
     FilledShapeName,
     get_component, Handle,
     has_component, Movable, MovableName,
     PickingSystem,
-    Point,
+    Point, PropRenderingSystem,
     RenderingSystem, Resizable, ResizableName, SVGExporter,
     TreeNode
 } from "./common.js";
@@ -145,4 +145,58 @@ export class ResizableRectObject implements Resizable {
         this.handle.update_from_node()
         return this.handle
     }
+}
+
+function LABEL(text: string) {
+    return ELEM('label',[],[text])
+}
+
+function NUMBER_INPUT(value: number, cb: (v) => void) {
+    let input = document.createElement('input')
+    input.setAttribute('type','number')
+    input.setAttribute('value',value+"")
+    input.addEventListener('change',(e)=>{
+        let el:HTMLInputElement = <HTMLInputElement>e.target
+        if(!Number.isNaN(el.valueAsNumber)) cb(el.valueAsNumber)
+    })
+    return input
+}
+
+export class RectPropRendererSystem implements PropRenderingSystem {
+    name: string;
+    private state: GlobalState;
+    constructor(state:GlobalState) {
+        this.state = state
+    }
+
+    render_view(comp: Component): HTMLElement {
+        let bounds = (comp as BoundedShape).get_bounds()
+        let x = LABEL("x")
+        let xbox = NUMBER_INPUT(bounds.x,(v)=>{
+            bounds.x = v
+            this.state.dispatch("refresh", {})
+        })
+        let y = LABEL("y")
+        let ybox = NUMBER_INPUT(bounds.x,(v)=>{
+            bounds.y = v
+            this.state.dispatch("refresh", {})
+        })
+        let w = LABEL("w")
+        let wbox = NUMBER_INPUT(bounds.x,(v)=>{
+            bounds.w = v
+            this.state.dispatch("refresh", {})
+        })
+        let h = LABEL("h")
+        let hbox = NUMBER_INPUT(bounds.x,(v)=>{
+            bounds.h = v
+            this.state.dispatch("refresh", {})
+        })
+        return DIV(["prop-group"],[x,xbox,y,ybox,w,wbox,h,hbox])
+    }
+
+    supports(name: string): any {
+        if(name === BoundedShapeName) return true
+        return false
+    }
+
 }

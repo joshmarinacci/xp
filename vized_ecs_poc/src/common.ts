@@ -91,6 +91,10 @@ export interface RenderingSystem extends System {
 export interface PickingSystem extends System {
     pick(pt:Point, state:GlobalState): TreeNode[]
 }
+export interface PropRenderingSystem extends System {
+    supports(name: string): any;
+    render_view(comp: Component): HTMLElement;
+}
 
 export interface SVGExporter extends System {
     canExport(node:TreeNode):boolean
@@ -173,6 +177,10 @@ export class SelectionSystem {
 
     has(nd: TreeNode) {
         return this.selection.has(nd)
+    }
+
+    isEmpty() {
+        return (this.selection.size<=0)
     }
 }
 

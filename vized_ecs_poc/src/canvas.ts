@@ -31,7 +31,7 @@ class MouseMoveDelegate implements MouseGestureDelegate {
         this.state.pickers.forEach(pk => shapes.push(...pk.pick(this.press_point, this.state)))
         e.shiftKey ? this.state.selection.add(shapes) : this.state.selection.set(shapes)
         this.refresh_handles(shapes)
-        this.state.dispatch('refresh', {})
+        this.state.dispatch('selection-change',{})
     }
 
     move(e: MouseEvent) {
@@ -133,6 +133,7 @@ export class CanvasView {
 
 
         state.on("refresh", () => this.refresh())
+        state.on("selection-change", ()=>this.refresh())
         elem.append(this.canvas)
         this.dom = elem
         this.root = root
