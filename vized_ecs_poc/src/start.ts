@@ -6,13 +6,9 @@ import {
 } from "./circle_powerup.js";
 import {
     BoundedShape,
-    BoundedShapeName,
     BoundedShapeObject,
-    FilledShape,
-    FilledShapeName,
     FilledShapeObject,
-    get_component,
-    has_component, PickingSystem,
+    PickingSystem,
     Point,
     Rect,
     RenderingSystem,
@@ -20,6 +16,7 @@ import {
     TreeNode,
     TreeNodeImpl
 } from "./common.js";
+import {RectPickSystem, RectRendererSystem} from "./rect_powerup.js";
 
 
 //make sure parent and child are compatible, then add the child to the parent
@@ -44,9 +41,6 @@ function B(text:string) {
 
 function I(text: string) {
     return ELEM('i',[],[text])
-    // let elem = document.createElement('i')
-    // elem.innerHTML = text
-    // return elem
 }
 function ELEM(name:string,classes:string[],children?:any[]):HTMLElement{
     let elem = document.createElement(name)
@@ -137,65 +131,29 @@ function make_props_view() {
     return elem
 }
 
+function BUTTON(caption: string, cb:any) {
+    let elem = ELEM('button',[],[caption])
+    elem.addEventListener('click',cb)
+    return elem
+}
+
+function make_toolbar() {
+    let chi = [
+        BUTTON("export JSON",()=>{
+            console.log("going to do something")
+        })
+    ]
+    let elem = DIV(['toolbar'],chi)
+    return elem
+}
+
 // makes three panes
 export function make_gui(root:TreeNode, state:GlobalState) {
     let v1 = make_tree_view(root,state)
     let v2 = make_canvas_view(root,state)
     let v3 = make_props_view()
-    return DIV(['main'],[v1,v2,v3])
-}
-
-const RectRendererSystemName = 'RectRendererSystemName'
-class RectRendererSystem implements RenderingSystem {
-    constructor() {
-        this.name = RectRendererSystemName
-    }
-
-    render(ctx: CanvasRenderingContext2D, node: TreeNode, state:GlobalState): void {
-        if(has_component(node,BoundedShapeName)) {
-            let bd:BoundedShape = <BoundedShape>get_component(node, BoundedShapeName)
-            let rect = bd.get_bounds()
-
-            if(has_component(node,FilledShapeName)) {
-                let color: FilledShape = <FilledShape>get_component(node, FilledShapeName)
-                ctx.fillStyle = color.get_color()
-            } else {
-                ctx.fillStyle = 'magenta'
-            }
-            ctx.fillRect(rect.x,rect.y,rect.w,rect.h)
-            if(state.selection.has(node)) {
-                ctx.strokeStyle = 'magenta'
-                ctx.lineWidth = 3.5
-                ctx.strokeRect(rect.x,rect.y,rect.w,rect.h)
-            }
-        }
-    }
-
-    name: string;
-}
-
-const RectPickSystemName = 'RectPickSystemName';
-class RectPickSystem implements PickingSystem {
-    name: string;
-    constructor() {
-        this.name = RectPickSystemName
-    }
-
-    pick(pt: Point, state: GlobalState): TreeNode[] {
-        let picked = []
-        this._test_node(pt,state.get_root(),picked)
-        return picked
-    }
-
-    private _test_node(pt:Point, node: TreeNode, collect:TreeNode[]) {
-        if(has_component(node,BoundedShapeName)) {
-            let rect = (<BoundedShape> get_component(node,BoundedShapeName)).get_bounds()
-            if(rect.contains(pt)) collect.push(node)
-        }
-        node.children.forEach((ch:TreeNode) => {
-            this._test_node(pt,ch,collect)
-        })
-    }
+    let v4 = make_toolbar()
+    return DIV(['main'],[v4,v1,v2,v3])
 }
 
 
