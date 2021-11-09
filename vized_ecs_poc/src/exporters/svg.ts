@@ -1,15 +1,5 @@
-import {TreeNode} from "../common.js";
+import {forceDownloadBlob, TreeNode} from "../common.js";
 import {GlobalState} from "../state.js";
-
-export function forceDownloadBlob(title, blob) {
-    // console.log("forcing download of",title)
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = title
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-}
 
 function treenode_to_SVG(node: TreeNode, state: GlobalState) {
     let exp = state.svgexporters.find(exp => exp.canExport(node))

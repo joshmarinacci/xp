@@ -1,4 +1,4 @@
-import {TreeNode} from "../common.js";
+import {forceDownloadBlob, TreeNode} from "../common.js";
 
 function treenode_to_POJO(root: TreeNode) {
     let obj = {}
@@ -19,4 +19,5 @@ export function export_JSON(root: TreeNode) {
     console.log("obj is", obj)
     let str = JSON.stringify(obj, null, '  ')
     console.log(str)
+    forceDownloadBlob('demo.json', new Blob([str]))
 }

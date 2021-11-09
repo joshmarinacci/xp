@@ -317,3 +317,13 @@ export class FilledShapePropRenderer implements PropRenderingSystem {
 export function COLOR_PICKER(colors:string[],cb:(v)=>void) {
 
 }
+
+export function forceDownloadBlob(title, blob) {
+    // console.log("forcing download of",title)
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = title
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+}
