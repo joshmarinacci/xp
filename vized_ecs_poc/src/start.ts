@@ -1,5 +1,6 @@
 import {
-    CirclePickSystem, CirclePropRendererSystem,
+    CirclePickSystem,
+    CirclePropRendererSystem,
     CircleRendererSystem,
     CircleShape,
     CircleShapeObject,
@@ -11,21 +12,27 @@ import {
     BUTTON,
     DIV,
     ELEM,
-    FilledShapeObject, FilledShapePropRenderer,
-    Point, PropRenderingSystem,
+    FilledShapeObject,
+    FilledShapePropRenderer,
+    Point,
+    PropRenderingSystem,
     Rect,
     TreeNode,
     TreeNodeImpl
 } from "./common.js";
 import {
     MovableRectObject,
-    RectPickSystem, RectPropRendererSystem,
+    RectPickSystem,
+    RectPropRendererSystem,
     RectRendererSystem,
     RectSVGExporter,
     ResizableRectObject
 } from "./rect_powerup.js";
 import {GlobalState} from "./state.js";
 import {CanvasView} from "./canvas.js";
+import {export_SVG} from "./exporters/svg.js";
+import {export_JSON} from "./exporters/json.js";
+import {export_PNG} from "./exporters/png.js";
 
 
 //make sure parent and child are compatible, then add the child to the parent
@@ -118,59 +125,11 @@ function make_props_view(state: GlobalState) {
     return div
 }
 
-function treenode_to_POJO(root: TreeNode) {
-    let obj = {
-    }
-    Object.keys(root).forEach(key => {
-        if(key === 'parent') return
-        if(key === 'children') {
-            obj[key] = root.children.map(ch => treenode_to_POJO(ch))
-            return
-        }
-        obj[key] = root[key]
-    })
-    return obj
-}
-
-function export_JSON(root: TreeNode) {
-    console.log("exporting to JSON",root)
-    let obj = treenode_to_POJO(root)
-    console.log("obj is",obj)
-    let str = JSON.stringify(obj,null,'  ')
-    console.log(str)
-}
-
-function treenode_to_SVG(node: TreeNode, state:GlobalState) {
-    let exp = state.svgexporters.find(exp => exp.canExport(node))
-    return exp?exp.toSVG(node):""
-}
-
-function export_SVG(root: TreeNode, state:GlobalState) {
-    console.log("exporting to SVG",root)
-    let chs = root.children.map(ch => treenode_to_SVG(ch,state))
-    let template = `<?xml version="1.0" standalone="no"?>
-    <svg width="400" height="400" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    ${chs.join("\n")}
-    </svg>
-    `
-    console.log("template output",template)
-    let blog = new Blob([template.toString()])
-    forceDownloadBlob('demo.svg',blog)
-}
-function forceDownloadBlob(title,blob) {
-    // console.log("forcing download of",title)
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = title
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-}
-
 function make_toolbar(state:GlobalState) {
     let chi = [
         BUTTON("export JSON",()=> export_JSON(state.get_root())),
         BUTTON("export SVG",()=> export_SVG(state.get_root(), state)),
+        BUTTON("export PNG",()=> export_PNG(state.get_root(), state))
     ]
     let elem = DIV(['toolbar'],chi)
     return elem
