@@ -144,7 +144,7 @@ export class CanvasView {
         let ctx = this.canvas.getContext('2d')
         ctx.fillStyle = 'black'
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
-        this.draw_node(ctx, this.root)
+        this.draw_node(ctx, this.state.get_root())
         this.draw_handles(ctx)
     }
     draw_node(ctx: CanvasRenderingContext2D, root: TreeNode) {

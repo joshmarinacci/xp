@@ -8,6 +8,11 @@ export class Point {
         this.x = x
         this.y = y
     }
+    from_object(obj:any) {
+        this.x = obj.x
+        this.y = obj.y
+        return this
+    }
 
     subtract(pt: Point) {
         return new Point(this.x-pt.x, this.y-pt.y)
@@ -113,7 +118,7 @@ export class TreeNodeImpl implements TreeNode {
     }
 
     has_component(name): boolean {
-        let comps = this.components.find(comp => comp.name === name)
+        let comps = this.components.find(comp => comp && comp.name === name)
         if (comps) return true
         return false
     }

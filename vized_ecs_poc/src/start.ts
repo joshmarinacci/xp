@@ -11,7 +11,7 @@ import {
     DIV,
     ELEM,
     FilledShapeObject,
-    FilledShapePropRenderer,
+    FilledShapePropRenderer, MovableName,
     Point,
     PropRenderingSystem,
     Rect,
@@ -29,7 +29,11 @@ import {
 import {GlobalState} from "./state.js";
 import {CanvasView} from "./canvas.js";
 import {export_SVG} from "./exporters/svg.js";
-import {export_JSON, FilledShapeJSONExporter, treenode_to_POJO} from "./exporters/json.js";
+import {
+    export_JSON,
+    FilledShapeJSONExporter, POJO_to_treenode,
+    treenode_to_POJO
+} from "./exporters/json.js";
 import {export_PNG} from "./exporters/png.js";
 import {export_PDF} from "./exporters/pdf.js";
 
@@ -133,9 +137,25 @@ function save_JSON(root: TreeNode, state: GlobalState) {
     localStorage.setItem('mydoc',str)
 }
 
+function load_JSON(state: GlobalState) {
+    let str = localStorage.getItem('mydoc')
+    if(!str) {
+        console.error("there is no saved doc")
+        return
+    }
+    console.log("saved doc is",str)
+    let obj = JSON.parse(str)
+    console.log("obj is",obj)
+    let root:TreeNode = POJO_to_treenode(obj,state)
+    console.log("root is",root)
+    state.set_root(root)
+    state.dispatch("refresh", {})
+}
+
 function make_toolbar(state:GlobalState) {
     let chi = [
         BUTTON('persist',()=>save_JSON(state.get_root(),state)),
+        BUTTON("reload",()=>load_JSON(state)),
         BUTTON("export JSON",()=> export_JSON(state.get_root(),state)),
         BUTTON("export SVG",()=> export_SVG(state.get_root(), state)),
         BUTTON("export PNG",()=> export_PNG(state.get_root(), state)),
@@ -153,6 +173,7 @@ export function make_gui(root:TreeNode, state:GlobalState) {
     let v4 = make_toolbar(state)
     return DIV(['main'],[v4,v1,v2,v3])
 }
+
 
 export function setup_state():GlobalState {
     let state:GlobalState = new GlobalState()

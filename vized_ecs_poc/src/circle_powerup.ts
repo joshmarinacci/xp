@@ -18,6 +18,7 @@ import {
 } from "./common.js";
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
+import {MovableRectObject} from "./rect_powerup";
 
 const CircleShapeName = "CircleShapeName"
 export interface CircleShape extends Component {
@@ -218,17 +219,29 @@ export class CirclePowerup implements Powerup {
 export class CircleShapeJSONExporter implements JSONExporter {
     name: string;
 
-    canExport(component_name: string): boolean {
-        return component_name === CircleShapeName
-    }
-
-    toJSON(component: Component): any {
+    toJSON(component: Component, node:TreeNode): any {
+        if(component.name === MovableName) return {name:component.name, empty:true, powerup:'circle'}
         let circle = component as CircleShape
         return {
             name:circle.name,
             position:circle.get_position(),
             radius:circle.get_radius(),
         }
+    }
+
+    fromJSON(obj: any, node:TreeNode): Component {
+        if(obj.name === MovableName) return new MovableCircleObject(node)
+        if(obj.name === CircleShapeName) return new CircleShapeObject((new Point(0,0)).from_object(obj.position),obj.radius)
+    }
+
+    canHandleFromJSON(obj: any, node: TreeNode): boolean {
+        if(obj.name === MovableName && obj.powerup === 'circle') return true
+        return obj.name === CircleShapeName
+    }
+
+    canHandleToJSON(comp: any, node: TreeNode): boolean {
+        if(comp.name === MovableName && node.has_component(CircleShapeName)) return true
+        return comp.name === CircleShapeName
     }
 
 }

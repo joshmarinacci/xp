@@ -1,6 +1,6 @@
 import {
     BoundedShape,
-    BoundedShapeName,
+    BoundedShapeName, BoundedShapeObject,
     Component,
     DIV,
     FilledShape,
@@ -13,7 +13,7 @@ import {
     PDFExporter,
     PickingSystem,
     Point, Powerup,
-    PropRenderingSystem,
+    PropRenderingSystem, Rect,
     RenderingSystem,
     Resizable,
     ResizableName,
@@ -127,26 +127,42 @@ export class RectPDFExporter implements PDFExporter {
     }
 
 }
-export class BoundedShapeJSONExporter implements JSONExporter {
+export class RectJsonExporter implements JSONExporter {
     name: string;
 
-    canExport(component_name: string): boolean {
-        return component_name === BoundedShapeName
-    }
-
-    toJSON(component: Component): any {
+    toJSON(component: Component, node:TreeNode): any {
+        if(component.name === ResizableName) return {name:component.name, empty:true, powerup:'rect'}
+        if(component.name === MovableName) return {name:component.name, empty:true, powerup:'rect'}
         let bd: BoundedShape = <BoundedShape>component
         let rect = bd.get_bounds()
-        // let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
         let obj = {
             name:BoundedShapeName,
             x:rect.x,
             y:rect.y,
             width:rect.w,
             height:rect.w,
-            // fill:color.get_color()
+            powerup:'rect',
         }
         return obj
+    }
+
+    fromJSON(obj: any, node:TreeNode): Component {
+        if(obj.name === ResizableName) return new ResizableRectObject(node)
+        if(obj.name === MovableName) return new MovableRectObject(node)
+        if(obj.name === BoundedShapeName) return new BoundedShapeObject(new Rect(obj.x,obj.y,obj.width,obj.height))
+    }
+
+    canHandleFromJSON(obj: any, node: TreeNode): boolean {
+        if(obj.name === ResizableName && obj.powerup==='rect') return true
+        if(obj.name === MovableName && obj.powerup==='rect') return true
+        if(obj.name === BoundedShapeName && obj.powerup === 'rect') return true
+    }
+
+    canHandleToJSON(comp: any, node: TreeNode): boolean {
+        if(comp.name === BoundedShapeName) return true
+        if(comp.name === ResizableName && node.has_component(BoundedShapeName)) return true
+        if(comp.name === MovableName && node.has_component(BoundedShapeName)) return true
+        return false;
     }
 
 }
@@ -253,6 +269,6 @@ export class RectPowerup implements Powerup {
         state.props_renderers.push(new RectPropRendererSystem(state))
         state.svgexporters.push(new RectSVGExporter())
         state.pdfexporters.push(new RectPDFExporter())
-        state.jsonexporters.push(new BoundedShapeJSONExporter())
+        state.jsonexporters.push(new RectJsonExporter())
     }
 }
