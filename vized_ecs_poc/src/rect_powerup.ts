@@ -5,9 +5,7 @@ import {
     DIV,
     FilledShape,
     FilledShapeName,
-    get_component,
     Handle,
-    has_component,
     LABEL,
     Movable,
     MovableName,
@@ -31,12 +29,12 @@ export class RectRendererSystem implements RenderingSystem {
     }
 
     render(ctx: CanvasRenderingContext2D, node: TreeNode, state: GlobalState): void {
-        if (has_component(node, BoundedShapeName)) {
-            let bd: BoundedShape = <BoundedShape>get_component(node, BoundedShapeName)
+        if (node.has_component(BoundedShapeName)) {
+            let bd: BoundedShape = <BoundedShape>node.get_component(BoundedShapeName)
             let rect = bd.get_bounds()
 
-            if (has_component(node, FilledShapeName)) {
-                let color: FilledShape = <FilledShape>get_component(node, FilledShapeName)
+            if (node.has_component(FilledShapeName)) {
+                let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
                 ctx.fillStyle = color.get_color()
             } else {
                 ctx.fillStyle = 'magenta'
@@ -69,8 +67,8 @@ export class RectPickSystem implements PickingSystem {
     }
 
     private _test_node(pt: Point, node: TreeNode, collect: TreeNode[]) {
-        if (has_component(node, BoundedShapeName)) {
-            let rect = (<BoundedShape>get_component(node, BoundedShapeName)).get_bounds()
+        if (node.has_component(BoundedShapeName)) {
+            let rect = (<BoundedShape>node.get_component(BoundedShapeName)).get_bounds()
             if (rect.contains(pt)) collect.push(node)
         }
         node.children.forEach((ch: TreeNode) => {
@@ -83,13 +81,13 @@ export class RectSVGExporter implements SVGExporter {
     name: string;
 
     canExport(node: TreeNode): boolean {
-        return has_component(node,BoundedShapeName)
+        return node.has_component(BoundedShapeName)
     }
 
     toSVG(node: TreeNode): string {
-        let bd: BoundedShape = <BoundedShape>get_component(node, BoundedShapeName)
+        let bd: BoundedShape = <BoundedShape>node.get_component(BoundedShapeName)
         let rect = bd.get_bounds()
-        let color: FilledShape = <FilledShape>get_component(node, FilledShapeName)
+        let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
         let obj = {
             x:rect.x,
             y:rect.y,
@@ -111,7 +109,7 @@ export class MovableRectObject implements Movable {
         this.name = MovableName
     }
     moveBy(pt: Point): void {
-        let bd:BoundedShape = <BoundedShape>get_component(this.node, BoundedShapeName)
+        let bd:BoundedShape = <BoundedShape>this.node.get_component(BoundedShapeName)
         bd.get_bounds().x += pt.x
         bd.get_bounds().y += pt.y
     }
@@ -124,7 +122,7 @@ class RectHandle extends Handle {
         this.node = node
     }
     update_from_node() {
-        let bd:BoundedShape = <BoundedShape>get_component(this.node, BoundedShapeName)
+        let bd:BoundedShape = <BoundedShape>this.node.get_component(BoundedShapeName)
         this.x = bd.get_bounds().x + bd.get_bounds().w - 5
         this.y = bd.get_bounds().y + bd.get_bounds().h - 5
     }
@@ -136,7 +134,7 @@ class RectHandle extends Handle {
 
 
     private update_to_node() {
-        let bd:BoundedShape = <BoundedShape>get_component(this.node, BoundedShapeName)
+        let bd:BoundedShape = <BoundedShape>this.node.get_component(BoundedShapeName)
         let bdd = bd.get_bounds()
         bdd.w = this.x - bdd.x + this.w/2
         bdd.h = this.y - bdd.y + this.h/2

@@ -5,8 +5,6 @@ import {
     DIV,
     FilledShape,
     FilledShapeName,
-    get_component,
-    has_component,
     LABEL,
     Movable,
     MovableName,
@@ -58,10 +56,10 @@ export class CircleRendererSystem implements RenderingSystem {
     }
 
     render(ctx: CanvasRenderingContext2D, node: TreeNode, state:GlobalState): void {
-        if(has_component(node,CircleShapeName)) {
-            let shape:CircleShape = <CircleShape>get_component(node, CircleShapeName)
-            if(has_component(node,FilledShapeName)) {
-                let color: FilledShape = <FilledShape>get_component(node, FilledShapeName)
+        if(node.has_component(CircleShapeName)) {
+            let shape:CircleShape = <CircleShape>node.get_component(CircleShapeName)
+            if(node.has_component(FilledShapeName)) {
+                let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
                 ctx.fillStyle = color.get_color()
             } else {
                 ctx.fillStyle = 'magenta'
@@ -95,8 +93,8 @@ export class CirclePickSystem implements PickingSystem {
     }
 
     private _test_node(pt:Point, node: TreeNode, collect:TreeNode[]) {
-        if(has_component(node,CircleShapeName)) {
-            let circle = (<CircleShape> get_component(node,CircleShapeName))
+        if(node.has_component(CircleShapeName)) {
+            let circle = (<CircleShape> node.get_component(CircleShapeName))
             let dist = circle.get_position().subtract(pt)
             if(dist.magnitude() < circle.get_radius()) {
                 collect.push(node)
@@ -117,7 +115,7 @@ export class MovableCircleObject implements Movable {
         this.name = MovableName
     }
     moveBy(pt: Point): void {
-        let circle:CircleShape = <CircleShape>get_component(this.node, CircleShapeName)
+        let circle:CircleShape = <CircleShape>this.node.get_component(CircleShapeName)
         circle.get_position().x += pt.x
         circle.get_position().y += pt.y
     }

@@ -1,9 +1,7 @@
 import {
     DIV,
     ELEM,
-    get_component,
     Handle,
-    has_component,
     MouseGestureDelegate,
     Movable,
     MovableName,
@@ -39,9 +37,9 @@ class MouseMoveDelegate implements MouseGestureDelegate {
         let drag_point = toCanvasPoint(e)
         let diff = drag_point.subtract(this.press_point)
         this.press_point = drag_point
-        let movables: TreeNode[] = this.state.selection.get().filter(sh => has_component(sh, MovableName))
+        let movables: TreeNode[] = this.state.selection.get().filter(sh => sh.has_component(MovableName))
         movables.forEach(node => {
-            let mov: Movable = <Movable>get_component(node, MovableName)
+            let mov: Movable = <Movable>node.get_component(MovableName)
             mov.moveBy(diff)
         })
         this.state.active_handles.forEach(h => h.update_from_node())
@@ -56,8 +54,8 @@ class MouseMoveDelegate implements MouseGestureDelegate {
     private refresh_handles(shapes: any[]) {
         this.state.active_handles = []
         shapes.forEach(shape => {
-            if (has_component(shape, ResizableName)) {
-                let res: Resizable = <Resizable>get_component(shape, ResizableName)
+            if (shape.has_component(ResizableName)) {
+                let res: Resizable = <Resizable>shape.get_component(ResizableName)
                 this.state.active_handles.push(res.get_handle())
             }
         })

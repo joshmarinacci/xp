@@ -45,21 +45,13 @@ export interface Component {
     name: string,
 }
 
-export function has_component(node: TreeNode, name: string): boolean {
-    let comps = node.components.find(comp => comp.name === name)
-    if (comps) return true
-    return false
-}
-
-export function get_component(node: TreeNode, name: string): Component {
-    return node.components.find(comp => comp.name === name)
-}
-
 export type TreeNode = {
     id: string,
     parent: TreeNode,
     children: TreeNode[],
     components: Component[],
+    has_component(name):boolean
+    get_component(name):Component
 }
 
 export interface FilledShape extends Component {
@@ -113,6 +105,17 @@ export class TreeNodeImpl implements TreeNode {
         this.id = "tree_node_" + Math.floor(Math.random() * 1000000)
         this.children = []
         this.components = []
+    }
+
+
+    get_component(name): Component {
+        return this.components.find(comp => comp.name === name)
+    }
+
+    has_component(name): boolean {
+        let comps = this.components.find(comp => comp.name === name)
+        if (comps) return true
+        return false
     }
 }
 
