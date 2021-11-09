@@ -334,3 +334,8 @@ export function forceDownloadBlob(title, blob) {
 export interface Powerup {
     init(state: GlobalState)
 }
+
+export interface PDFExporter extends System {
+    canExport(node:TreeNode):boolean
+    toPDF(node:TreeNode,doc:any):void
+}

@@ -1,5 +1,5 @@
 import {
-    Handle,
+    Handle, PDFExporter,
     PickingSystem, Powerup, PropRenderingSystem,
     RenderingSystem,
     SelectionSystem,
@@ -20,12 +20,15 @@ export class GlobalState {
     private listeners: Map<string, Callback[]>
     active_handles: Handle[];
     powerups: Powerup[];
+    jspdf:any
+    pdfexporters: PDFExporter[];
 
     constructor() {
         this.systems = []
         this.renderers = []
         this.pickers = []
         this.svgexporters = []
+        this.pdfexporters = []
         this.props_renderers = []
         this.powerups = []
         this.selection = new SelectionSystem()

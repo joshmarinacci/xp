@@ -1,6 +1,4 @@
 import {
-    BoundedShape,
-    BoundedShapeName,
     Component,
     DIV,
     FilledShape,
@@ -9,11 +7,13 @@ import {
     Movable,
     MovableName,
     NUMBER_INPUT,
+    PDFExporter,
     PickingSystem,
     Point,
     Powerup,
     PropRenderingSystem,
-    RenderingSystem, SVGExporter,
+    RenderingSystem,
+    SVGExporter,
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./state.js";
@@ -180,12 +180,35 @@ export class CircleSVGExporter implements SVGExporter {
 
 }
 
+export class CirclePDFExporter implements PDFExporter {
+    name: string;
+
+    canExport(node: TreeNode): boolean {
+        return node.has_component(CircleShapeName)
+    }
+
+    toPDF(node: TreeNode, doc:any): void {
+        let circle: CircleShape = <CircleShape>node.get_component(CircleShapeName)
+        let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
+
+        let obj = {
+            cx:circle.get_position().x,
+            cy:circle.get_position().y,
+            r:circle.get_radius(),
+            fill:color.get_color()
+        }
+        doc.setFillColor(255, 255, 0);
+        doc.circle(obj.cx,obj.cy, obj.r, "FD");
+    }
+}
+
 export class CirclePowerup implements Powerup {
     init(state: GlobalState) {
         state.props_renderers.push(new CirclePropRendererSystem(state))
         state.pickers.push(new CirclePickSystem())
         state.renderers.push(new CircleRendererSystem())
         state.svgexporters.push(new CircleSVGExporter())
+        state.pdfexporters.push(new CirclePDFExporter())
     }
 
 }

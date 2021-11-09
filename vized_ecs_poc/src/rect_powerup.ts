@@ -10,6 +10,7 @@ import {
     Movable,
     MovableName,
     NUMBER_INPUT,
+    PDFExporter,
     PickingSystem,
     Point, Powerup,
     PropRenderingSystem,
@@ -101,6 +102,30 @@ export class RectSVGExporter implements SVGExporter {
 
 }
 
+export class RectPDFExporter implements PDFExporter {
+    name: string;
+
+    canExport(node: TreeNode): boolean {
+        return node.has_component(BoundedShapeName)
+    }
+
+    toPDF(node: TreeNode, doc: any): void {
+        let bd: BoundedShape = <BoundedShape>node.get_component(BoundedShapeName)
+        let rect = bd.get_bounds()
+        let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
+        let obj = {
+            x:rect.x,
+            y:rect.y,
+            width:rect.w,
+            height:rect.w,
+            fill:color.get_color()
+        }
+        doc.setFillColor(255, 0, 0);
+        doc.rect(obj.x,obj.y,obj.width,obj.height,"FD")
+
+    }
+
+}
 export class MovableRectObject implements Movable {
     name: string;
     private node: TreeNode;
@@ -202,5 +227,6 @@ export class RectPowerup implements Powerup {
         state.renderers.push(new RectRendererSystem())
         state.props_renderers.push(new RectPropRendererSystem(state))
         state.svgexporters.push(new RectSVGExporter())
+        state.pdfexporters.push(new RectPDFExporter())
     }
 }

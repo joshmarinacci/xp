@@ -31,6 +31,7 @@ import {CanvasView} from "./canvas.js";
 import {export_SVG} from "./exporters/svg.js";
 import {export_JSON} from "./exporters/json.js";
 import {export_PNG} from "./exporters/png.js";
+import {export_PDF} from "./exporters/pdf.js";
 
 
 //make sure parent and child are compatible, then add the child to the parent
@@ -127,7 +128,8 @@ function make_toolbar(state:GlobalState) {
     let chi = [
         BUTTON("export JSON",()=> export_JSON(state.get_root())),
         BUTTON("export SVG",()=> export_SVG(state.get_root(), state)),
-        BUTTON("export PNG",()=> export_PNG(state.get_root(), state))
+        BUTTON("export PNG",()=> export_PNG(state.get_root(), state)),
+        BUTTON("export PDF",()=> export_PDF(state.get_root(), state)),
     ]
     let elem = DIV(['toolbar'],chi)
     return elem
