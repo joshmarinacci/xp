@@ -11,7 +11,7 @@ import {
     MovableName,
     NUMBER_INPUT,
     PickingSystem,
-    Point,
+    Point, Powerup,
     PropRenderingSystem,
     RenderingSystem,
     Resizable,
@@ -19,7 +19,7 @@ import {
     SVGExporter,
     TreeNode
 } from "./common.js";
-import {GlobalState} from "./state";
+import {GlobalState} from "./state.js";
 
 const RectRendererSystemName = 'RectRendererSystemName'
 
@@ -193,4 +193,14 @@ export class RectPropRendererSystem implements PropRenderingSystem {
         return false
     }
 
+}
+
+export class RectPowerup implements Powerup {
+    init(state: GlobalState) {
+        state.props_renderers.push(new RectPropRendererSystem(state))
+        state.pickers.push(new RectPickSystem())
+        state.renderers.push(new RectRendererSystem())
+        state.props_renderers.push(new RectPropRendererSystem(state))
+        state.svgexporters.push(new RectSVGExporter())
+    }
 }

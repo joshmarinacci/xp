@@ -1,6 +1,6 @@
 import {
     Handle,
-    PickingSystem, PropRenderingSystem,
+    PickingSystem, Powerup, PropRenderingSystem,
     RenderingSystem,
     SelectionSystem,
     SVGExporter,
@@ -19,6 +19,7 @@ export class GlobalState {
     private root: TreeNode;
     private listeners: Map<string, Callback[]>
     active_handles: Handle[];
+    powerups: Powerup[];
 
     constructor() {
         this.systems = []
@@ -26,6 +27,7 @@ export class GlobalState {
         this.pickers = []
         this.svgexporters = []
         this.props_renderers = []
+        this.powerups = []
         this.selection = new SelectionSystem()
         this.active_handles = []
         this.listeners = new Map<string, Callback[]>()

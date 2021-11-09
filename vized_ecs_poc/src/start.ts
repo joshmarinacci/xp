@@ -1,7 +1,5 @@
 import {
-    CirclePickSystem,
-    CirclePropRendererSystem,
-    CircleRendererSystem,
+    CirclePowerup,
     CircleShape,
     CircleShapeObject,
     MovableCircleObject
@@ -22,7 +20,7 @@ import {
 } from "./common.js";
 import {
     MovableRectObject,
-    RectPickSystem,
+    RectPickSystem, RectPowerup,
     RectPropRendererSystem,
     RectRendererSystem,
     RectSVGExporter,
@@ -146,15 +144,11 @@ export function make_gui(root:TreeNode, state:GlobalState) {
 
 export function setup_state():GlobalState {
     let state:GlobalState = new GlobalState()
-    state.renderers.push(new RectRendererSystem())
-    state.renderers.push(new CircleRendererSystem())
-    state.pickers.push(new RectPickSystem())
-    state.pickers.push(new CirclePickSystem())
-    state.svgexporters.push(new RectSVGExporter())
-    state.props_renderers.push(new RectPropRendererSystem(state))
-    state.props_renderers.push(new CirclePropRendererSystem(state))
     state.props_renderers.push(new FilledShapePropRenderer(state))
 
+    state.powerups.push(new CirclePowerup())
+    state.powerups.push(new RectPowerup())
+    state.powerups.forEach(pow => pow.init(state))
     return state
 }
 

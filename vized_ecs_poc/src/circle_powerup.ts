@@ -1,6 +1,4 @@
 import {
-    BoundedShape,
-    BoundedShapeName,
     Component,
     DIV,
     FilledShape,
@@ -11,11 +9,12 @@ import {
     NUMBER_INPUT,
     PickingSystem,
     Point,
+    Powerup,
     PropRenderingSystem,
     RenderingSystem,
     TreeNode
 } from "./common.js";
-import {GlobalState} from "./state";
+import {GlobalState} from "./state.js";
 
 const CircleShapeName = "CircleShapeName"
 export interface CircleShape extends Component {
@@ -152,6 +151,15 @@ export class CirclePropRendererSystem implements PropRenderingSystem {
     supports(name: string): any {
         if(name === CircleShapeName) return true
         return false
+    }
+
+}
+
+export class CirclePowerup implements Powerup {
+    init(state: GlobalState) {
+        state.props_renderers.push(new CirclePropRendererSystem(state))
+        state.pickers.push(new CirclePickSystem())
+        state.renderers.push(new CircleRendererSystem())
     }
 
 }

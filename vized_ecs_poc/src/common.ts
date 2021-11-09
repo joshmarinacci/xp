@@ -1,4 +1,4 @@
-import {GlobalState} from "./state";
+import {GlobalState} from "./state.js";
 
 export class Point {
     x: number
@@ -329,4 +329,8 @@ export function forceDownloadBlob(title, blob) {
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
+}
+
+export interface Powerup {
+    init(state: GlobalState)
 }
