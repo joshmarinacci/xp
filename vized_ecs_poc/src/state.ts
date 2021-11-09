@@ -6,6 +6,7 @@ import {
     SVGExporter,
     TreeNode
 } from "./common.js";
+import {JSONExporter} from "./exporters/json";
 
 export type Callback = (any) => void
 export type EVENT_TYPES = "refresh" | "selection-change" | "prop-change" | "object-changed"
@@ -22,6 +23,7 @@ export class GlobalState {
     powerups: Powerup[];
     jspdf:any
     pdfexporters: PDFExporter[];
+    jsonexporters: JSONExporter[];
 
     constructor() {
         this.systems = []
@@ -29,6 +31,7 @@ export class GlobalState {
         this.pickers = []
         this.svgexporters = []
         this.pdfexporters = []
+        this.jsonexporters = []
         this.props_renderers = []
         this.powerups = []
         this.selection = new SelectionSystem()

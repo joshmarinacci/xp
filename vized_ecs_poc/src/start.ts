@@ -29,7 +29,7 @@ import {
 import {GlobalState} from "./state.js";
 import {CanvasView} from "./canvas.js";
 import {export_SVG} from "./exporters/svg.js";
-import {export_JSON} from "./exporters/json.js";
+import {export_JSON, FilledShapeJSONExporter, treenode_to_POJO} from "./exporters/json.js";
 import {export_PNG} from "./exporters/png.js";
 import {export_PDF} from "./exporters/pdf.js";
 
@@ -124,9 +124,19 @@ function make_props_view(state: GlobalState) {
     return div
 }
 
+function save_JSON(root: TreeNode, state: GlobalState) {
+    console.log("exporting to JSON", root)
+    let obj = treenode_to_POJO(root, state)
+    console.log("obj is", obj)
+    let str = JSON.stringify(obj, null, '  ')
+    console.log("final json is",str)
+    localStorage.setItem('mydoc',str)
+}
+
 function make_toolbar(state:GlobalState) {
     let chi = [
-        BUTTON("export JSON",()=> export_JSON(state.get_root())),
+        BUTTON('persist',()=>save_JSON(state.get_root(),state)),
+        BUTTON("export JSON",()=> export_JSON(state.get_root(),state)),
         BUTTON("export SVG",()=> export_SVG(state.get_root(), state)),
         BUTTON("export PNG",()=> export_PNG(state.get_root(), state)),
         BUTTON("export PDF",()=> export_PDF(state.get_root(), state)),
@@ -147,7 +157,7 @@ export function make_gui(root:TreeNode, state:GlobalState) {
 export function setup_state():GlobalState {
     let state:GlobalState = new GlobalState()
     state.props_renderers.push(new FilledShapePropRenderer(state))
-
+    state.jsonexporters.push(new FilledShapeJSONExporter())
     state.powerups.push(new CirclePowerup())
     state.powerups.push(new RectPowerup())
     state.powerups.forEach(pow => pow.init(state))

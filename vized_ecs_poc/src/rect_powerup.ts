@@ -21,6 +21,7 @@ import {
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./state.js";
+import {JSONExporter} from "./exporters/json.js";
 
 const RectRendererSystemName = 'RectRendererSystemName'
 
@@ -126,6 +127,30 @@ export class RectPDFExporter implements PDFExporter {
     }
 
 }
+export class BoundedShapeJSONExporter implements JSONExporter {
+    name: string;
+
+    canExport(component_name: string): boolean {
+        return component_name === BoundedShapeName
+    }
+
+    toJSON(component: Component): any {
+        let bd: BoundedShape = <BoundedShape>component
+        let rect = bd.get_bounds()
+        // let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
+        let obj = {
+            name:BoundedShapeName,
+            x:rect.x,
+            y:rect.y,
+            width:rect.w,
+            height:rect.w,
+            // fill:color.get_color()
+        }
+        return obj
+    }
+
+}
+
 export class MovableRectObject implements Movable {
     name: string;
     private node: TreeNode;
@@ -228,5 +253,6 @@ export class RectPowerup implements Powerup {
         state.props_renderers.push(new RectPropRendererSystem(state))
         state.svgexporters.push(new RectSVGExporter())
         state.pdfexporters.push(new RectPDFExporter())
+        state.jsonexporters.push(new BoundedShapeJSONExporter())
     }
 }
