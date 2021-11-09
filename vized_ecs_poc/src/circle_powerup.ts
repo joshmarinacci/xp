@@ -1,4 +1,6 @@
 import {
+    BoundedShape,
+    BoundedShapeName,
     Component,
     DIV,
     FilledShape,
@@ -11,7 +13,7 @@ import {
     Point,
     Powerup,
     PropRenderingSystem,
-    RenderingSystem,
+    RenderingSystem, SVGExporter,
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./state.js";
@@ -155,11 +157,35 @@ export class CirclePropRendererSystem implements PropRenderingSystem {
 
 }
 
+
+export class CircleSVGExporter implements SVGExporter {
+    name: string;
+
+    canExport(node: TreeNode): boolean {
+        return node.has_component(CircleShapeName)
+    }
+
+    toSVG(node: TreeNode): string {
+        let circle: CircleShape = <CircleShape>node.get_component(CircleShapeName)
+        let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
+        let obj = {
+            cx:circle.get_position().x,
+            cy:circle.get_position().y,
+            r:circle.get_radius(),
+            fill:color.get_color()
+        }
+        let pairs = Object.keys(obj).map(k => `${k}='${obj[k]}'`)
+        return '<circle ' + pairs.join(" ") + "/>"
+    }
+
+}
+
 export class CirclePowerup implements Powerup {
     init(state: GlobalState) {
         state.props_renderers.push(new CirclePropRendererSystem(state))
         state.pickers.push(new CirclePickSystem())
         state.renderers.push(new CircleRendererSystem())
+        state.svgexporters.push(new CircleSVGExporter())
     }
 
 }
