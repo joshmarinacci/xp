@@ -64,10 +64,6 @@ export interface FilledShape extends Component {
     set_color(color:string):void
 }
 
-export interface BoundedShape extends Component {
-    get_bounds(): Rect
-}
-
 //indicates shape can be moved
 export const MovableName = "MovableName"
 export interface Movable extends Component {
@@ -140,23 +136,6 @@ export class FilledShapeObject implements FilledShape {
     }
     set_color(color: string) {
         this.color = color
-    }
-
-}
-
-export const BoundedShapeName = "BoundedShapeName";
-
-export class BoundedShapeObject implements BoundedShape {
-    name: string;
-    private readonly rect: Rect;
-
-    constructor(rect: Rect) {
-        this.name = BoundedShapeName
-        this.rect = rect
-    }
-
-    get_bounds(): Rect {
-        return this.rect
     }
 
 }

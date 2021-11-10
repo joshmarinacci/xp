@@ -1,7 +1,4 @@
 import {
-    BoundedShape,
-    BoundedShapeName,
-    BoundedShapeObject,
     CHOICE_INPUT,
     Component,
     DIV, FilledShape, FilledShapeName,
@@ -21,6 +18,7 @@ import {
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
 import {cssToPdfColor} from "./exporters/pdf.js";
+import {BoundedShape, BoundedShapeName, BoundedShapeObject} from "./bounded_shape.js";
 
 const TextShapeName = "TextShapeName"
 interface TextShape extends Component {

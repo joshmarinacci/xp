@@ -1,5 +1,6 @@
-import {BoundedShape, BoundedShapeName, TreeNode} from "../common.js";
+import {TreeNode} from "../common.js";
 import {GlobalState} from "../state.js";
+import {BoundedShape, BoundedShapeName} from "../bounded_shape.js";
 // @ts-ignore
 const { jsPDF } = window.jspdf;
 

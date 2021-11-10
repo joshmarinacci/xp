@@ -1,5 +1,6 @@
-import {BoundedShape, BoundedShapeName, forceDownloadBlob, TreeNode} from "../common.js";
+import {forceDownloadBlob, TreeNode} from "../common.js";
 import {GlobalState} from "../state.js";
+import {BoundedShape, BoundedShapeName} from "../bounded_shape.js";
 
 function to_PNG(ctx: CanvasRenderingContext2D, node: TreeNode, state: GlobalState) {
     state.renderers.forEach(red => {

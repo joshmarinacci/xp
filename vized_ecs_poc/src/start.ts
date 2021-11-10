@@ -5,8 +5,6 @@ import {
     MovableCircleObject
 } from "./circle_powerup.js";
 import {
-    BoundedShape,
-    BoundedShapeObject,
     BUTTON,
     DIV,
     ELEM,
@@ -19,12 +17,9 @@ import {
     TreeNodeImpl
 } from "./common.js";
 import {
-    MovableRectObject,
-    RectPickSystem, RectPowerup,
-    RectPropRendererSystem,
+    RectPowerup,
     RectRendererSystem,
-    RectSVGExporter,
-    ResizableRectObject
+    RectSVGExporter
 } from "./rect_powerup.js";
 import {GlobalState} from "./state.js";
 import {CanvasView} from "./canvas.js";
@@ -38,6 +33,12 @@ import {export_PNG} from "./exporters/png.js";
 import {export_PDF} from "./exporters/pdf.js";
 import {MovableTextObject, TextPowerup, TextShapeObject} from "./text_powerup.js";
 import {MovableSpiralObject, SpiralPowerup, SpiralShapeObject} from "./spiral.js";
+import {
+    BoundedShape,
+    BoundedShapeObject,
+    MovableRectObject, RectPickSystem, RectPropRendererSystem,
+    ResizableRectObject
+} from "./bounded_shape.js";
 
 
 //make sure parent and child are compatible, then add the child to the parent

@@ -18,7 +18,6 @@ import {
 } from "./common.js";
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
-import {MovableRectObject} from "./rect_powerup";
 import {cssToPdfColor} from "./exporters/pdf.js";
 
 const CircleShapeName = "CircleShapeName"
