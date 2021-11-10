@@ -91,6 +91,15 @@ class SpiralRendererSystem implements RenderingSystem {
                 }
             }
             ctx.stroke()
+
+            if(state.selection.has(node)) {
+                ctx.strokeStyle = 'magenta'
+                ctx.lineWidth = 3.5
+                ctx.beginPath()
+                ctx.arc(0,0,spiral.get_radius(),0,Math.PI*2)
+                ctx.stroke()
+            }
+
             ctx.restore()
         }
     }

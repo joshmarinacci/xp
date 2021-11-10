@@ -87,10 +87,11 @@ class TextRenderingSystem implements RenderingSystem {
             ctx.save()
             let bs = node.get_component(BoundedShapeName) as BoundedShape
             let tn = node.get_component(TextShapeName) as TextShape
+            let fill = node.get_component(FilledShapeName) as FilledShape
 
             let bounds = bs.get_bounds()
             ctx.translate(bounds.x, bounds.y)
-            ctx.fillStyle = 'black'
+            ctx.fillStyle = fill.get_color()
             ctx.font = `${tn.get_fontsize()}pt sans-serif`
             let metrics = ctx.measureText(tn.get_content())
             // console.log("metrics are",metrics)
@@ -113,6 +114,14 @@ class TextRenderingSystem implements RenderingSystem {
             }
             ctx.fillText(tn.get_content(),h_offset,v_offset )
             ctx.restore()
+            if (state.selection.has(node)) {
+                ctx.save()
+                ctx.strokeStyle = 'magenta'
+                ctx.lineWidth = 3.5
+                ctx.strokeRect(bounds.x,bounds.y,bounds.w,bounds.h)//h_offset, v_offset, rect.w, rect.h)
+                ctx.restore()
+            }
+
         }
     }
 

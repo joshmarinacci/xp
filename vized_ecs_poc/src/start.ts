@@ -190,7 +190,7 @@ export function setup_state():GlobalState {
 
 export function make_default_tree(state:GlobalState) {
     let root:TreeNode = new TreeNodeImpl()
-    root.components.push(new BoundedShapeObject(new Rect(0,0,200,200)))
+    root.components.push(new BoundedShapeObject(new Rect(0,0,300,300)))
     root.components.push(new RectShapeObject())
     root.components.push(new FilledShapeObject('white'))
 
@@ -221,16 +221,16 @@ export function make_default_tree(state:GlobalState) {
     }
     {
         let text1 = new TreeNodeImpl() as TreeNode
-        text1.components.push(new TextShapeObject("Greetings, Earthling!", 16, "right",'top'))
+        text1.components.push(new TextShapeObject("Greetings, Earthling!", 16, "center",'center'))
         text1.components.push(new BoundedShapeObject(new Rect(50,50,200,50)))
         text1.components.push(new MovableTextObject(text1))
         text1.components.push(new ResizableRectObject(text1))
-        text1.components.push(new FilledShapeObject('#00ff00'))
+        text1.components.push(new FilledShapeObject('#000000'))
         add_child_to_parent(text1,root)
     }
     {
         let spiral:TreeNode = new TreeNodeImpl()
-        spiral.components.push(new FilledShapeObject('#ffff00'))
+        spiral.components.push(new FilledShapeObject('#000000'))
         spiral.components.push(new SpiralShapeObject(new Point(100,200),15))
         spiral.components.push(new MovableSpiralObject(spiral))
         add_child_to_parent(spiral,root)
