@@ -187,6 +187,8 @@ export function setup_state():GlobalState {
 
 export function make_default_tree(state:GlobalState) {
     let root:TreeNode = new TreeNodeImpl()
+    root.components.push(new BoundedShapeObject(new Rect(0,0,200,200)))
+    root.components.push(new FilledShapeObject('white'))
     {
         let rect1 = new TreeNodeImpl()
         let bds: BoundedShape = new BoundedShapeObject(new Rect(10, 10, 10, 10))

@@ -1,4 +1,4 @@
-import {forceDownloadBlob, TreeNode} from "../common.js";
+import {BoundedShape, BoundedShapeName, forceDownloadBlob, TreeNode} from "../common.js";
 import {GlobalState} from "../state.js";
 
 function to_PNG(ctx: CanvasRenderingContext2D, node: TreeNode, state: GlobalState) {
@@ -8,9 +8,20 @@ function to_PNG(ctx: CanvasRenderingContext2D, node: TreeNode, state: GlobalStat
 }
 
 export function export_PNG(root: TreeNode, state: GlobalState) {
+    let bds = {
+        w:500,
+        h:500,
+    }
+    if(root.has_component(BoundedShapeName)) {
+        let bounds = root.get_component(BoundedShapeName) as BoundedShape
+        let rect = bounds.get_bounds()
+        bds.w = rect.w
+        bds.h = rect.h
+    }
+
     let canvas = document.createElement('canvas')
-    canvas.width = 500
-    canvas.height = 500
+    canvas.width = bds.w
+    canvas.height = bds.h
     let ctx = canvas.getContext('2d')
     ctx.fillStyle = 'white'
     ctx.fillRect(0,0,canvas.width,canvas.height)
