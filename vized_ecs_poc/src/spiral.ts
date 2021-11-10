@@ -3,7 +3,7 @@ import {
     FilledShape,
     FilledShapeName, LABEL, Movable, MovableName, NUMBER_INPUT, PDFExporter, PickingSystem, Point,
     Powerup, PropRenderingSystem,
-    RenderingSystem,
+    RenderingSystem, SVGExporter,
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./state.js";
@@ -202,12 +202,37 @@ export class SpiralPDFExporter implements PDFExporter {
 }
 
 
+class SpiralSVGExporter implements SVGExporter {
+    name: string;
+
+    canExport(node: TreeNode): boolean {
+        return node.has_component(SpiralShapeName)
+    }
+
+    toSVG(node: TreeNode): string {
+        let spiral:SpiralShapeObject = node.get_component(SpiralShapeName) as SpiralShapeObject
+        let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
+        let times = 5*Math.PI*2
+        let radius = spiral.get_radius() / times
+        let ox = spiral.get_position().x
+        let oy = spiral.get_position().y
+        let points = []
+        for(let th=0; th<times; th+=0.1) {
+            let x2 = Math.sin(th)*radius*th
+            let y2 = Math.cos(th)*radius*th
+            points.push((x2+ox).toFixed(1))
+            points.push((y2+oy).toFixed(1))
+        }
+        return `<polyline fill="none" points="${points.join(",")}" stroke-width="1" stroke="${color.get_color()}"/>`
+    }
+}
+
 export class SpiralPowerup implements Powerup {
     init(state: GlobalState) {
         state.props_renderers.push(new SpiralPropRendererSystem(state))
         state.pickers.push(new SpiralPickSystem())
         state.renderers.push(new SpiralRendererSystem())
-        // state.svgexporters.push(new RectSVGExporter())
+        state.svgexporters.push(new SpiralSVGExporter())
         state.pdfexporters.push(new SpiralPDFExporter())
         state.jsonexporters.push(new SpiralJSONExporter())
     }
