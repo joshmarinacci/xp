@@ -1,14 +1,25 @@
 import {
     BoundedShape,
-    BoundedShapeName, CHOICE_INPUT,
-    Component, DIV, LABEL, Movable, MovableName, NUMBER_INPUT,
-    PickingSystem,
+    BoundedShapeName,
+    BoundedShapeObject,
+    CHOICE_INPUT,
+    Component,
+    DIV,
+    LABEL,
+    Movable,
+    MovableName,
+    NUMBER_INPUT,
     Point,
-    Powerup, PropRenderingSystem,
-    RenderingSystem, STRING_INPUT,
+    Powerup,
+    PropRenderingSystem,
+    Rect,
+    RenderingSystem,
+    ResizableName,
+    STRING_INPUT,
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./state.js";
+import {JSONExporter} from "./exporters/json.js";
 
 const TextShapeName = "TextShapeName"
 interface TextShape extends Component {
@@ -162,13 +173,62 @@ export class TextPropRendererSystem implements PropRenderingSystem {
 }
 
 
+class TextJSONExporter implements JSONExporter {
+    name: string;
+
+    canHandleFromJSON(obj: any, node: TreeNode): boolean {
+        if(obj.name === TextShapeName) return true
+        if(obj.name === MovableName && obj.powerup==='text') return true
+        return false;
+    }
+
+    canHandleToJSON(comp: any, node: TreeNode): boolean {
+        if(comp.name === TextShapeName) return true
+        if(comp.name === MovableName && node.has_component(BoundedShapeName)) return true
+        return false;
+    }
+
+    fromJSON(obj: any, node: TreeNode): Component {
+        if(obj.name === MovableName) return new MovableTextObject(node)
+        if(obj.name === BoundedShapeName) return new BoundedShapeObject(new Rect(obj.x,obj.y,obj.width,obj.height))
+        if(obj.name === TextShapeName) return new TextShapeObject(obj.content,obj.fontsize, obj.halign, obj.valign)
+    }
+
+    toJSON(component: Component, node: TreeNode): any {
+        if(component.name === ResizableName) return {name:component.name, empty:true, powerup:'text'}
+        if(component.name === MovableName) return {name:component.name, empty:true, powerup:'text'}
+        if(component.name === TextShapeName) {
+            let ts:TextShapeObject = <TextShapeObject>component
+            return {
+                name:TextShapeName,
+                content:ts.get_content(),
+                fontsize:ts.get_fontsize(),
+                halign:ts.get_halign(),
+                valign:ts.get_valign()
+            }
+        }
+        if(component.name === BoundedShapeName) {
+            let bd: BoundedShape = <BoundedShape>component
+            let rect = bd.get_bounds()
+            return {
+                name: BoundedShapeName,
+                x: rect.x,
+                y: rect.y,
+                width: rect.w,
+                height: rect.w,
+                powerup: 'text',
+            }
+        }
+    }
+}
+
 export class TextPowerup implements Powerup {
     init(state: GlobalState) {
         state.props_renderers.push(new TextPropRendererSystem(state))
         state.renderers.push(new TextRenderingSystem())
         // state.svgexporters.push(new TextSVGExporter())
         // state.pdfexporters.push(new TextPDFExporter())
-        // state.jsonexporters.push(new CircleShapeJSONExporter())
+        state.jsonexporters.push(new TextJSONExporter())
     }
 
 }

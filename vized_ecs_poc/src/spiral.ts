@@ -7,7 +7,7 @@ import {
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./state.js";
-import {CircleShape} from "./circle_powerup";
+import {JSONExporter} from "./exporters/json.js";
 
 const SpiralShapeName = "SpiralShape"
 export class SpiralShapeObject implements Component {
@@ -137,6 +137,42 @@ export class MovableSpiralObject implements Movable {
 }
 
 
+class SpiralJSONExporter implements JSONExporter {
+    name: string;
+    private powerup: string;
+    constructor() {
+        this.powerup = 'spiral'
+    }
+
+    canHandleFromJSON(obj: any, node: TreeNode): boolean {
+        if(obj.name === SpiralShapeName) return true
+        if(obj.name === MovableName) return true
+        return false
+    }
+
+    canHandleToJSON(comp: any, node: TreeNode): boolean {
+        if(comp.name === SpiralShapeName) return true
+        if(comp.name === MovableName && node.has_component(SpiralShapeName)) return true
+        return false;
+    }
+
+    fromJSON(obj: any, node: TreeNode): Component {
+        if(obj.name === MovableName) return new MovableSpiralObject(node)
+        if(obj.name === SpiralShapeName) return new SpiralShapeObject((new Point(0,0)).from_object(obj.position),obj.radius)
+    }
+
+    toJSON(component: Component, node: TreeNode): any {
+        if(component.name === MovableName) return {name:component.name, empty:true, powerup:this.powerup}
+        if(component.name === SpiralShapeName) {
+            let shape = component as SpiralShapeObject
+            return {
+                name: shape.name,
+                position: shape.get_position(),
+                radius: shape.get_radius(),
+            }
+        }
+    }
+}
 
 export class SpiralPowerup implements Powerup {
     init(state: GlobalState) {
@@ -145,6 +181,6 @@ export class SpiralPowerup implements Powerup {
         state.renderers.push(new SpiralRendererSystem())
         // state.svgexporters.push(new RectSVGExporter())
         // state.pdfexporters.push(new RectPDFExporter())
-        // state.jsonexporters.push(new RectJsonExporter())
+        state.jsonexporters.push(new SpiralJSONExporter())
     }
 }

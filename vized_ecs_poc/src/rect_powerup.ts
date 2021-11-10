@@ -142,7 +142,7 @@ export class RectJsonExporter implements JSONExporter {
             x:rect.x,
             y:rect.y,
             width:rect.w,
-            height:rect.w,
+            height:rect.h,
             powerup:'rect',
         }
         return obj

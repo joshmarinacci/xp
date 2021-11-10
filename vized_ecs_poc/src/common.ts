@@ -114,7 +114,7 @@ export class TreeNodeImpl implements TreeNode {
 
 
     get_component(name): Component {
-        return this.components.find(comp => comp.name === name)
+        return this.components.find(comp => comp && comp.name === name)
     }
 
     has_component(name): boolean {
