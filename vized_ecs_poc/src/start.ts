@@ -37,6 +37,7 @@ import {
 import {export_PNG} from "./exporters/png.js";
 import {export_PDF} from "./exporters/pdf.js";
 import {MovableTextObject, TextPowerup, TextShapeObject} from "./text_powerup.js";
+import {MovableSpiralObject, SpiralPowerup, SpiralShapeObject} from "./spiral.js";
 
 
 //make sure parent and child are compatible, then add the child to the parent
@@ -183,6 +184,7 @@ export function setup_state():GlobalState {
     state.powerups.push(new CirclePowerup())
     state.powerups.push(new RectPowerup())
     state.powerups.push(new TextPowerup())
+    state.powerups.push(new SpiralPowerup())
     state.powerups.forEach(pow => pow.init(state))
     return state
 }
@@ -227,6 +229,14 @@ export function make_default_tree(state:GlobalState) {
         text1.components.push(new ResizableRectObject(text1))
         text1.components.push(new FilledShapeObject('green'))
         add_child_to_parent(text1,root)
+    }
+
+    {
+        let spiral:TreeNode = new TreeNodeImpl()
+        spiral.components.push(new FilledShapeObject('#ffff00'))
+        spiral.components.push(new SpiralShapeObject(new Point(100,200),15))
+        spiral.components.push(new MovableSpiralObject(spiral))
+        add_child_to_parent(spiral,root)
     }
 
     return root
