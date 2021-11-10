@@ -36,6 +36,7 @@ import {
 } from "./exporters/json.js";
 import {export_PNG} from "./exporters/png.js";
 import {export_PDF} from "./exporters/pdf.js";
+import {MovableTextObject, TextPowerup, TextShapeObject} from "./text_powerup.js";
 
 
 //make sure parent and child are compatible, then add the child to the parent
@@ -181,6 +182,7 @@ export function setup_state():GlobalState {
     state.jsonexporters.push(new FilledShapeJSONExporter())
     state.powerups.push(new CirclePowerup())
     state.powerups.push(new RectPowerup())
+    state.powerups.push(new TextPowerup())
     state.powerups.forEach(pow => pow.init(state))
     return state
 }
@@ -193,7 +195,7 @@ export function make_default_tree(state:GlobalState) {
         let rect1 = new TreeNodeImpl()
         let bds: BoundedShape = new BoundedShapeObject(new Rect(10, 10, 10, 10))
         rect1.components.push(bds)
-        let fill = new FilledShapeObject("red")
+        let fill = new FilledShapeObject("#ff0000")
         rect1.components.push(fill)
         rect1.components.push(new MovableRectObject(rect1))
         add_child_to_parent(rect1, root)
@@ -203,18 +205,28 @@ export function make_default_tree(state:GlobalState) {
     {
         let rect2: TreeNode = new TreeNodeImpl()
         rect2.components.push(new BoundedShapeObject(new Rect(200, 30, 50, 50)))
-        rect2.components.push(new FilledShapeObject('blue'))
+        rect2.components.push(new FilledShapeObject('#0000FF'))
         rect2.components.push(new MovableRectObject(rect2))
         rect2.components.push(new ResizableRectObject(rect2))
         add_child_to_parent(rect2, root)
     }
     {
         let circ1: TreeNode = new TreeNodeImpl()
-        circ1.components.push(new FilledShapeObject('green'))
+        circ1.components.push(new FilledShapeObject('#00FF00'))
         let circle_shape:CircleShape = new CircleShapeObject(new Point(100,100),20)
         circ1.components.push(circle_shape)
         circ1.components.push(new MovableCircleObject(circ1))
         add_child_to_parent(circ1, root)
+    }
+
+    {
+        let text1 = new TreeNodeImpl() as TreeNode
+        text1.components.push(new TextShapeObject("Greetings, Earthling!", 16, "right",'top'))
+        text1.components.push(new BoundedShapeObject(new Rect(50,50,200,50)))
+        text1.components.push(new MovableTextObject(text1))
+        text1.components.push(new ResizableRectObject(text1))
+        text1.components.push(new FilledShapeObject('green'))
+        add_child_to_parent(text1,root)
     }
 
     return root
