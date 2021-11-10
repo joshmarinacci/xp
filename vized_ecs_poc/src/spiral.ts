@@ -1,13 +1,14 @@
 import {
     Component, DIV,
     FilledShape,
-    FilledShapeName, LABEL, Movable, MovableName, NUMBER_INPUT, PickingSystem, Point,
+    FilledShapeName, LABEL, Movable, MovableName, NUMBER_INPUT, PDFExporter, PickingSystem, Point,
     Powerup, PropRenderingSystem,
     RenderingSystem,
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
+import {cssToPdfColor} from "./exporters/pdf.js";
 
 const SpiralShapeName = "SpiralShape"
 export class SpiralShapeObject implements Component {
@@ -174,13 +175,40 @@ class SpiralJSONExporter implements JSONExporter {
     }
 }
 
+export class SpiralPDFExporter implements PDFExporter {
+    name: string;
+
+    canExport(node: TreeNode): boolean {
+        return node.has_component(SpiralShapeName)
+    }
+
+    toPDF(node: TreeNode, doc: any): void {
+        let spiral:SpiralShapeObject = node.get_component(SpiralShapeName) as SpiralShapeObject
+        let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
+        let pdf_color = cssToPdfColor(color.get_color())
+        doc.setFillColor(...pdf_color)
+        let times = 5*Math.PI*2
+        let radius = spiral.get_radius() / times
+        let ox = spiral.get_position().x
+        let oy = spiral.get_position().y
+        for(let th=1; th<times; th+=0.1) {
+            let x1 = Math.sin(th-0.1)*radius*th
+            let y1 = Math.cos(th-0.1)*radius*th
+            let x2 = Math.sin(th)*radius*th
+            let y2 = Math.cos(th)*radius*th
+            doc.line(x1+ox,y1+oy,x2+ox,y2+oy,"S")
+        }
+    }
+}
+
+
 export class SpiralPowerup implements Powerup {
     init(state: GlobalState) {
         state.props_renderers.push(new SpiralPropRendererSystem(state))
         state.pickers.push(new SpiralPickSystem())
         state.renderers.push(new SpiralRendererSystem())
         // state.svgexporters.push(new RectSVGExporter())
-        // state.pdfexporters.push(new RectPDFExporter())
+        state.pdfexporters.push(new SpiralPDFExporter())
         state.jsonexporters.push(new SpiralJSONExporter())
     }
 }

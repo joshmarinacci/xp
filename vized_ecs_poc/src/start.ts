@@ -227,7 +227,7 @@ export function make_default_tree(state:GlobalState) {
         text1.components.push(new BoundedShapeObject(new Rect(50,50,200,50)))
         text1.components.push(new MovableTextObject(text1))
         text1.components.push(new ResizableRectObject(text1))
-        text1.components.push(new FilledShapeObject('green'))
+        text1.components.push(new FilledShapeObject('#00ff00'))
         add_child_to_parent(text1,root)
     }
 
