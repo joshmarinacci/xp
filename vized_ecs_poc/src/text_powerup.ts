@@ -12,7 +12,7 @@ import {
     Rect,
     RenderingSystem,
     ResizableName,
-    STRING_INPUT,
+    STRING_INPUT, SVGExporter,
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./state.js";
@@ -251,11 +251,27 @@ class TextPDFExporter implements PDFExporter {
     }
 }
 
+class TextSVGExporter implements SVGExporter {
+    name: string;
+
+    canExport(node: TreeNode): boolean {
+        return node.has_component(TextShapeName)
+    }
+
+    toSVG(node: TreeNode): string {
+        let ts:TextShape = node.get_component(TextShapeName) as TextShape
+        let bs = node.get_component(BoundedShapeName) as BoundedShape
+        let bounds = bs.get_bounds()
+        return `<text x="${bounds.x}" y="${bounds.y}" font-size="${ts.get_fontsize()}">${ts.get_content()}</text>`;
+    }
+
+}
+
 export class TextPowerup implements Powerup {
     init(state: GlobalState) {
         state.props_renderers.push(new TextPropRendererSystem(state))
         state.renderers.push(new TextRenderingSystem())
-        // state.svgexporters.push(new TextSVGExporter())
+        state.svgexporters.push(new TextSVGExporter())
         state.pdfexporters.push(new TextPDFExporter())
         state.jsonexporters.push(new TextJSONExporter())
     }
