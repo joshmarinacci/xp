@@ -36,6 +36,7 @@ import {
 } from "./exporters/json.js";
 import {export_PNG} from "./exporters/png.js";
 import {export_PDF} from "./exporters/pdf.js";
+import {MovableTextObject, TextPowerup, TextShapeObject} from "./text_powerup.js";
 
 
 //make sure parent and child are compatible, then add the child to the parent
@@ -181,6 +182,7 @@ export function setup_state():GlobalState {
     state.jsonexporters.push(new FilledShapeJSONExporter())
     state.powerups.push(new CirclePowerup())
     state.powerups.push(new RectPowerup())
+    state.powerups.push(new TextPowerup())
     state.powerups.forEach(pow => pow.init(state))
     return state
 }
@@ -213,6 +215,16 @@ export function make_default_tree(state:GlobalState) {
         circ1.components.push(circle_shape)
         circ1.components.push(new MovableCircleObject(circ1))
         add_child_to_parent(circ1, root)
+    }
+
+    {
+        let text1 = new TreeNodeImpl() as TreeNode
+        text1.components.push(new TextShapeObject("Greetings, Earthling!", 16, "right",'top'))
+        text1.components.push(new BoundedShapeObject(new Rect(50,50,200,50)))
+        text1.components.push(new MovableTextObject(text1))
+        text1.components.push(new ResizableRectObject(text1))
+        text1.components.push(new FilledShapeObject('green'))
+        add_child_to_parent(text1,root)
     }
 
     return root

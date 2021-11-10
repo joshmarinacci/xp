@@ -247,7 +247,19 @@ export function LABEL(text: string) {
     return ELEM('label', [], [text])
 }
 
-export function NUMBER_INPUT(value: number, cb: (v) => void) {
+export function STRING_INPUT(value: string, cb: (v:string) => void) {
+    let input = document.createElement('input')
+    input.setAttribute('type', 'text')
+    input.setAttribute('value', value)
+    input.addEventListener('change', (e) => {
+        let el: HTMLInputElement = <HTMLInputElement>e.target
+        cb(el.value)
+        // if (!Number.isNaN(el.valueAsNumber)) cb(el.valueAsNumber)
+    })
+    return input
+}
+
+export function NUMBER_INPUT(value: number, cb: (v:number) => void) {
     let input = document.createElement('input')
     input.setAttribute('type', 'number')
     input.setAttribute('value', value + "")
@@ -256,6 +268,11 @@ export function NUMBER_INPUT(value: number, cb: (v) => void) {
         if (!Number.isNaN(el.valueAsNumber)) cb(el.valueAsNumber)
     })
     return input
+}
+
+export function CHOICE_INPUT(value:string, values:string[], cb:(v:string)=>void) {
+    let buttons = values.map(val => BUTTON(val,()=>cb(val)))
+    return DIV(["hbox"],buttons)
 }
 
 export class FilledShapePropRenderer implements PropRenderingSystem {
