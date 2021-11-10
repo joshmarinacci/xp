@@ -4,11 +4,11 @@ import {
     BoundedShapeObject,
     CHOICE_INPUT,
     Component,
-    DIV,
+    DIV, FilledShape, FilledShapeName,
     LABEL,
     Movable,
     MovableName,
-    NUMBER_INPUT,
+    NUMBER_INPUT, PDFExporter,
     Point,
     Powerup,
     PropRenderingSystem,
@@ -20,6 +20,7 @@ import {
 } from "./common.js";
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
+import {cssToPdfColor} from "./exporters/pdf.js";
 
 const TextShapeName = "TextShapeName"
 interface TextShape extends Component {
@@ -222,12 +223,33 @@ class TextJSONExporter implements JSONExporter {
     }
 }
 
+class TextPDFExporter implements PDFExporter {
+    name: string;
+
+    canExport(node: TreeNode): boolean {
+        return node.has_component(TextShapeName)
+    }
+
+    toPDF(node: TreeNode, doc: any): void {
+        console.log("rendering text to pdf right here",node,doc)
+        // console.log("list of fonts", doc.getFontList())
+        let ts: TextShape = node.get_component(TextShapeName) as TextShape
+        let bd: BoundedShape = <BoundedShape>node.get_component(BoundedShapeName)
+        let rect = bd.get_bounds()
+        let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
+        let pdf_color = cssToPdfColor('#00ff00')
+        doc.setFontSize(ts.get_fontsize())
+        doc.setFillColor(...pdf_color)
+        doc.text(ts.get_content(), rect.x, rect.y)
+    }
+}
+
 export class TextPowerup implements Powerup {
     init(state: GlobalState) {
         state.props_renderers.push(new TextPropRendererSystem(state))
         state.renderers.push(new TextRenderingSystem())
         // state.svgexporters.push(new TextSVGExporter())
-        // state.pdfexporters.push(new TextPDFExporter())
+        state.pdfexporters.push(new TextPDFExporter())
         state.jsonexporters.push(new TextJSONExporter())
     }
 
