@@ -18,12 +18,19 @@ import {
     BoundedShape,
     BoundedShapeName,
     BoundedShapeObject,
-    MovableRectObject,
-    RectPickSystem,
-    RectPropRendererSystem,
+    MovableBoundedShape,
     ResizableRectObject
 } from "./bounded_shape.js";
 
+const RectShapeName = "RectShape"
+interface RectShape extends Component {
+}
+export class RectShapeObject implements RectShape {
+    name: string;
+    constructor() {
+        this.name = RectShapeName
+    }
+}
 const RectRendererSystemName = 'RectRendererSystemName'
 export class RectRendererSystem implements RenderingSystem {
     constructor() {
@@ -31,7 +38,7 @@ export class RectRendererSystem implements RenderingSystem {
     }
 
     render(ctx: CanvasRenderingContext2D, node: TreeNode, state: GlobalState): void {
-        if (node.has_component(BoundedShapeName)) {
+        if (node.has_component(BoundedShapeName) && node.has_component(RectShapeName)) {
             let bd: BoundedShape = <BoundedShape>node.get_component(BoundedShapeName)
             let rect = bd.get_bounds()
 
@@ -57,7 +64,7 @@ export class RectSVGExporter implements SVGExporter {
     name: string;
 
     canExport(node: TreeNode): boolean {
-        return node.has_component(BoundedShapeName)
+        return node.has_component(BoundedShapeName) && node.has_component(RectShapeName)
     }
 
     toSVG(node: TreeNode): string {
@@ -81,7 +88,7 @@ export class RectPDFExporter implements PDFExporter {
     name: string;
 
     canExport(node: TreeNode): boolean {
-        return node.has_component(BoundedShapeName)
+        return node.has_component(BoundedShapeName) && node.has_component(RectShapeName)
     }
 
     toPDF(node: TreeNode, doc: any): void {
@@ -109,26 +116,30 @@ export class RectJsonExporter implements JSONExporter {
     toJSON(component: Component, node:TreeNode): any {
         if(component.name === ResizableName) return {name:component.name, empty:true, powerup:'rect'}
         if(component.name === MovableName) return {name:component.name, empty:true, powerup:'rect'}
-        let bd: BoundedShape = <BoundedShape>component
-        let rect = bd.get_bounds()
-        let obj = {
-            name:BoundedShapeName,
-            x:rect.x,
-            y:rect.y,
-            width:rect.w,
-            height:rect.h,
-            powerup:'rect',
+        if(component.name === RectShapeName) return {name:component.name, empty:true, powerup:'rect'}
+        if(component.name === BoundedShapeName) {
+            let bd: BoundedShape = <BoundedShape>component
+            let rect = bd.get_bounds()
+            return {
+                name: BoundedShapeName,
+                x: rect.x,
+                y: rect.y,
+                width: rect.w,
+                height: rect.h,
+                powerup: 'rect',
+            }
         }
-        return obj
     }
 
     fromJSON(obj: any, node:TreeNode): Component {
+        if(obj.name === RectShapeName) return new RectShapeObject()
         if(obj.name === ResizableName) return new ResizableRectObject(node)
-        if(obj.name === MovableName) return new MovableRectObject(node)
+        if(obj.name === MovableName) return new MovableBoundedShape(node)
         if(obj.name === BoundedShapeName) return new BoundedShapeObject(new Rect(obj.x,obj.y,obj.width,obj.height))
     }
 
     canHandleFromJSON(obj: any, node: TreeNode): boolean {
+        if(obj.name === RectShapeName && obj.powerup === 'rect') return true
         if(obj.name === ResizableName && obj.powerup==='rect') return true
         if(obj.name === MovableName && obj.powerup==='rect') return true
         if(obj.name === BoundedShapeName && obj.powerup === 'rect') return true
@@ -136,8 +147,9 @@ export class RectJsonExporter implements JSONExporter {
 
     canHandleToJSON(comp: any, node: TreeNode): boolean {
         if(comp.name === BoundedShapeName) return true
-        if(comp.name === ResizableName && node.has_component(BoundedShapeName)) return true
-        if(comp.name === MovableName && node.has_component(BoundedShapeName)) return true
+        if(comp.name === RectShapeName) return true
+        if(comp.name === ResizableName && node.has_component(RectShapeName)) return true
+        if(comp.name === MovableName && node.has_component(RectShapeName)) return true
         return false;
     }
 
@@ -145,10 +157,7 @@ export class RectJsonExporter implements JSONExporter {
 
 export class RectPowerup implements Powerup {
     init(state: GlobalState) {
-        state.props_renderers.push(new RectPropRendererSystem(state))
-        state.pickers.push(new RectPickSystem())
         state.renderers.push(new RectRendererSystem())
-        state.props_renderers.push(new RectPropRendererSystem(state))
         state.svgexporters.push(new RectSVGExporter())
         state.pdfexporters.push(new RectPDFExporter())
         state.jsonexporters.push(new RectJsonExporter())

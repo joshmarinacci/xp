@@ -7,7 +7,7 @@ import {
     MovableName,
     NUMBER_INPUT,
     PickingSystem,
-    Point,
+    Point, Powerup,
     PropRenderingSystem,
     Rect,
     Resizable,
@@ -16,12 +16,10 @@ import {
 } from "./common.js";
 import {GlobalState} from "./state.js";
 
+export const BoundedShapeName = "BoundedShapeName";
 export interface BoundedShape extends Component {
     get_bounds(): Rect
 }
-
-export const BoundedShapeName = "BoundedShapeName";
-
 export class BoundedShapeObject implements BoundedShape {
     name: string;
     private readonly rect: Rect;
@@ -37,7 +35,7 @@ export class BoundedShapeObject implements BoundedShape {
 
 }
 
-export class MovableRectObject implements Movable {
+export class MovableBoundedShape implements Movable {
     name: string;
     private node: TreeNode;
 
@@ -47,13 +45,13 @@ export class MovableRectObject implements Movable {
     }
 
     moveBy(pt: Point): void {
-        let bd: BoundedShape = <BoundedShape>this.node.get_component(BoundedShapeName)
+        let bd: BoundedShape = this.node.get_component(BoundedShapeName) as BoundedShape
         bd.get_bounds().x += pt.x
         bd.get_bounds().y += pt.y
     }
 }
 
-export class RectHandle extends Handle {
+export class BoundedShapeHandle extends Handle {
     private node: TreeNode;
 
     constructor(node: TreeNode) {
@@ -62,7 +60,7 @@ export class RectHandle extends Handle {
     }
 
     update_from_node() {
-        let bd: BoundedShape = <BoundedShape>this.node.get_component(BoundedShapeName)
+        let bd: BoundedShape = this.node.get_component(BoundedShapeName) as BoundedShape
         this.x = bd.get_bounds().x + bd.get_bounds().w - 5
         this.y = bd.get_bounds().y + bd.get_bounds().h - 5
     }
@@ -73,9 +71,8 @@ export class RectHandle extends Handle {
         this.update_to_node()
     }
 
-
     private update_to_node() {
-        let bd: BoundedShape = <BoundedShape>this.node.get_component(BoundedShapeName)
+        let bd: BoundedShape = this.node.get_component(BoundedShapeName) as BoundedShape
         let bdd = bd.get_bounds()
         bdd.w = this.x - bdd.x + this.w / 2
         bdd.h = this.y - bdd.y + this.h / 2
@@ -83,14 +80,14 @@ export class RectHandle extends Handle {
 }
 
 export class ResizableRectObject implements Resizable {
-    private handle: RectHandle;
+    private handle: BoundedShapeHandle;
     name: string;
     private node: TreeNode;
 
     constructor(node: TreeNode) {
         this.node = node
         this.name = ResizableName
-        this.handle = new RectHandle(this.node)
+        this.handle = new BoundedShapeHandle(this.node)
     }
 
     get_handle(): Handle {
@@ -99,7 +96,7 @@ export class ResizableRectObject implements Resizable {
     }
 }
 
-export class RectPropRendererSystem implements PropRenderingSystem {
+export class BoundedShapePropRenderingSystem implements PropRenderingSystem {
     name: string;
     private state: GlobalState;
 
@@ -133,19 +130,17 @@ export class RectPropRendererSystem implements PropRenderingSystem {
     }
 
     supports(name: string): any {
-        if (name === BoundedShapeName) return true
-        return false
+        return (name === BoundedShapeName)
     }
-
 }
 
-const RectPickSystemName = 'RectPickSystemName';
+const BoundedShapePickSystemName = 'BoundedShapePickSystem';
 
-export class RectPickSystem implements PickingSystem {
+export class BoundedShapePickSystem implements PickingSystem {
     name: string;
 
     constructor() {
-        this.name = RectPickSystemName
+        this.name = BoundedShapePickSystemName
     }
 
     pick(pt: Point, state: GlobalState): TreeNode[] {
@@ -164,3 +159,12 @@ export class RectPickSystem implements PickingSystem {
         })
     }
 }
+
+
+export class BoundedShapePowerup implements Powerup {
+    init(state: GlobalState) {
+        state.props_renderers.push(new BoundedShapePropRenderingSystem(state))
+        state.pickers.push(new BoundedShapePickSystem())
+    }
+}
+

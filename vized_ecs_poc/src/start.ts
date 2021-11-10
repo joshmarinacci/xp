@@ -18,8 +18,7 @@ import {
 } from "./common.js";
 import {
     RectPowerup,
-    RectRendererSystem,
-    RectSVGExporter
+    RectShapeObject
 } from "./rect_powerup.js";
 import {GlobalState} from "./state.js";
 import {CanvasView} from "./canvas.js";
@@ -34,10 +33,8 @@ import {export_PDF} from "./exporters/pdf.js";
 import {MovableTextObject, TextPowerup, TextShapeObject} from "./text_powerup.js";
 import {MovableSpiralObject, SpiralPowerup, SpiralShapeObject} from "./spiral.js";
 import {
-    BoundedShape,
-    BoundedShapeObject,
-    MovableRectObject, RectPickSystem, RectPropRendererSystem,
-    ResizableRectObject
+    BoundedShapeObject, BoundedShapePowerup,
+    MovableBoundedShape, ResizableRectObject
 } from "./bounded_shape.js";
 
 
@@ -182,6 +179,7 @@ export function setup_state():GlobalState {
     let state:GlobalState = new GlobalState()
     state.props_renderers.push(new FilledShapePropRenderer(state))
     state.jsonexporters.push(new FilledShapeJSONExporter())
+    state.powerups.push(new BoundedShapePowerup())
     state.powerups.push(new CirclePowerup())
     state.powerups.push(new RectPowerup())
     state.powerups.push(new TextPowerup())
@@ -193,23 +191,23 @@ export function setup_state():GlobalState {
 export function make_default_tree(state:GlobalState) {
     let root:TreeNode = new TreeNodeImpl()
     root.components.push(new BoundedShapeObject(new Rect(0,0,200,200)))
+    root.components.push(new RectShapeObject())
     root.components.push(new FilledShapeObject('white'))
+
     {
         let rect1 = new TreeNodeImpl()
-        let bds: BoundedShape = new BoundedShapeObject(new Rect(10, 10, 10, 10))
-        rect1.components.push(bds)
-        let fill = new FilledShapeObject("#ff0000")
-        rect1.components.push(fill)
-        rect1.components.push(new MovableRectObject(rect1))
+        rect1.components.push(new RectShapeObject())
+        rect1.components.push(new BoundedShapeObject(new Rect(10, 10, 10, 10)))
+        rect1.components.push(new FilledShapeObject("#ff0000"))
+        rect1.components.push(new MovableBoundedShape(rect1))
         add_child_to_parent(rect1, root)
     }
-
-
     {
         let rect2: TreeNode = new TreeNodeImpl()
+        rect2.components.push(new RectShapeObject())
         rect2.components.push(new BoundedShapeObject(new Rect(200, 30, 50, 50)))
         rect2.components.push(new FilledShapeObject('#0000FF'))
-        rect2.components.push(new MovableRectObject(rect2))
+        rect2.components.push(new MovableBoundedShape(rect2))
         rect2.components.push(new ResizableRectObject(rect2))
         add_child_to_parent(rect2, root)
     }
@@ -221,7 +219,6 @@ export function make_default_tree(state:GlobalState) {
         circ1.components.push(new MovableCircleObject(circ1))
         add_child_to_parent(circ1, root)
     }
-
     {
         let text1 = new TreeNodeImpl() as TreeNode
         text1.components.push(new TextShapeObject("Greetings, Earthling!", 16, "right",'top'))
@@ -231,7 +228,6 @@ export function make_default_tree(state:GlobalState) {
         text1.components.push(new FilledShapeObject('#00ff00'))
         add_child_to_parent(text1,root)
     }
-
     {
         let spiral:TreeNode = new TreeNodeImpl()
         spiral.components.push(new FilledShapeObject('#ffff00'))
