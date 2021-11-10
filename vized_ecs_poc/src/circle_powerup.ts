@@ -19,6 +19,7 @@ import {
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
 import {MovableRectObject} from "./rect_powerup";
+import {cssToPdfColor} from "./exporters/pdf.js";
 
 const CircleShapeName = "CircleShapeName"
 export interface CircleShape extends Component {
@@ -199,7 +200,8 @@ export class CirclePDFExporter implements PDFExporter {
             r:circle.get_radius(),
             fill:color.get_color()
         }
-        doc.setFillColor(255, 255, 0);
+        let pdf_color = cssToPdfColor(obj.fill)
+        doc.setFillColor(...pdf_color)
         doc.circle(obj.cx,obj.cy, obj.r, "FD");
     }
 }

@@ -22,6 +22,7 @@ import {
 } from "./common.js";
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
+import {cssToPdfColor} from "./exporters/pdf.js";
 
 const RectRendererSystemName = 'RectRendererSystemName'
 
@@ -121,7 +122,8 @@ export class RectPDFExporter implements PDFExporter {
             height:rect.w,
             fill:color.get_color()
         }
-        doc.setFillColor(255, 0, 0);
+        let pdf_color = cssToPdfColor(obj.fill)
+        doc.setFillColor(...pdf_color)
         doc.rect(obj.x,obj.y,obj.width,obj.height,"FD")
 
     }
