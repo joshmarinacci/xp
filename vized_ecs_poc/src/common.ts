@@ -208,12 +208,6 @@ export function BUTTON(caption: string, cb: any) {
     return elem
 }
 
-export function toCanvasPoint(e: MouseEvent) {
-    let target: HTMLElement = <HTMLElement>e.target
-    let bounds = target.getBoundingClientRect()
-    return new Point(e.clientX - bounds.x, e.clientY - bounds.y)
-}
-
 export interface MouseGestureDelegate {
     press(e: MouseEvent)
 
@@ -302,7 +296,9 @@ export class FilledShapePropRenderer implements PropRenderingSystem {
             })
         }
         canvas.addEventListener('click',(e)=>{
-            let pt = toCanvasPoint(e)
+            let target: HTMLElement = <HTMLElement>e.target
+            let bounds = target.getBoundingClientRect()
+            let pt = new Point(e.clientX - bounds.x, e.clientY - bounds.y)
             let n = xy2n(pt)
             if(n >= 0 && n < this.colors.length) {
                 let color = this.colors[n]
