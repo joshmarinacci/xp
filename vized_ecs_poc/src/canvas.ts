@@ -146,6 +146,11 @@ export class CanvasView {
             if(delegate) delegate.release(e)
             delegate = null
         })
+        this.canvas.addEventListener('wheel',(e:WheelEvent) => {
+            this.pan_offset.x += e.deltaX/10
+            this.pan_offset.y += e.deltaY/10
+            this.refresh()
+        })
 
         state.on("refresh", () => this.refresh())
         state.on("selection-change", ()=>this.refresh())
