@@ -168,6 +168,8 @@ export class CanvasView {
         let ctx = this.canvas.getContext('2d')
         ctx.fillStyle = 'black'
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        ctx.fillStyle = '#f0f0f0'
+        ctx.fillRect(0+2, 0+2, this.canvas.width-4, this.canvas.height-4)
         ctx.save()
         ctx.translate(this.pan_offset.x,this.pan_offset.y)
         ctx.scale(scale,scale)
