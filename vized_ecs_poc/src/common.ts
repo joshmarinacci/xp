@@ -21,6 +21,10 @@ export class Point {
     magnitude() {
         return Math.sqrt(this.x * this.x + this.y * this.y)
     }
+
+    multiply(scale: number) {
+        return new Point(this.x*scale,this.y*scale)
+    }
 }
 
 export class Rect {

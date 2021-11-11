@@ -21,7 +21,10 @@ export function toCanvasPoint(e: MouseEvent, canvas:CanvasView) {
     let target: HTMLElement = <HTMLElement>e.target
     let bounds = target.getBoundingClientRect()
     let cp = new Point(e.clientX - bounds.x, e.clientY - bounds.y)
-    return cp.subtract(canvas.pan_offset)
+    let pt = cp.subtract(canvas.pan_offset)
+    let scale = Math.pow(2,canvas.zoom_level)
+    return pt.multiply(1/scale)
+
 }
 
 class MouseMoveDelegate implements MouseGestureDelegate {
@@ -115,10 +118,10 @@ export class CanvasView {
     private root: TreeNode;
     private state: GlobalState;
     pan_offset: Point
-    private zoom_level: number
+    zoom_level: number
 
     constructor(root: TreeNode, state: GlobalState) {
-        this.pan_offset = new Point(100,50)
+        this.pan_offset = new Point(0,0)
         this.zoom_level = 0
         let elem = DIV(['pane', 'canvas-view'], [])
         this.canvas = <HTMLCanvasElement>ELEM('canvas', ['drawing-surface'])
@@ -161,11 +164,13 @@ export class CanvasView {
         this.state = state
     }
     refresh() {
+        let scale = Math.pow(2,this.zoom_level)
         let ctx = this.canvas.getContext('2d')
         ctx.fillStyle = 'black'
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
         ctx.save()
         ctx.translate(this.pan_offset.x,this.pan_offset.y)
+        ctx.scale(scale,scale)
         this.draw_node(ctx, this.state.get_root())
         this.draw_handles(ctx)
         ctx.restore()
@@ -184,5 +189,15 @@ export class CanvasView {
 
     get_dom() {
         return this.dom
+    }
+
+    zoom_in() {
+        this.zoom_level += 1
+        this.refresh()
+    }
+
+    zoom_out() {
+        this.zoom_level -= 1
+        this.refresh()
     }
 }

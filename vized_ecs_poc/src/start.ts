@@ -9,23 +9,21 @@ import {
     DIV,
     ELEM,
     FilledShapeObject,
-    FilledShapePropRenderer, MovableName,
+    FilledShapePropRenderer,
     Point,
     PropRenderingSystem,
     Rect,
     TreeNode,
     TreeNodeImpl
 } from "./common.js";
-import {
-    RectPowerup,
-    RectShapeObject
-} from "./rect_powerup.js";
+import {RectPowerup, RectShapeObject} from "./rect_powerup.js";
 import {GlobalState} from "./state.js";
 import {CanvasView} from "./canvas.js";
 import {export_SVG} from "./exporters/svg.js";
 import {
     export_JSON,
-    FilledShapeJSONExporter, POJO_to_treenode,
+    FilledShapeJSONExporter,
+    POJO_to_treenode,
     treenode_to_POJO
 } from "./exporters/json.js";
 import {export_PNG} from "./exporters/png.js";
@@ -33,8 +31,10 @@ import {export_PDF} from "./exporters/pdf.js";
 import {MovableTextObject, TextPowerup, TextShapeObject} from "./text_powerup.js";
 import {MovableSpiralObject, SpiralPowerup, SpiralShapeObject} from "./spiral.js";
 import {
-    BoundedShapeObject, BoundedShapePowerup,
-    MovableBoundedShape, ResizableRectObject
+    BoundedShapeObject,
+    BoundedShapePowerup,
+    MovableBoundedShape,
+    ResizableRectObject
 } from "./bounded_shape.js";
 
 
@@ -98,9 +98,8 @@ function log(...args) {
 }
 
 
-function make_canvas_view(root:TreeNode, state:GlobalState) {
-    let canvas = new CanvasView(root,state)
-    return canvas.get_dom()
+function make_canvas_view(root:TreeNode, state:GlobalState):CanvasView {
+    return new CanvasView(root, state)
 }
 
 function make_props_view(state: GlobalState) {
@@ -152,26 +151,31 @@ function load_JSON(state: GlobalState) {
     state.dispatch("refresh", {})
 }
 
-function make_toolbar(state:GlobalState) {
-    let chi = [
-        BUTTON('persist',()=>save_JSON(state.get_root(),state)),
-        BUTTON("reload",()=>load_JSON(state)),
-        BUTTON("export JSON",()=> export_JSON(state.get_root(),state)),
-        BUTTON("export SVG",()=> export_SVG(state.get_root(), state)),
-        BUTTON("export PNG",()=> export_PNG(state.get_root(), state)),
-        BUTTON("export PDF",()=> export_PDF(state.get_root(), state)),
-    ]
-    let elem = DIV(['toolbar'],chi)
-    return elem
+function make_toolbar_1(state:GlobalState) {
+    return DIV(['toolbar'], [
+        BUTTON('persist', () => save_JSON(state.get_root(), state)),
+        BUTTON("reload", () => load_JSON(state)),
+        BUTTON("export JSON", () => export_JSON(state.get_root(), state)),
+        BUTTON("export SVG", () => export_SVG(state.get_root(), state)),
+        BUTTON("export PNG", () => export_PNG(state.get_root(), state)),
+        BUTTON("export PDF", () => export_PDF(state.get_root(), state)),
+    ])
+}
+function make_toolbar_2(state:GlobalState, canvas:CanvasView) {
+    return DIV(['toolbar'], [
+        BUTTON("zoom in", () => canvas.zoom_in()),
+        BUTTON("zoom out", () => canvas.zoom_out()),
+    ])
 }
 
 // makes three panes
 export function make_gui(root:TreeNode, state:GlobalState) {
     let v1 = make_tree_view(root,state)
-    let v2 = make_canvas_view(root,state)
+    let canvas:CanvasView = make_canvas_view(root,state)
     let v3 = make_props_view(state)
-    let v4 = make_toolbar(state)
-    return DIV(['main'],[v4,v1,v2,v3])
+    let v4 = make_toolbar_1(state)
+    let v5 = make_toolbar_2(state,canvas)
+    return DIV(['main'],[v4,v1,canvas.get_dom(),v3,v5])
 }
 
 
