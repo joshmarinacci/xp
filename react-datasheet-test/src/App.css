@@ -1,27 +1,30 @@
+/* size of the grid */
 .data-grid {
-    border: 1px solid red;
+    width: 500px;
     min-width: 100px;
     max-width: 500px;
 }
 
-
-.data-grid .cell {
-    background-color: red;
-    padding: 1.25rem;
-}
-.data-grid .cell .changed {
-    background-color: red;
-}
-
+/* general styloing for all cells */
 .data-grid-container .data-grid .cell {
     padding: 0.25rem 0.5rem;
     border: 1px solid #333;
 }
-.data-grid .header {
-    background-color: #cccccc;
-}
-
 .data-grid-container .data-grid .cell.selected {
     background-color: lightgreen;
+}
 
+
+/* draw headers w/ gray background */
+.data-grid-container .data-grid .cell[data-header="true"] {
+    background-color:  #cccccc;
+}
+
+/* draw changed cells w/ yellow */
+.data-grid-container .data-grid .cell[data-changed="true"] {
+    background-color:  yellow;
+}
+
+.data-grid-container .data-grid .cell[data-changed="false"] {
+    /*background-color:  blue;*/
 }
