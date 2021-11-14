@@ -1,0 +1,27 @@
+.data-grid {
+    border: 1px solid red;
+    min-width: 100px;
+    max-width: 500px;
+}
+
+
+.data-grid .cell {
+    background-color: red;
+    padding: 1.25rem;
+}
+.data-grid .cell .changed {
+    background-color: red;
+}
+
+.data-grid-container .data-grid .cell {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #333;
+}
+.data-grid .header {
+    background-color: #cccccc;
+}
+
+.data-grid-container .data-grid .cell.selected {
+    background-color: lightgreen;
+
+}
