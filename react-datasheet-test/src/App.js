@@ -1,7 +1,7 @@
 // import ReactDataSheet from 'react-datasheet';
 // import 'react-datasheet/lib/react-datasheet.css';
 import './App.css';
-import React, {useState} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 
 /*
 - [ ] create columns for pet simulator
@@ -19,99 +19,137 @@ import React, {useState} from 'react'
 
 const log = (...args) => console.log(...args)
 
-function make_props_from_data(data) {
-    return Object.keys(data.schema.properties)
-}
-
-function make_grid_from_data(data) {
-    // console.log("json data is",data)
-    let PROPS = make_props_from_data(data)
-    let grid = []
-    let headers = Object.keys(data.schema.properties).map(key => {
-        return {
-            type:'header',
-            value:data.schema.properties[key].title,
-            changed:false
+function classes_to_string(obj) {
+    let clss = ""
+    Object.keys(obj).forEach(key => {
+        if(obj[key] === true) {
+            clss += " " + key
         }
     })
-    grid.push(headers)
-    data.items.forEach(item => {
-        grid.push(PROPS.map(prop => {
-            return {
-                type:'string',
-                changed:false,
-                value:item[prop]
-            }
-        }))
-    })
-    return grid
+    return clss
 }
 
-function SheetRow({item,columns}) {
-    log("item",item)
-    log(columns)
+function CellEditor({item,value,name, onEdited}) {
+    let [temp, set_temp] = useState(value)
+    let ref = useRef()
+    useEffect(()=> ref.current.focus())  //auto focus
+    return <td className={'cell editing'}>
+        <input ref={ref} type="text" value={temp}
+        onKeyDown={e => {
+        if(e.key === 'Enter') {
+            e.preventDefault()
+            e.stopPropagation()
+            onEdited(item,name,temp)
+        }}}
+       onChange={(e)=>{
+            set_temp(e.target.value)
+        }
+        }/>
+    </td>
+}
+
+function SheetRow({item,columns, onSetActive, activePoint,rowNum, editing, onEdited}) {
     return <tr>
-        {columns.map((col,i)=>{
+        {columns.map((col,colNum)=>{
             let val = item[col.name]
-            return <td className={'cell'} key={i}>{val}</td>
+            let active = (colNum===activePoint.col && rowNum === activePoint.row)
+            if(editing && active) {
+                return <CellEditor key={colNum} item={item} value={val} name={col.name} onEdited={onEdited}/>
+            }
+            let style = {
+                cell:true,
+                active:active,
+                changed:item._changed === true,
+            }
+            return <td className={classes_to_string(style)} key={colNum}
+                       onClick={(e)=>{
+                           onSetActive({row:rowNum,col:colNum})
+                       }
+                   }
+            >{val}</td>
         })}
     </tr>
 }
 
+
 function Sheet({data=[],columns=[]}) {
-    console.log("columns",columns)
-    console.log('rendering data',data)
-    return <table>
+    let [active, setActive] = useState({row:-1, col:-1})
+    let [editing, setEditing] = useState(false)
+    let ref = useRef()
+    const handlers = {
+        'ArrowLeft':() => {
+            if(active.col >= 1) {
+                setActive({
+                    col:active.col-1,
+                    row:active.row,
+                })
+            }
+        },
+        'ArrowRight':() => {
+            if(active.col < columns.length-1) {
+                setActive({
+                    col:active.col+1,
+                    row:active.row,
+                })
+            }
+        },
+        'ArrowUp':() => {
+            if(active.row >= 1) {
+                setActive({
+                    col:active.col,
+                    row:active.row-1,
+                })
+            }
+        },
+        'ArrowDown':() => {
+            if(active.row < data.length-1) {
+                setActive({
+                    col:active.col,
+                    row:active.row+1,
+                })
+            }
+        },
+        'Enter':()=>{
+            setEditing(true)
+        }
+    }
+
+    const onEdited = (item,key,value) => {
+        data[active.row][key] = value
+        data[active.row]._changed = true
+        setEditing(false)
+        ref.current.focus()
+    }
+
+
+    return <table
+        ref={ref}
+        tabIndex={0}
+        onKeyDown={(e)=> handlers[e.key]? handlers[e.key](e):""}>
         <tbody>
         <tr>
-            {columns.map((col,i) => {
-                return <th key={i}>{col.info.title}</th>
-            })}
+            {columns.map((col,i) => <th key={i}>{col.info.title}</th>)}
         </tr>
-        {data.map((item,i)=>{
-            return <SheetRow key={i} item={item} columns={columns}/>
-        })}
+        {data.map((item,rowNum)=><SheetRow key={rowNum}
+                             item={item}
+                             columns={columns}
+                             rowNum={rowNum}
+                             activePoint={active}
+                             onSetActive={setActive}
+                             editing={editing}
+                             onEdited={onEdited}
+            />
+        )}
         </tbody>
     </table>
 }
 function App () {
     const [grid, set_grid] = useState([[]])
     const [props, set_props] = useState([])
-    //used while viewing cells
-    // const render_view = (cell, i, j) => {
-        // console.log("view")
-        // if(cell.type === 'header') {
-        //     return <span className={'header'}>{cell.value}</span>
-        // }
-        // if(cell.changed) return <span className={'changed'}>{cell.value}</span>
-        // console.log("returning",cell.value)
-        // return cell.value
-    // }
-    //used while editing cells
-    // const render_edit = (cell,i,j) => {
-    //     // console.log("data",i,j,cell)
-    //     return cell.value
-    // }
-    // const render_att = (cell,i,j)=>{
-    //     return {'data-changed':cell.changed, 'data-header':cell.type === 'header'}
-    // }
-    //called when things are changed
-    // const onCellsChanged = (changes) => {
-    //     changes.forEach(({cell, row, col, value}) => {
-    //         // console.log("updated: " + value, cell, row, col)
-    //         if(cell.type === 'string') {
-    //             cell.value = value
-    //             cell.changed = true
-    //         }
-    //     })
-    // }
 
     let save_changes = () => {
-        // console.log('saving from',grid)
         grid.forEach(row => {
-            row.forEach(cell => {
-                if(cell.changed) console.log(cell)
-            })
+            if(row._changed) log("must save",row)
         })
     }
     let add_row = () => {
