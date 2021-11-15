@@ -1,42 +1,4 @@
-table {
-    border: 1px solid black;
-    border-collapse: collapse;
-}
-
-table th {
-    background-color: #cccccc;
-    border: 1px solid black;
-}
-
-
-table td {
-}
-
-
-.cell {
-    font-family: sans-serif;
+html, body, input {
     font-size: 100%;
-    border: 1px solid black;
-    min-width: 5em;
-    background-color: #faeba7;
-    padding: 0.25em 0.5em;
-}
-.cell.editing {
-    padding: 0;
-}
-
-.cell.editing input {
-    font-size: 100%;
-    max-width: 5em;
-    margin:0;
-    padding: 0.25em 0.5em;
     font-family: sans-serif;
-}
-
-
-.cell.changed {
-    background-color: green;
-}
-.cell.active {
-    background-color: red;
 }
