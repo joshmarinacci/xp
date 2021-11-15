@@ -147,10 +147,15 @@ function App () {
     const [grid, set_grid] = useState([[]])
     const [props, set_props] = useState([])
 
-    let save_changes = () => {
-        grid.forEach(row => {
-            if(row._changed) log("must save",row)
-        })
+    let save_changes = async () => {
+        console.log('checking in grid',grid)
+        for(let row of grid) {
+            if(row._changed) {
+                log("we must save",row)
+                let res = await fetch('http://localhost:30088/dataset/petsimulatorx/changed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(row)})
+                log("got the result",res)
+            }
+        }
     }
     let add_row = () => {
         let item = {}
@@ -161,29 +166,27 @@ function App () {
         set_grid(grid.slice())
     }
     async function load_data() {
-        fetch("http://localhost:30088/dataset/petsimulatorx/load",
+        let res = await fetch("http://localhost:30088/dataset/petsimulatorx/load",
             {
             method:'POST',
             headers:{ 'Content-Type':'application/json'}
         })
-            .then(res => res.json())
-            .then((obj)=>{
-                console.log("got the new data",obj.data)
-                let props = Object.entries(obj.data.schema.properties).map(([key,value])=>{
-                    return {
-                        name:key,
-                        info:value,
-                    }
-                })
-                set_props(props)
-                set_grid(obj.data.items)
-            })
+        let obj = await res.json()
+        console.log("got the new data",obj)
+        let props = Object.entries(obj.data.schema.properties).map(([key,value])=>{
+            return {
+                name:key,
+                info:value,
+            }
+        })
+        set_props(props)
+        set_grid(obj.data.items)
     }
 
     return <div>
         <div className={'hbox'}>
             <button onClick={load_data}>load</button>
-            <button onClick={save_changes}>save</button>
+            <button onClick={()=>save_changes().then("done")}>save</button>
         </div>
         <Sheet data={grid} columns={props}/>
         <div className={'hbox'}>

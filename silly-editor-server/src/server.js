@@ -8,7 +8,7 @@ POST /dataset/name/changed
 
  */
 
-import Express from "express"
+import express from "express"
 import path from 'path'
 import fs from 'fs'
 import cors from 'cors'
@@ -18,6 +18,11 @@ const CACHE = []
 const log = (...args) => console.log(...args)
 const genid = (str) => str + "_" + Math.floor(Math.random()*10000000)
 
+
+async function save_to(cacheElement, filename) {
+    console.log("writing out to", filename)
+    await fs.promises.writeFile(filename, JSON.stringify(cacheElement,null, '    '))
+}
 
 async function setup() {
     if(process.argv.length < 3) {
@@ -38,11 +43,32 @@ async function setup() {
     CACHE[setname] = data
     log(CACHE)
 
-    let app = Express()
+    let app = express()
     app.use(cors())
+    app.use(express.json())
     app.post('/dataset/:name/load',(req,res)=>{
         console.log("requesting the dataset",req.params.name)
         return res.json(CACHE[req.params.name])
+    })
+    app.post('/dataset/:name/changed',async (req,res)=>{
+        console.log("got a change",req.params,req.body)
+        let dataset = CACHE[req.params.name]
+        dataset.data.items.forEach(item => {
+            // console.log('checking item',item)
+            if(item._id === req.body._id) {
+                // console.log("we can update this one")
+                Object.keys(req.body)
+                    .filter(key => key !== '_id')
+                    .filter(key => key !== '_changed')
+                    .forEach(key => {
+                        item[key] = req.body[key]
+                    })
+                console.log("final item is",item)
+            }
+        })
+        await save_to(CACHE[req.params.name],filename)
+        log("wrote it okay")
+        res.json({success:true})
     })
 
     app.listen(30088,()=>{
