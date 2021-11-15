@@ -1,0 +1,23 @@
+{
+  "data": {
+    "schema": {
+      "properties": {
+        "foo": {
+          "title": "Foo",
+          "type": "string"
+        },
+        "bar": {
+          "title": "Bar",
+          "type": "string"
+        }
+      }
+    },
+    "items": [
+      {
+        "foo": "foozer",
+        "bar": "barzer"
+      }
+    ]
+  }
+}
+

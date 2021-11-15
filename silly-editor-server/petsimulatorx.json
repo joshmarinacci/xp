@@ -1,0 +1,29 @@
+{
+  "data": {
+    "schema": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "rarity": {
+          "title": "Rarity",
+          "type": "string",
+          "format": "enum",
+          "values": ["basic","rare","epic","legendary","mythical"]
+        }
+      }
+    },
+    "items": [
+      {
+        "name": "Dog",
+        "rarity": "basic"
+      },
+      {
+        "name": "Cat",
+        "rarity": "basic"
+      }
+    ]
+  }
+}
+
