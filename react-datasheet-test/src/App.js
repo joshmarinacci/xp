@@ -173,14 +173,14 @@ function App () {
         })
         let obj = await res.json()
         console.log("got the new data",obj)
-        let props = Object.entries(obj.data.schema.properties).map(([key,value])=>{
+        let props = Object.entries(obj.schema.properties).map(([key,value])=>{
             return {
                 name:key,
                 info:value,
             }
         })
         set_props(props)
-        set_grid(obj.data.items)
+        set_grid(obj.items)
     }
 
     return <div>

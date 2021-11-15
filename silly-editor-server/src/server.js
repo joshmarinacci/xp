@@ -36,7 +36,8 @@ async function setup() {
 
     let buff = await fs.promises.readFile(filename)
     let data = JSON.parse(buff.toString())
-    data.data.items.forEach(item => {
+    console.log('data is',data)
+    data.items.forEach(item => {
         console.log("item",item)
         if(!item.hasOwnProperty('_id')) item._id = genid("item")
     })
@@ -53,7 +54,7 @@ async function setup() {
     app.post('/dataset/:name/changed',async (req,res)=>{
         console.log("got a change",req.params,req.body)
         let dataset = CACHE[req.params.name]
-        dataset.data.items.forEach(item => {
+        dataset.items.forEach(item => {
             // console.log('checking item',item)
             if(item._id === req.body._id) {
                 // console.log("we can update this one")

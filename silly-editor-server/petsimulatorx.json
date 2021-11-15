@@ -1,36 +1,34 @@
 {
-    "data": {
-        "schema": {
-            "properties": {
-                "name": {
-                    "title": "Name",
-                    "type": "string"
-                },
-                "rarity": {
-                    "title": "Rarity",
-                    "type": "string",
-                    "format": "enum",
-                    "values": [
-                        "basic",
-                        "rare",
-                        "epic",
-                        "legendary",
-                        "mythical"
-                    ]
-                }
-            }
-        },
-        "items": [
-            {
-                "name": "Doggo",
-                "rarity": "basic",
-                "_id": "item_6741045"
+    "schema": {
+        "properties": {
+            "name": {
+                "title": "Name",
+                "type": "string"
             },
-            {
-                "name": "Cat",
-                "rarity": "basic",
-                "_id": "item_1408585"
+            "rarity": {
+                "title": "Rarity",
+                "type": "string",
+                "format": "enum",
+                "values": [
+                    "basic",
+                    "rare",
+                    "epic",
+                    "legendary",
+                    "mythical"
+                ]
             }
-        ]
-    }
+        }
+    },
+    "items": [
+        {
+            "name": "Doggos",
+            "rarity": "basic",
+            "_id": "item_6741045"
+        },
+        {
+            "name": "Cat",
+            "rarity": "basic",
+            "_id": "item_1408585"
+        }
+    ]
 }
