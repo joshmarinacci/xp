@@ -38,6 +38,31 @@ import {
 } from "./bounded_shape.js";
 
 
+/*
+
+generate a certificate for a student that says "You Rock" with their name and a funny cartoon image of a rock.
+
+create an image_powerup.ts
+
+add ImageObject
+    has url. loads URL when created
+    has internal width and height which are hard coded
+    has internal aspect ratio which are hard coded
+    resize knows how to edit the width and height and maintains the aspect ratio
+    has internal crop rect. edit only w/ props, not visually.
+add BoundedShape to it
+add Movable and Resizable to it
+
+update add renderer to render image
+update PNG export to render image + text
+
+update page bounds to have a unit
+set page bounds to standard US paper size (A4?)
+update tree so root node can be selected too.
+
+
+ */
+
 //make sure parent and child are compatible, then add the child to the parent
 function add_child_to_parent(child:TreeNode, parent:TreeNode):void {
     parent.children.push(child)
@@ -63,6 +88,10 @@ function UL(classes:string[],children:any[]) {
 function make_tree_view(root:TreeNode, state:GlobalState) {
     let elem = DIV(['pane','tree-view'],[])
     let root_div = UL(['tree-node'],[B("root")])
+    root_div.addEventListener('click',(e) => {
+        state.selection.set([root])
+        state.dispatch('selection-change',{})
+    })
     function refresh() {
         root_div.childNodes.forEach((ch:HTMLElement) => {
             let nd:TreeNode = state.lookup_treenode(ch.dataset.nodeid)
@@ -72,11 +101,15 @@ function make_tree_view(root:TreeNode, state:GlobalState) {
                 ch.classList.remove('selected')
             }
         })
+        if(state.selection.has(root)) {
+            console.log("root is selected")
+        }
     }
     root.children.forEach(ch => {
         let ch_div = UL(['tree-node'],[B('child')])
         ch_div.dataset.nodeid = ch.id
         ch_div.addEventListener('click',(e)=>{
+            e.stopPropagation()
             let sel = state.selection
             e.shiftKey?sel.add([ch]):sel.set([ch])
             state.dispatch('selection-change',{})
