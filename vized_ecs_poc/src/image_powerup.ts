@@ -1,5 +1,5 @@
 import {
-    Component, DIV,
+    Component, DIV, FilledShape, FilledShapeName,
     Handle, LABEL, NUMBER_INPUT,
     Point, Powerup, PropRenderingSystem,
     RenderingSystem, Resizable, ResizableName, STRING_INPUT,
@@ -7,6 +7,7 @@ import {
 } from "./common.js"
 import {GlobalState} from "./state.js";
 import {BoundedShape, BoundedShapeName} from "./bounded_shape.js";
+import {cssToPdfColor, PDFExporter} from "./exporters/pdf.js";
 
 const ImageShapeName = "ImageShapeName"
 export interface ImageShape extends Component {
@@ -141,6 +142,31 @@ export class ImageRendererSystem implements RenderingSystem {
 }
 
 
+export class ImagePDFExporter implements PDFExporter {
+    name: string;
+
+    canExport(node: TreeNode): boolean {
+        return node.has_component(BoundedShapeName) && node.has_component(ImageShapeName)
+    }
+
+    toPDF(node: TreeNode, doc: any,scale:number): void {
+        let bd: BoundedShape = <BoundedShape>node.get_component(BoundedShapeName)
+        let img:ImageShapeObject = node.get_component(ImageShapeName) as ImageShapeObject
+        let rect = bd.get_bounds().scale(scale)
+        let obj = {
+            x:rect.x,
+            y:rect.y,
+            width:rect.w,
+            height:rect.h,
+        }
+        let pdf_color = cssToPdfColor('#ff00ff')
+        doc.setFillColor(...pdf_color)
+        doc.rect(obj.x,obj.y,obj.width,obj.height,"FD")
+        doc.addImage(img.dom_image,'JPEG',obj.x,obj.y,obj.width,obj.height,'NONE',0)
+
+    }
+
+}
 
 
 export class ImagePowerup implements Powerup {
@@ -148,7 +174,7 @@ export class ImagePowerup implements Powerup {
         state.renderers.push(new ImageRendererSystem())
         state.props_renderers.push(new ImagePropRendererSystem(state))
         // state.svgexporters.push(new RectSVGExporter())
-        // state.pdfexporters.push(new RectPDFExporter())
+        state.pdfexporters.push(new ImagePDFExporter())
         // state.jsonexporters.push(new RectJsonExporter())
     }
 }

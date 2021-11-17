@@ -1,14 +1,14 @@
 import {
     Component, DIV,
     FilledShape,
-    FilledShapeName, LABEL, Movable, MovableName, NUMBER_INPUT, PDFExporter, PickingSystem, Point,
+    FilledShapeName, LABEL, Movable, MovableName, NUMBER_INPUT, PickingSystem, Point,
     Powerup, PropRenderingSystem,
     RenderingSystem, SVGExporter,
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
-import {cssToPdfColor} from "./exporters/pdf.js";
+import {cssToPdfColor, PDFExporter} from "./exporters/pdf.js";
 
 const SpiralShapeName = "SpiralShape"
 export class SpiralShapeObject implements Component {

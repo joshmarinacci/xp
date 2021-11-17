@@ -3,7 +3,6 @@ import {
     FilledShape,
     FilledShapeName,
     MovableName,
-    PDFExporter,
     Powerup,
     Rect,
     RenderingSystem,
@@ -13,7 +12,7 @@ import {
 } from "./common.js";
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
-import {cssToPdfColor} from "./exporters/pdf.js";
+import {cssToPdfColor, PDFExporter} from "./exporters/pdf.js";
 import {
     BoundedShape,
     BoundedShapeName,
@@ -91,15 +90,15 @@ export class RectPDFExporter implements PDFExporter {
         return node.has_component(BoundedShapeName) && node.has_component(RectShapeName)
     }
 
-    toPDF(node: TreeNode, doc: any): void {
+    toPDF(node: TreeNode, doc: any,scale:number): void {
         let bd: BoundedShape = <BoundedShape>node.get_component(BoundedShapeName)
-        let rect = bd.get_bounds()
+        let rect = bd.get_bounds().scale(scale)
         let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
         let obj = {
             x:rect.x,
             y:rect.y,
             width:rect.w,
-            height:rect.w,
+            height:rect.h,
             fill:color.get_color()
         }
         let pdf_color = cssToPdfColor(obj.fill)

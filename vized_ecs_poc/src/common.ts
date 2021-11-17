@@ -47,6 +47,10 @@ export class Rect {
         if(pt.y > this.y+this.h) return false
         return true
     }
+
+    scale(scale: number) {
+        return new Rect(this.x*scale,this.y*scale,this.w*scale,this.h*scale)
+    }
 }
 
 
@@ -338,7 +342,3 @@ export interface Powerup {
     init(state: GlobalState)
 }
 
-export interface PDFExporter extends System {
-    canExport(node:TreeNode):boolean
-    toPDF(node:TreeNode,doc:any):void
-}

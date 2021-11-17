@@ -7,7 +7,6 @@ import {
     Movable,
     MovableName,
     NUMBER_INPUT,
-    PDFExporter,
     PickingSystem,
     Point,
     Powerup,
@@ -18,7 +17,7 @@ import {
 } from "./common.js";
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
-import {cssToPdfColor} from "./exporters/pdf.js";
+import {cssToPdfColor, PDFExporter} from "./exporters/pdf.js";
 
 const CircleShapeName = "CircleShapeName"
 export interface CircleShape extends Component {

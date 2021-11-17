@@ -5,7 +5,7 @@ import {
     LABEL,
     Movable,
     MovableName,
-    NUMBER_INPUT, PDFExporter,
+    NUMBER_INPUT,
     Point,
     Powerup,
     PropRenderingSystem,
@@ -17,7 +17,7 @@ import {
 } from "./common.js";
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
-import {cssToPdfColor} from "./exporters/pdf.js";
+import {cssToPdfColor, PDFExporter} from "./exporters/pdf.js";
 import {BoundedShape, BoundedShapeName, BoundedShapeObject} from "./bounded_shape.js";
 
 const TextShapeName = "TextShapeName"
@@ -237,12 +237,12 @@ class TextPDFExporter implements PDFExporter {
         return node.has_component(TextShapeName)
     }
 
-    toPDF(node: TreeNode, doc: any): void {
-        console.log("rendering text to pdf right here",node,doc)
+    toPDF(node: TreeNode, doc: any, scale:number): void {
+        console.log("rendering text to pdf right here",node,doc,scale)
         // console.log("list of fonts", doc.getFontList())
         let ts: TextShape = node.get_component(TextShapeName) as TextShape
         let bd: BoundedShape = <BoundedShape>node.get_component(BoundedShapeName)
-        let rect = bd.get_bounds()
+        let rect = bd.get_bounds().scale(scale)
         let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
         let pdf_color = cssToPdfColor('#00ff00')
         doc.setFontSize(ts.get_fontsize())

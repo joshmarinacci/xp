@@ -27,7 +27,7 @@ import {
     treenode_to_POJO
 } from "./exporters/json.js";
 import {export_PNG} from "./exporters/png.js";
-import {export_PDF} from "./exporters/pdf.js";
+import {export_PDF, PDFExportBounds} from "./exporters/pdf.js";
 import {MovableTextObject, TextPowerup, TextShapeObject} from "./text_powerup.js";
 import {MovableSpiralObject, SpiralPowerup, SpiralShapeObject} from "./spiral.js";
 import {
@@ -57,12 +57,12 @@ generate a certificate for a student that says "You Rock" with their name and a 
 //update add renderer to render image
 
 //add image props panel
+//add CORS to my example images
+//update PNG export to render image + text
 
-add CORS to my example images
-update PNG export to render image + text
-update page bounds to have a unit
-set page bounds to standard US paper size (A4?)
-add PDF export
+//update page bounds to have a unit
+//set page bounds to standard US paper size (A4?)
+//add PDF export
 
  */
 
@@ -231,18 +231,19 @@ export function setup_state():GlobalState {
 
 export function make_default_tree(state:GlobalState) {
     let root:TreeNode = new TreeNodeImpl()
-    root.components.push(new BoundedShapeObject(new Rect(0,0,300,300)))
+    root.components.push(new BoundedShapeObject(new Rect(0,0,8.5*100,11*100)))
+    root.components.push(new PDFExportBounds("in",1/100))
     root.components.push(new RectShapeObject())
     root.components.push(new FilledShapeObject('white'))
 
-    // {
-    //     let rect1 = new TreeNodeImpl()
-    //     rect1.components.push(new RectShapeObject())
-    //     rect1.components.push(new BoundedShapeObject(new Rect(10, 10, 10, 10)))
-    //     rect1.components.push(new FilledShapeObject("#ff0000"))
-    //     rect1.components.push(new MovableBoundedShape(rect1))
-    //     add_child_to_parent(rect1, root)
-    // }
+    {
+        let rect1 = new TreeNodeImpl()
+        rect1.components.push(new RectShapeObject())
+        rect1.components.push(new BoundedShapeObject(new Rect(10, 10, 10, 10)))
+        rect1.components.push(new FilledShapeObject("#ff0000"))
+        rect1.components.push(new MovableBoundedShape(rect1))
+        add_child_to_parent(rect1, root)
+    }
     // {
     //     let rect2: TreeNode = new TreeNodeImpl()
     //     rect2.components.push(new RectShapeObject())
