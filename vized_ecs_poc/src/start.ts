@@ -50,13 +50,15 @@ generate a certificate for a student that says "You Rock" with their name and a 
 //    has internal width and height which are hard coded
 //    has internal aspect ratio which are hard coded
 //    resize knows how to edit the width and height and maintains the aspect ratio
-    has internal crop rect. edit only w/ props, not visually.
+//    has internal crop rect. edit only w/ props, not visually.
 //add BoundedShape to it
 //add Movable and Resizable to it
 //update tree so root node can be selected too.
 //update add renderer to render image
 
-add image props panel
+//add image props panel
+
+add CORS to my example images
 update PNG export to render image + text
 update page bounds to have a unit
 set page bounds to standard US paper size (A4?)
@@ -268,7 +270,8 @@ export function make_default_tree(state:GlobalState) {
 
     {
         let image:TreeNode = new TreeNodeImpl()
-        let url = "https://vr.josh.earth/webxr-simgame/images/3dsimgame_thumb.png"
+        // let url = "https://vr.josh.earth/webxr-simgame/images/3dsimgame_thumb.png"
+        let url = "https://vr.josh.earth/assets/2dimages/saturnv.jpg"
         image.components.push(new ImageShapeObject(url,1000,1000))
         image.components.push(new BoundedShapeObject(new Rect(100,100,200,200)))
         image.components.push(new MovableBoundedShape(image))
