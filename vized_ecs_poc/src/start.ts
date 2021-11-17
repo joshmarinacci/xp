@@ -36,6 +36,7 @@ import {
     MovableBoundedShape,
     ResizableRectObject
 } from "./bounded_shape.js";
+import {ImagePowerup, ImageShapeObject, ResizableImageObject} from "./image_powerup.js";
 
 
 /*
@@ -102,7 +103,7 @@ function make_tree_view(root:TreeNode, state:GlobalState) {
             }
         })
         if(state.selection.has(root)) {
-            console.log("root is selected")
+            // console.log("root is selected")
         }
     }
     root.children.forEach(ch => {
@@ -221,6 +222,7 @@ export function setup_state():GlobalState {
     state.powerups.push(new RectPowerup())
     state.powerups.push(new TextPowerup())
     state.powerups.push(new SpiralPowerup())
+    state.powerups.push(new ImagePowerup())
     state.powerups.forEach(pow => pow.init(state))
     return state
 }
@@ -260,7 +262,7 @@ export function make_default_tree(state:GlobalState) {
         let text1 = new TreeNodeImpl() as TreeNode
         text1.components.push(new TextShapeObject("Greetings, Earthling!", 16, "center",'center'))
         text1.components.push(new BoundedShapeObject(new Rect(50,50,200,50)))
-        text1.components.push(new MovableTextObject(text1))
+        text1.components.push(new MovableBoundedShape(text1))
         text1.components.push(new ResizableRectObject(text1))
         text1.components.push(new FilledShapeObject('#000000'))
         add_child_to_parent(text1,root)
@@ -271,6 +273,16 @@ export function make_default_tree(state:GlobalState) {
         spiral.components.push(new SpiralShapeObject(new Point(100,200),15))
         spiral.components.push(new MovableSpiralObject(spiral))
         add_child_to_parent(spiral,root)
+    }
+
+    {
+        let image:TreeNode = new TreeNodeImpl()
+        let url = "https://vr.josh.earth/webxr-simgame/images/3dsimgame_thumb.png"
+        image.components.push(new ImageShapeObject(url,1000,1000))
+        image.components.push(new BoundedShapeObject(new Rect(100,100,200,200)))
+        image.components.push(new MovableBoundedShape(image))
+        image.components.push(new ResizableImageObject(image))
+        add_child_to_parent(image,root)
     }
 
     return root
