@@ -224,25 +224,27 @@ export function LABEL(text: string) {
     return ELEM('label', [], [text])
 }
 
-export function STRING_INPUT(value: string, cb: (v:string) => void) {
+export function STRING_INPUT(value: string, cb?: (v:string) => void) {
     let input = document.createElement('input')
     input.setAttribute('type', 'text')
     input.setAttribute('value', value)
+    if(!cb) input.setAttribute('disabled',"")
     input.addEventListener('change', (e) => {
         let el: HTMLInputElement = <HTMLInputElement>e.target
-        cb(el.value)
+        if(cb) cb(el.value)
         // if (!Number.isNaN(el.valueAsNumber)) cb(el.valueAsNumber)
     })
     return input
 }
 
-export function NUMBER_INPUT(value: number, cb: (v:number) => void) {
+export function NUMBER_INPUT(value: number, cb?: (v:number) => void) {
     let input = document.createElement('input')
     input.setAttribute('type', 'number')
     input.setAttribute('value', value + "")
+    if(!cb) input.setAttribute('disabled',"")
     input.addEventListener('change', (e) => {
         let el: HTMLInputElement = <HTMLInputElement>e.target
-        if (!Number.isNaN(el.valueAsNumber)) cb(el.valueAsNumber)
+        if (!Number.isNaN(el.valueAsNumber) && cb) cb(el.valueAsNumber)
     })
     return input
 }

@@ -43,24 +43,24 @@ import {ImagePowerup, ImageShapeObject, ResizableImageObject} from "./image_powe
 
 generate a certificate for a student that says "You Rock" with their name and a funny cartoon image of a rock.
 
-create an image_powerup.ts
+//create an image_powerup.ts
 
-add ImageObject
-    has url. loads URL when created
-    has internal width and height which are hard coded
-    has internal aspect ratio which are hard coded
-    resize knows how to edit the width and height and maintains the aspect ratio
+//add ImageObject
+//    has url. loads URL when created
+//    has internal width and height which are hard coded
+//    has internal aspect ratio which are hard coded
+//    resize knows how to edit the width and height and maintains the aspect ratio
     has internal crop rect. edit only w/ props, not visually.
-add BoundedShape to it
-add Movable and Resizable to it
+//add BoundedShape to it
+//add Movable and Resizable to it
+//update tree so root node can be selected too.
+//update add renderer to render image
 
-update add renderer to render image
+add image props panel
 update PNG export to render image + text
-
 update page bounds to have a unit
 set page bounds to standard US paper size (A4?)
-update tree so root node can be selected too.
-
+add PDF export
 
  */
 
@@ -233,47 +233,38 @@ export function make_default_tree(state:GlobalState) {
     root.components.push(new RectShapeObject())
     root.components.push(new FilledShapeObject('white'))
 
-    {
-        let rect1 = new TreeNodeImpl()
-        rect1.components.push(new RectShapeObject())
-        rect1.components.push(new BoundedShapeObject(new Rect(10, 10, 10, 10)))
-        rect1.components.push(new FilledShapeObject("#ff0000"))
-        rect1.components.push(new MovableBoundedShape(rect1))
-        add_child_to_parent(rect1, root)
-    }
-    {
-        let rect2: TreeNode = new TreeNodeImpl()
-        rect2.components.push(new RectShapeObject())
-        rect2.components.push(new BoundedShapeObject(new Rect(200, 30, 50, 50)))
-        rect2.components.push(new FilledShapeObject('#0000FF'))
-        rect2.components.push(new MovableBoundedShape(rect2))
-        rect2.components.push(new ResizableRectObject(rect2))
-        add_child_to_parent(rect2, root)
-    }
-    {
-        let circ1: TreeNode = new TreeNodeImpl()
-        circ1.components.push(new FilledShapeObject('#00FF00'))
-        let circle_shape:CircleShape = new CircleShapeObject(new Point(100,100),20)
-        circ1.components.push(circle_shape)
-        circ1.components.push(new MovableCircleObject(circ1))
-        add_child_to_parent(circ1, root)
-    }
-    {
-        let text1 = new TreeNodeImpl() as TreeNode
-        text1.components.push(new TextShapeObject("Greetings, Earthling!", 16, "center",'center'))
-        text1.components.push(new BoundedShapeObject(new Rect(50,50,200,50)))
-        text1.components.push(new MovableBoundedShape(text1))
-        text1.components.push(new ResizableRectObject(text1))
-        text1.components.push(new FilledShapeObject('#000000'))
-        add_child_to_parent(text1,root)
-    }
-    {
-        let spiral:TreeNode = new TreeNodeImpl()
-        spiral.components.push(new FilledShapeObject('#000000'))
-        spiral.components.push(new SpiralShapeObject(new Point(100,200),15))
-        spiral.components.push(new MovableSpiralObject(spiral))
-        add_child_to_parent(spiral,root)
-    }
+    // {
+    //     let rect1 = new TreeNodeImpl()
+    //     rect1.components.push(new RectShapeObject())
+    //     rect1.components.push(new BoundedShapeObject(new Rect(10, 10, 10, 10)))
+    //     rect1.components.push(new FilledShapeObject("#ff0000"))
+    //     rect1.components.push(new MovableBoundedShape(rect1))
+    //     add_child_to_parent(rect1, root)
+    // }
+    // {
+    //     let rect2: TreeNode = new TreeNodeImpl()
+    //     rect2.components.push(new RectShapeObject())
+    //     rect2.components.push(new BoundedShapeObject(new Rect(200, 30, 50, 50)))
+    //     rect2.components.push(new FilledShapeObject('#0000FF'))
+    //     rect2.components.push(new MovableBoundedShape(rect2))
+    //     rect2.components.push(new ResizableRectObject(rect2))
+    //     add_child_to_parent(rect2, root)
+    // }
+    // {
+    //     let circ1: TreeNode = new TreeNodeImpl()
+    //     circ1.components.push(new FilledShapeObject('#00FF00'))
+    //     let circle_shape:CircleShape = new CircleShapeObject(new Point(100,100),20)
+    //     circ1.components.push(circle_shape)
+    //     circ1.components.push(new MovableCircleObject(circ1))
+    //     add_child_to_parent(circ1, root)
+    // }
+    // {
+    //     let spiral:TreeNode = new TreeNodeImpl()
+    //     spiral.components.push(new FilledShapeObject('#000000'))
+    //     spiral.components.push(new SpiralShapeObject(new Point(100,200),15))
+    //     spiral.components.push(new MovableSpiralObject(spiral))
+    //     add_child_to_parent(spiral,root)
+    // }
 
     {
         let image:TreeNode = new TreeNodeImpl()
@@ -285,5 +276,14 @@ export function make_default_tree(state:GlobalState) {
         add_child_to_parent(image,root)
     }
 
+    {
+        let text1 = new TreeNodeImpl() as TreeNode
+        text1.components.push(new TextShapeObject("Jesse", 16, "center",'center'))
+        text1.components.push(new BoundedShapeObject(new Rect(50,150,200,200)))
+        text1.components.push(new MovableBoundedShape(text1))
+        text1.components.push(new ResizableRectObject(text1))
+        text1.components.push(new FilledShapeObject('#000000'))
+        add_child_to_parent(text1,root)
+    }
     return root
 }

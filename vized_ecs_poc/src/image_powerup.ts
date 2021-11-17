@@ -1,8 +1,8 @@
 import {
-    Component,
-    Handle,
-    Point, Powerup,
-    RenderingSystem, Resizable, ResizableName,
+    Component, DIV,
+    Handle, LABEL, NUMBER_INPUT,
+    Point, Powerup, PropRenderingSystem,
+    RenderingSystem, Resizable, ResizableName, STRING_INPUT,
     TreeNode
 } from "./common.js"
 import {GlobalState} from "./state.js";
@@ -27,14 +27,23 @@ export class ImageShapeObject implements ImageShape {
         this.oh = h
         this.aspect_ratio = w/h
         this.dom_image = new Image()
+        this.dom_image.crossOrigin = "anonymous"
         this.dom_image.addEventListener('load',()=>{
             console.log("image loaded",this.dom_image)
         })
         this.dom_image.src = this.url
     }
 
+    get_size():Point {
+        return new Point(this.ow,this.oh)
+    }
+
     get_aspect_ratio(): number {
         return this.aspect_ratio;
+    }
+
+    get_url() {
+        return this.url
     }
 }
 export class ImageShapeHandle extends Handle {
@@ -82,6 +91,28 @@ export class ResizableImageObject implements Resizable {
 
 }
 
+export class ImagePropRendererSystem implements PropRenderingSystem {
+    name: string;
+    private state: GlobalState;
+    constructor(state:GlobalState) {
+        this.state = state
+    }
+
+    render_view(comp: Component): HTMLElement {
+        let image = (comp as ImageShapeObject)
+        let x = LABEL("w")
+        let xbox = NUMBER_INPUT(image.get_size().x)
+        let y = LABEL("h")
+        let ybox = NUMBER_INPUT(image.get_size().y)
+        let url_lable = LABEL("url")
+        let url_box = STRING_INPUT(image.get_url())
+        return DIV(["prop-group"],[x,xbox,y,ybox,url_lable,url_box])
+    }
+
+    supports(name: string): any { return (name === ImageShapeName)  }
+
+}
+
 const ImageRendererSystemName = 'ImageRendererSystemName'
 export class ImageRendererSystem implements RenderingSystem {
     constructor() {
@@ -115,6 +146,7 @@ export class ImageRendererSystem implements RenderingSystem {
 export class ImagePowerup implements Powerup {
     init(state: GlobalState) {
         state.renderers.push(new ImageRendererSystem())
+        state.props_renderers.push(new ImagePropRendererSystem(state))
         // state.svgexporters.push(new RectSVGExporter())
         // state.pdfexporters.push(new RectPDFExporter())
         // state.jsonexporters.push(new RectJsonExporter())
