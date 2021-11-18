@@ -3,11 +3,11 @@ import {
     PickingSystem, Powerup, PropRenderingSystem,
     RenderingSystem,
     SelectionSystem,
-    SVGExporter,
     TreeNode
 } from "./common.js";
 import {JSONExporter} from "./exporters/json.js";
 import {PDFExporter} from "./exporters/pdf.js";
+import {SVGExporter} from "./exporters/svg.js";
 
 export type Callback = (any) => void
 export type EVENT_TYPES = "refresh" | "selection-change" | "prop-change" | "object-changed"

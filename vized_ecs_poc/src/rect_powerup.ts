@@ -7,7 +7,6 @@ import {
     Rect,
     RenderingSystem,
     ResizableName,
-    SVGExporter,
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./state.js";
@@ -20,6 +19,7 @@ import {
     MovableBoundedShape,
     ResizableRectObject
 } from "./bounded_shape.js";
+import {SVGExporter} from "./exporters/svg.js";
 
 const RectShapeName = "RectShape"
 interface RectShape extends Component {

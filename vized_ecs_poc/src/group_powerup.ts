@@ -40,12 +40,12 @@ import {
     Movable, MovableName, ParentTranslate, ParentTranslateName,
     PickingSystem,
     Point,
-    Powerup, Rect, RenderingSystem,
-    TreeNode,
+    Powerup, Rect, RenderingSystem, TreeNode,
     TreeNodeImpl
 } from "./common.js";
 import {GlobalState} from "./state.js";
 import {BoundedShape, BoundedShapeName} from "./bounded_shape.js";
+import {SVGExporter, treenode_to_SVG} from "./exporters/svg.js";
 
 const GroupShapeName = "GroupShapeName"
 export interface GroupShape extends Component {
@@ -152,12 +152,26 @@ export class GroupPickSystem implements PickingSystem {
     }
 }
 
+class GroupSVGExporter implements SVGExporter {
+    name: string;
+
+    canExport(node: TreeNode): boolean {
+        return node.has_component(GroupShapeName)
+    }
+
+    toSVG(node: TreeNode, state:GlobalState): string {
+        let group:GroupShape = node.get_component(GroupShapeName) as GroupShapeObject
+        let pt = group.get_position()
+        let chs = node.children.map(ch => treenode_to_SVG(ch, state))
+        return `<g transform="translate(${pt.x},${pt.y})">${chs.join("\n")}</g>`
+    }
+}
+
 export class GroupPowerup implements Powerup {
     init(state: GlobalState) {
         state.pickers.push(new GroupPickSystem())
         state.renderers.push(new GroupRendererSystem())
         // state.props_renderers.push(new ImagePropRendererSystem(state))
-        // state.svgexporters.push(new ImageSVGExporter())
-        // state.pdfexporters.push(new ImagePDFExporter())
+        state.svgexporters.push(new GroupSVGExporter())
     }
 }

@@ -138,11 +138,6 @@ export interface PropRenderingSystem extends System {
     render_view(comp: Component): HTMLElement;
 }
 
-export interface SVGExporter extends System {
-    canExport(node:TreeNode):boolean
-    toSVG(node:TreeNode):string
-}
-
 
 export class TreeNodeImpl implements TreeNode {
     id: string

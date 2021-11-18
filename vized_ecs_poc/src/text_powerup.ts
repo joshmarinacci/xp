@@ -12,13 +12,13 @@ import {
     Rect,
     RenderingSystem,
     ResizableName,
-    STRING_INPUT, SVGExporter,
-    TreeNode
+    STRING_INPUT, TreeNode
 } from "./common.js";
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
 import {cssToPdfColor, PDFExporter} from "./exporters/pdf.js";
 import {BoundedShape, BoundedShapeName, BoundedShapeObject} from "./bounded_shape.js";
+import {SVGExporter} from "./exporters/svg.js";
 
 const TextShapeName = "TextShapeName"
 interface TextShape extends Component {

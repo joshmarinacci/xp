@@ -1,9 +1,9 @@
-import {forceDownloadBlob, TreeNode} from "../common.js";
+import {forceDownloadBlob, System, TreeNode} from "../common.js";
 import {GlobalState} from "../state.js";
 
-function treenode_to_SVG(node: TreeNode, state: GlobalState) {
-    let exp = state.svgexporters.find(exp => exp.canExport(node))
-    return exp ? exp.toSVG(node) : ""
+export function treenode_to_SVG(node: TreeNode, state: GlobalState) {
+    let exp = state.svgexporters.find(exp => exp.canExport(node,state))
+    return exp ? exp.toSVG(node, state) : ""
 }
 
 export function export_SVG(root: TreeNode, state: GlobalState) {
@@ -17,4 +17,9 @@ export function export_SVG(root: TreeNode, state: GlobalState) {
     console.log("template output", template)
     let blog = new Blob([template.toString()])
     forceDownloadBlob('demo.svg', blog)
+}
+
+export interface SVGExporter extends System {
+    canExport(node: TreeNode, state:GlobalState): boolean
+    toSVG(node: TreeNode, state:GlobalState): string
 }

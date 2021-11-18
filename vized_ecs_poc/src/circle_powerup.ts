@@ -12,12 +12,12 @@ import {
     Powerup,
     PropRenderingSystem,
     RenderingSystem,
-    SVGExporter,
     TreeNode
 } from "./common.js";
 import {GlobalState} from "./state.js";
 import {JSONExporter} from "./exporters/json.js";
 import {cssToPdfColor, PDFExporter} from "./exporters/pdf.js";
+import {SVGExporter} from "./exporters/svg.js";
 
 const CircleShapeName = "CircleShapeName"
 export interface CircleShape extends Component {

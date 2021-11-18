@@ -1,12 +1,12 @@
 import {
     Component, DIV, Handle, LABEL, NUMBER_INPUT,
     Point, Powerup, PropRenderingSystem,
-    RenderingSystem, Resizable, ResizableName, STRING_INPUT, SVGExporter,
-    TreeNode
+    RenderingSystem, Resizable, ResizableName, STRING_INPUT, TreeNode
 } from "./common.js"
 import {GlobalState} from "./state.js";
 import {BoundedShape, BoundedShapeName} from "./bounded_shape.js";
 import {cssToPdfColor, PDFExporter} from "./exporters/pdf.js";
+import {SVGExporter} from "./exporters/svg.js";
 
 const ImageShapeName = "ImageShapeName"
 export interface ImageShape extends Component {
