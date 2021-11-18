@@ -1,8 +1,7 @@
 import {
-    Component, DIV, FilledShape, FilledShapeName,
-    Handle, LABEL, NUMBER_INPUT,
+    Component, DIV, Handle, LABEL, NUMBER_INPUT,
     Point, Powerup, PropRenderingSystem,
-    RenderingSystem, Resizable, ResizableName, STRING_INPUT,
+    RenderingSystem, Resizable, ResizableName, STRING_INPUT, SVGExporter,
     TreeNode
 } from "./common.js"
 import {GlobalState} from "./state.js";
@@ -47,6 +46,7 @@ export class ImageShapeObject implements ImageShape {
         return this.url
     }
 }
+
 export class ImageShapeHandle extends Handle {
     private node: TreeNode;
     constructor(node:TreeNode) {
@@ -141,7 +141,6 @@ export class ImageRendererSystem implements RenderingSystem {
     name: string;
 }
 
-
 export class ImagePDFExporter implements PDFExporter {
     name: string;
 
@@ -169,11 +168,27 @@ export class ImagePDFExporter implements PDFExporter {
 }
 
 
+class ImageSVGExporter implements SVGExporter {
+    name: string;
+
+    canExport(node: TreeNode): boolean {
+        return node.has_component(BoundedShapeName) && node.has_component(ImageShapeName)
+    }
+
+    toSVG(node: TreeNode): string {
+        let img:ImageShapeObject = node.get_component(ImageShapeName) as ImageShapeObject
+        let bd: BoundedShape = <BoundedShape>node.get_component(BoundedShapeName)
+        let rect = bd.get_bounds()
+
+        return `<image x="${rect.x}" y="${rect.y}" width="${rect.w}" height="${rect.h}" href="${img.get_url()}"/>`
+    }
+}
+
 export class ImagePowerup implements Powerup {
     init(state: GlobalState) {
         state.renderers.push(new ImageRendererSystem())
         state.props_renderers.push(new ImagePropRendererSystem(state))
-        // state.svgexporters.push(new RectSVGExporter())
+        state.svgexporters.push(new ImageSVGExporter())
         state.pdfexporters.push(new ImagePDFExporter())
         // state.jsonexporters.push(new RectJsonExporter())
     }
