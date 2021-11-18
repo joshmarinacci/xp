@@ -37,6 +37,7 @@ import {
     ResizableRectObject
 } from "./bounded_shape.js";
 import {ImagePowerup, ImageShapeObject, ResizableImageObject} from "./image_powerup.js";
+import {GroupPowerup, GroupShapeObject, MovableGroupShape} from "./group_powerup.js";
 
 
 /*
@@ -215,6 +216,7 @@ export function make_gui(root:TreeNode, state:GlobalState) {
 }
 
 
+
 export function setup_state():GlobalState {
     let state:GlobalState = new GlobalState()
     state.props_renderers.push(new FilledShapePropRenderer(state))
@@ -225,6 +227,7 @@ export function setup_state():GlobalState {
     state.powerups.push(new TextPowerup())
     state.powerups.push(new SpiralPowerup())
     state.powerups.push(new ImagePowerup())
+    state.powerups.push(new GroupPowerup())
     state.powerups.forEach(pow => pow.init(state))
     return state
 }
@@ -236,23 +239,28 @@ export function make_default_tree(state:GlobalState) {
     root.components.push(new RectShapeObject())
     root.components.push(new FilledShapeObject('white'))
 
+    let group1 = new TreeNodeImpl()
+    group1.components.push(new GroupShapeObject(group1, new Point(100,50)))
+    group1.components.push(new MovableGroupShape(group1))
+    add_child_to_parent(group1,root)
+
     {
         let rect1 = new TreeNodeImpl()
         rect1.components.push(new RectShapeObject())
         rect1.components.push(new BoundedShapeObject(new Rect(10, 10, 10, 10)))
         rect1.components.push(new FilledShapeObject("#ff0000"))
         rect1.components.push(new MovableBoundedShape(rect1))
-        add_child_to_parent(rect1, root)
+        add_child_to_parent(rect1, group1)
     }
-    // {
-    //     let rect2: TreeNode = new TreeNodeImpl()
-    //     rect2.components.push(new RectShapeObject())
-    //     rect2.components.push(new BoundedShapeObject(new Rect(200, 30, 50, 50)))
-    //     rect2.components.push(new FilledShapeObject('#0000FF'))
-    //     rect2.components.push(new MovableBoundedShape(rect2))
-    //     rect2.components.push(new ResizableRectObject(rect2))
-    //     add_child_to_parent(rect2, root)
-    // }
+    {
+        let rect2: TreeNode = new TreeNodeImpl()
+        rect2.components.push(new RectShapeObject())
+        rect2.components.push(new BoundedShapeObject(new Rect(200, 30, 50, 50)))
+        rect2.components.push(new FilledShapeObject('#0000FF'))
+        rect2.components.push(new MovableBoundedShape(rect2))
+        rect2.components.push(new ResizableRectObject(rect2))
+        add_child_to_parent(rect2, group1)
+    }
     // {
     //     let circ1: TreeNode = new TreeNodeImpl()
     //     circ1.components.push(new FilledShapeObject('#00FF00'))
@@ -269,25 +277,25 @@ export function make_default_tree(state:GlobalState) {
     //     add_child_to_parent(spiral,root)
     // }
 
-    {
-        let image:TreeNode = new TreeNodeImpl()
-        // let url = "https://vr.josh.earth/webxr-simgame/images/3dsimgame_thumb.png"
-        let url = "https://vr.josh.earth/assets/2dimages/saturnv.jpg"
-        image.components.push(new ImageShapeObject(url,1000,1000))
-        image.components.push(new BoundedShapeObject(new Rect(100,100,200,200)))
-        image.components.push(new MovableBoundedShape(image))
-        image.components.push(new ResizableImageObject(image))
-        add_child_to_parent(image,root)
-    }
-
-    {
-        let text1 = new TreeNodeImpl() as TreeNode
-        text1.components.push(new TextShapeObject("Jesse", 16, "center",'center'))
-        text1.components.push(new BoundedShapeObject(new Rect(50,150,200,200)))
-        text1.components.push(new MovableBoundedShape(text1))
-        text1.components.push(new ResizableRectObject(text1))
-        text1.components.push(new FilledShapeObject('#000000'))
-        add_child_to_parent(text1,root)
-    }
+    // {
+    //     let image:TreeNode = new TreeNodeImpl()
+    //     // let url = "https://vr.josh.earth/webxr-simgame/images/3dsimgame_thumb.png"
+    //     let url = "https://vr.josh.earth/assets/2dimages/saturnv.jpg"
+    //     image.components.push(new ImageShapeObject(url,1000,1000))
+    //     image.components.push(new BoundedShapeObject(new Rect(100,100,200,200)))
+    //     image.components.push(new MovableBoundedShape(image))
+    //     image.components.push(new ResizableImageObject(image))
+    //     add_child_to_parent(image,root)
+    // }
+    //
+    // {
+    //     let text1 = new TreeNodeImpl() as TreeNode
+    //     text1.components.push(new TextShapeObject("Jesse", 16, "center",'center'))
+    //     text1.components.push(new BoundedShapeObject(new Rect(50,150,200,200)))
+    //     text1.components.push(new MovableBoundedShape(text1))
+    //     text1.components.push(new ResizableRectObject(text1))
+    //     text1.components.push(new FilledShapeObject('#000000'))
+    //     add_child_to_parent(text1,root)
+    // }
     return root
 }
