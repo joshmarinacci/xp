@@ -28,7 +28,7 @@ import {
 } from "./exporters/json.js";
 import {export_PNG} from "./exporters/png.js";
 import {export_PDF, PDFExportBounds} from "./exporters/pdf.js";
-import {MovableTextObject, TextPowerup, TextShapeObject} from "./text_powerup.js";
+import {TextPowerup, TextShapeObject} from "./text_powerup.js";
 import {MovableSpiralObject, SpiralPowerup, SpiralShapeObject} from "./spiral.js";
 import {
     BoundedShapeObject,
@@ -37,7 +37,12 @@ import {
     ResizableRectObject
 } from "./bounded_shape.js";
 import {ImagePowerup, ImageShapeObject, ResizableImageObject} from "./image_powerup.js";
-import {GroupPowerup, GroupShapeObject, MovableGroupShape} from "./group_powerup.js";
+import {
+    GroupParentTranslate,
+    GroupPowerup,
+    GroupShapeObject,
+    MovableGroupShape
+} from "./group_powerup.js";
 
 
 /*
@@ -241,6 +246,7 @@ export function make_default_tree(state:GlobalState) {
 
     let group1 = new TreeNodeImpl()
     group1.components.push(new GroupShapeObject(group1, new Point(100,50)))
+    group1.components.push(new GroupParentTranslate(group1))
     group1.components.push(new MovableGroupShape(group1))
     add_child_to_parent(group1,root)
 
@@ -261,41 +267,49 @@ export function make_default_tree(state:GlobalState) {
         rect2.components.push(new ResizableRectObject(rect2))
         add_child_to_parent(rect2, group1)
     }
-    // {
-    //     let circ1: TreeNode = new TreeNodeImpl()
-    //     circ1.components.push(new FilledShapeObject('#00FF00'))
-    //     let circle_shape:CircleShape = new CircleShapeObject(new Point(100,100),20)
-    //     circ1.components.push(circle_shape)
-    //     circ1.components.push(new MovableCircleObject(circ1))
-    //     add_child_to_parent(circ1, root)
-    // }
-    // {
-    //     let spiral:TreeNode = new TreeNodeImpl()
-    //     spiral.components.push(new FilledShapeObject('#000000'))
-    //     spiral.components.push(new SpiralShapeObject(new Point(100,200),15))
-    //     spiral.components.push(new MovableSpiralObject(spiral))
-    //     add_child_to_parent(spiral,root)
-    // }
+    {
+        let rect3: TreeNode = new TreeNodeImpl()
+        rect3.components.push(new RectShapeObject())
+        rect3.components.push(new BoundedShapeObject(new Rect(50, 200, 50, 50)))
+        rect3.components.push(new FilledShapeObject('#00FF00'))
+        rect3.components.push(new MovableBoundedShape(rect3))
+        rect3.components.push(new ResizableRectObject(rect3))
+        add_child_to_parent(rect3, root)
+    }
+    {
+        let circ1: TreeNode = new TreeNodeImpl()
+        circ1.components.push(new FilledShapeObject('#00FF00'))
+        let circle_shape:CircleShape = new CircleShapeObject(new Point(100,100),20)
+        circ1.components.push(circle_shape)
+        circ1.components.push(new MovableCircleObject(circ1))
+        add_child_to_parent(circ1, root)
+    }
+    {
+        let spiral:TreeNode = new TreeNodeImpl()
+        spiral.components.push(new FilledShapeObject('#000000'))
+        spiral.components.push(new SpiralShapeObject(new Point(100,200),15))
+        spiral.components.push(new MovableSpiralObject(spiral))
+        add_child_to_parent(spiral,root)
+    }
 
-    // {
-    //     let image:TreeNode = new TreeNodeImpl()
-    //     // let url = "https://vr.josh.earth/webxr-simgame/images/3dsimgame_thumb.png"
-    //     let url = "https://vr.josh.earth/assets/2dimages/saturnv.jpg"
-    //     image.components.push(new ImageShapeObject(url,1000,1000))
-    //     image.components.push(new BoundedShapeObject(new Rect(100,100,200,200)))
-    //     image.components.push(new MovableBoundedShape(image))
-    //     image.components.push(new ResizableImageObject(image))
-    //     add_child_to_parent(image,root)
-    // }
-    //
-    // {
-    //     let text1 = new TreeNodeImpl() as TreeNode
-    //     text1.components.push(new TextShapeObject("Jesse", 16, "center",'center'))
-    //     text1.components.push(new BoundedShapeObject(new Rect(50,150,200,200)))
-    //     text1.components.push(new MovableBoundedShape(text1))
-    //     text1.components.push(new ResizableRectObject(text1))
-    //     text1.components.push(new FilledShapeObject('#000000'))
-    //     add_child_to_parent(text1,root)
-    // }
+    {
+        let image:TreeNode = new TreeNodeImpl()
+        let url = "https://vr.josh.earth/assets/2dimages/saturnv.jpg"
+        image.components.push(new ImageShapeObject(url,1000,1000))
+        image.components.push(new BoundedShapeObject(new Rect(100,100,200,200)))
+        image.components.push(new MovableBoundedShape(image))
+        image.components.push(new ResizableImageObject(image))
+        add_child_to_parent(image,root)
+    }
+
+    {
+        let text1 = new TreeNodeImpl() as TreeNode
+        text1.components.push(new TextShapeObject("Jesse", 16, "center",'center'))
+        text1.components.push(new BoundedShapeObject(new Rect(50,150,200,200)))
+        text1.components.push(new MovableBoundedShape(text1))
+        text1.components.push(new ResizableRectObject(text1))
+        text1.components.push(new FilledShapeObject('#000000'))
+        add_child_to_parent(text1,root)
+    }
     return root
 }

@@ -4,7 +4,7 @@ import {
     Handle,
     MouseGestureDelegate,
     Movable,
-    MovableName,
+    MovableName, ParentTranslate, ParentTranslateName,
     Point,
     Resizable,
     ResizableName,
@@ -40,9 +40,24 @@ class MouseMoveDelegate implements MouseGestureDelegate {
     press(e: MouseEvent) {
         this.press_point = toCanvasPoint(e,this.canvas)
         let shapes = []
-        this.state.pickers.forEach(pk => shapes.push(...pk.pick(this.press_point, this.state)))
-        e.shiftKey ? this.state.selection.add(shapes) : this.state.selection.set(shapes)
-        this.refresh_handles(shapes)
+        let root = this.state.get_root()
+        //skip root
+        let picked:TreeNode = null
+        root.children.forEach(ch => {
+            this.state.pickers.forEach(pk => {
+                if(pk.pick_node(this.press_point, ch))  picked = ch
+            })
+        })
+        if(picked) {
+            if(e.shiftKey) {
+                this.state.selection.add([picked])
+            } else {
+                this.state.selection.set([picked])
+            }
+        } else {
+            this.state.selection.clear()
+        }
+        this.refresh_handles(this.state.selection.get())
         this.state.dispatch('selection-change',{})
     }
 
@@ -178,8 +193,17 @@ export class CanvasView {
         ctx.restore()
     }
     draw_node(ctx: CanvasRenderingContext2D, root: TreeNode) {
+        //draw the current node
         this.state.renderers.forEach((rend) => rend.render(ctx, root, this.state))
+        //get transform for children
+        ctx.save()
+        if(root.has_component(ParentTranslateName)) {
+            let trans = root.get_component(ParentTranslateName) as ParentTranslate
+            let offset = trans.get_translation_point()
+            ctx.translate(offset.x,offset.y)
+        }
         root.children.forEach(ch => this.draw_node(ctx, ch))
+        ctx.restore()
     }
 
     draw_handles(ctx: CanvasRenderingContext2D) {

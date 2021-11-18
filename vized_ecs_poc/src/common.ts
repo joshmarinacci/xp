@@ -82,6 +82,10 @@ export class Rect {
             Number.MIN_VALUE
         )
     }
+
+    translate(position: Point) {
+        return new Rect(this.x+position.x,this.y+position.y,this.w,this.h)
+    }
 }
 
 
@@ -114,6 +118,11 @@ export interface Resizable extends Component {
     get_handle(): Handle,
 }
 
+export const ParentTranslateName = "ParentTranslateName"
+export interface ParentTranslate extends Component {
+    get_translation_point(): Point;
+}
+
 export interface System {
     name: string
 }
@@ -122,7 +131,7 @@ export interface RenderingSystem extends System {
     render(ctx: CanvasRenderingContext2D, node: TreeNode, state: GlobalState): void
 }
 export interface PickingSystem extends System {
-    pick(pt:Point, state:GlobalState): TreeNode[]
+    pick_node(pt:Point, node:TreeNode): boolean
 }
 export interface PropRenderingSystem extends System {
     supports(name: string): any;
