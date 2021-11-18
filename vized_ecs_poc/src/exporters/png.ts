@@ -1,11 +1,18 @@
-import {forceDownloadBlob, TreeNode} from "../common.js";
+import {forceDownloadBlob, ParentTranslate, ParentTranslateName, TreeNode} from "../common.js";
 import {GlobalState} from "../state.js";
 import {BoundedShape, BoundedShapeName} from "../bounded_shape.js";
 
 function to_PNG(ctx: CanvasRenderingContext2D, node: TreeNode, state: GlobalState) {
-    state.renderers.forEach(red => {
-        red.render(ctx,node,state)
-    })
+    //draw the current node
+    state.renderers.forEach(rend => rend.render(ctx,node,state))
+    ctx.save()
+    if(node.has_component(ParentTranslateName)) {
+        let trans = node.get_component(ParentTranslateName) as ParentTranslate
+        let offset = trans.get_translation_point()
+        ctx.translate(offset.x,offset.y)
+    }
+    node.children.forEach(ch => to_PNG(ctx, ch, state))
+    ctx.restore()
 }
 
 export function export_PNG(root: TreeNode, state: GlobalState) {

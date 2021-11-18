@@ -122,7 +122,7 @@ export class GroupRendererSystem implements RenderingSystem {
             let rect = group.get_child_bounds()
             ctx.fillStyle = 'rgba(255,0,0,0.5)'
             ctx.save()
-            ctx.fillRect(rect.x, rect.y, rect.w, rect.h)
+            // ctx.fillRect(rect.x, rect.y, rect.w, rect.h)
             if (state.selection.has(node)) {
                 ctx.strokeStyle = 'magenta'
                 ctx.lineWidth = 3.5
