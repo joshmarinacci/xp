@@ -148,7 +148,7 @@ export class ImagePDFExporter implements PDFExporter {
         return node.has_component(BoundedShapeName) && node.has_component(ImageShapeName)
     }
 
-    toPDF(node: TreeNode, doc: any,scale:number): void {
+    toPDF(node: TreeNode, state:GlobalState, doc: any,scale:number): void {
         let bd: BoundedShape = <BoundedShape>node.get_component(BoundedShapeName)
         let img:ImageShapeObject = node.get_component(ImageShapeName) as ImageShapeObject
         let rect = bd.get_bounds().scale(scale)

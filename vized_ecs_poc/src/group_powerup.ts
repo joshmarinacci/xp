@@ -46,6 +46,10 @@ import {
 import {GlobalState} from "./state.js";
 import {BoundedShape, BoundedShapeName} from "./bounded_shape.js";
 import {SVGExporter, treenode_to_SVG} from "./exporters/svg.js";
+import {cssToPdfColor, PDFExporter, treenode_to_PDF} from "./exporters/pdf.js";
+
+// @ts-ignore
+const { jsPDF } = window.jspdf;
 
 const GroupShapeName = "GroupShapeName"
 export interface GroupShape extends Component {
@@ -167,11 +171,34 @@ class GroupSVGExporter implements SVGExporter {
     }
 }
 
+class GroupPDFExporter implements PDFExporter {
+    name: string;
+
+    canExport(node: TreeNode): boolean {
+        return node.has_component(GroupShapeName)
+    }
+
+    toPDF(node: TreeNode, state:GlobalState, doc: any, scale: number): void {
+        let group:GroupShape = node.get_component(GroupShapeName) as GroupShapeObject
+        let rect = group.get_child_bounds().scale(scale)
+        doc.saveGraphicsState()
+        let pdf_color = cssToPdfColor('#ff00ff')
+        doc.setFillColor(...pdf_color)
+        doc.rect(rect.x,rect.y,rect.w,rect.h,"FD")
+        // const matrix = new jsPDF.Matrix(1,0,0,1,rect.x,rect.y)
+        //[1, 0, 0, 1, tx, ty]
+        // doc.setCurrentTransformationMatrix(`1 0 0 1 ${rect.x} ${rect.y}`);
+        node.children.forEach(ch => treenode_to_PDF(ch, state,doc,scale))
+        doc.restoreGraphicsState()
+    }
+}
+
 export class GroupPowerup implements Powerup {
     init(state: GlobalState) {
         state.pickers.push(new GroupPickSystem())
         state.renderers.push(new GroupRendererSystem())
         // state.props_renderers.push(new ImagePropRendererSystem(state))
         state.svgexporters.push(new GroupSVGExporter())
+        state.pdfexporters.push(new GroupPDFExporter())
     }
 }

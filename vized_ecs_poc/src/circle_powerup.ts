@@ -179,7 +179,7 @@ export class CirclePDFExporter implements PDFExporter {
         return node.has_component(CircleShapeName)
     }
 
-    toPDF(node: TreeNode, doc:any): void {
+    toPDF(node: TreeNode, state:GlobalState, doc:any): void {
         let circle: CircleShape = <CircleShape>node.get_component(CircleShapeName)
         let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
 

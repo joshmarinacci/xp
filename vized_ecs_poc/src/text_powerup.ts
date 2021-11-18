@@ -237,7 +237,7 @@ class TextPDFExporter implements PDFExporter {
         return node.has_component(TextShapeName)
     }
 
-    toPDF(node: TreeNode, doc: any, scale:number): void {
+    toPDF(node: TreeNode, state:GlobalState, doc: any, scale:number): void {
         console.log("rendering text to pdf right here",node,doc,scale)
         // console.log("list of fonts", doc.getFontList())
         let ts: TextShape = node.get_component(TextShapeName) as TextShape

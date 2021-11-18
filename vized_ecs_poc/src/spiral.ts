@@ -182,7 +182,7 @@ export class SpiralPDFExporter implements PDFExporter {
         return node.has_component(SpiralShapeName)
     }
 
-    toPDF(node: TreeNode, doc: any): void {
+    toPDF(node: TreeNode, state:GlobalState, doc: any): void {
         let spiral:SpiralShapeObject = node.get_component(SpiralShapeName) as SpiralShapeObject
         let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)
         let pdf_color = cssToPdfColor(color.get_color())

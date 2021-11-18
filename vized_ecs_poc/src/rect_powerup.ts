@@ -90,7 +90,7 @@ export class RectPDFExporter implements PDFExporter {
         return node.has_component(BoundedShapeName) && node.has_component(RectShapeName)
     }
 
-    toPDF(node: TreeNode, doc: any,scale:number): void {
+    toPDF(node: TreeNode, state:GlobalState, doc: any,scale:number): void {
         let bd: BoundedShape = <BoundedShape>node.get_component(BoundedShapeName)
         let rect = bd.get_bounds().scale(scale)
         let color: FilledShape = <FilledShape>node.get_component(FilledShapeName)

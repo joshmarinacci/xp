@@ -7,7 +7,7 @@ const { jsPDF } = window.jspdf;
 
 export interface PDFExporter extends System {
     canExport(node:TreeNode):boolean
-    toPDF(node:TreeNode,doc:any, scale:number):void
+    toPDF(node:TreeNode, state:GlobalState, doc:any, scale:number):void
 }
 
 const PDFExportBoundsName = "PDFExportBoundsName"
@@ -37,9 +37,9 @@ export function cssToPdfColor(color:string):number[] {
     console.info("generated color array",arr)
     return arr
 }
-function treenode_to_PDF(node: TreeNode, state: GlobalState,doc:any, scale:number) {
+export function treenode_to_PDF(node: TreeNode, state: GlobalState,doc:any, scale:number) {
     let exp = state.pdfexporters.find(exp => exp.canExport(node))
-    return exp ? exp.toPDF(node,doc,scale) : ""
+    return exp ? exp.toPDF(node,state,doc,scale) : ""
 }
 
 export function export_PDF(root:TreeNode, state:GlobalState) {
