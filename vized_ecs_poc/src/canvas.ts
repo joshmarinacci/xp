@@ -4,8 +4,7 @@ import {
     Handle,
     MouseGestureDelegate,
     Movable,
-    MovableName, ParentTranslate, ParentTranslateName,
-    Point,
+    MovableName, ParentTranslate, ParentTranslateName, Point,
     Resizable,
     ResizableName,
     TreeNode
@@ -38,9 +37,8 @@ class MouseMoveDelegate implements MouseGestureDelegate {
     }
 
     press(e: MouseEvent) {
-        this.press_point = toCanvasPoint(e,this.canvas)
-        let shapes = []
-        let root = this.state.get_root()
+        this.press_point = this.canvas.toRootPoint(e)
+        let root = this.canvas.get_current_root()
         //skip root
         let picked:TreeNode = null
         root.children.forEach(ch => {
@@ -63,7 +61,7 @@ class MouseMoveDelegate implements MouseGestureDelegate {
 
     move(e: MouseEvent) {
         if (!this.press_point) return
-        let drag_point = toCanvasPoint(e,this.canvas)
+        let drag_point = this.canvas.toRootPoint(e)
         let diff = drag_point.subtract(this.press_point)
         this.press_point = drag_point
         let movables: TreeNode[] = this.state.selection.get().filter(sh => sh.has_component(MovableName))
@@ -105,11 +103,11 @@ class HandleMoveDelegate implements MouseGestureDelegate {
 
     press(e: MouseEvent) {
         this.log("pressed on handle")
-        this.start = toCanvasPoint(e,this.canvas)
+        this.start = this.canvas.toRootPoint(e)
     }
 
     move(e: MouseEvent) {
-        let curr = toCanvasPoint(e,this.canvas)
+        let curr = this.canvas.toRootPoint(e)
         let diff = curr.subtract(this.start)
         this.handle.moveBy(diff)
         this.start = curr
@@ -134,6 +132,7 @@ export class CanvasView {
     private state: GlobalState;
     pan_offset: Point
     zoom_level: number
+    private inset_button: HTMLButtonElement;
 
     constructor(root: TreeNode, state: GlobalState) {
         this.pan_offset = new Point(0,0)
@@ -145,10 +144,27 @@ export class CanvasView {
         let delegate
 
         const over_handle = (e: MouseEvent) => {
-            let pt = toCanvasPoint(e,this)
+            let pt = this.toRootPoint(e)
             return state.active_handles.find(hand => hand.contains(pt))
         }
+        const over_group = (e:MouseEvent):TreeNode => {
+            let pt = toCanvasPoint(e,this)
+            for(let ch of this.root.children) {
+                if(ch.has_component(ParentTranslateName)) {
+                    for(let pk of state.pickers) {
+                        if(pk.pick_node(pt,ch)) {
+                            return ch
+                        }
+                    }
+                }
+            }
+            return null
+        }
 
+        this.canvas.addEventListener('dblclick',e => {
+            let g = over_group(e)
+            if(g) this.enter_inset(g)
+        })
         this.canvas.addEventListener('mousedown', e => {
             //check if pressed on a handle
             let hand: Handle = over_handle(e)
@@ -173,6 +189,13 @@ export class CanvasView {
         state.on("refresh", () => this.refresh())
         state.on("selection-change", ()=>this.refresh())
         state.on("prop-change",()=>this.refresh())
+        this.inset_button = document.createElement('button')
+        this.inset_button.innerText = "exit"
+        this.inset_button.setAttribute('disabled',"")
+        this.inset_button.addEventListener('click',() => {
+            this.exit_inset()
+        })
+        elem.append(this.inset_button)
         elem.append(this.canvas)
         this.dom = elem
         this.root = root
@@ -188,28 +211,33 @@ export class CanvasView {
         ctx.save()
         ctx.translate(this.pan_offset.x,this.pan_offset.y)
         ctx.scale(scale,scale)
-        this.draw_node(ctx, this.state.get_root())
-        this.draw_handles(ctx)
+        this.draw_node(ctx, this.get_current_root())
+        this.draw_handles(ctx,this.get_current_root())
         ctx.restore()
     }
-    draw_node(ctx: CanvasRenderingContext2D, root: TreeNode) {
+    draw_node(ctx: CanvasRenderingContext2D, node: TreeNode) {
         //draw the current node
-        this.state.renderers.forEach((rend) => rend.render(ctx, root, this.state))
+        this.state.renderers.forEach((rend) => rend.render(ctx, node, this.state))
         //get transform for children
         ctx.save()
-        if(root.has_component(ParentTranslateName)) {
-            let trans = root.get_component(ParentTranslateName) as ParentTranslate
+        if(node.has_component(ParentTranslateName)) {
+            let trans = node.get_component(ParentTranslateName) as ParentTranslate
             let offset = trans.get_translation_point()
             ctx.translate(offset.x,offset.y)
         }
-        root.children.forEach(ch => this.draw_node(ctx, ch))
+        node.children.forEach(ch => this.draw_node(ctx, ch))
         ctx.restore()
     }
 
-    draw_handles(ctx: CanvasRenderingContext2D) {
+    draw_handles(ctx: CanvasRenderingContext2D, node:TreeNode) {
+        let off = new Point(0,0)
+        if(node.has_component(ParentTranslateName)) {
+            let pt = (node.get_component(ParentTranslateName) as ParentTranslate).get_translation_point()
+            off = pt
+        }
         this.state.active_handles.forEach(hand => {
             ctx.fillStyle = 'yellow'
-            ctx.fillRect(hand.x, hand.y, hand.w, hand.h)
+            ctx.fillRect(off.x+hand.x, off.y+hand.y, hand.w, hand.h)
         })
     }
 
@@ -225,5 +253,31 @@ export class CanvasView {
     zoom_out() {
         this.zoom_level -= 1
         this.refresh()
+    }
+
+    private enter_inset(g: TreeNode) {
+        this.root = g
+        this.inset_button.removeAttribute('disabled')
+        this.refresh()
+    }
+
+    private exit_inset() {
+        this.root = this.state.get_root()
+        this.inset_button.setAttribute('disabled','')
+        this.refresh()
+    }
+
+    get_current_root() {
+        return this.root
+    }
+
+    toRootPoint(e: MouseEvent) {
+        let pt = toCanvasPoint(e,this)
+        let root = this.get_current_root()
+        if(root.has_component(ParentTranslateName)) {
+            let off = (root.get_component(ParentTranslateName) as ParentTranslate).get_translation_point()
+            pt = pt.subtract(off)
+        }
+        return pt
     }
 }

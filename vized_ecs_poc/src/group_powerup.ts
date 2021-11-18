@@ -15,7 +15,22 @@ BoundedShapePickSystem returns true if node has bounded shape and point inside t
 circle pick system returns true if node has circle shape and point inside
 same for text and spiral
 
-group pick system returns true if any of the children are inside the
+group pick system returns true if any of the children contain the point. so compare to children bounds.
+
+
+
+double click to enter the group.  There should be a canvas mouse gesture for this. If double click
+and object under cursor is a group, then canvas enters inset mode. canvas has a boolean state variable for this.
+
+only draws from the inset root, not the main root. things outside not drawn (or else drawn faded somehow??)
+draw child bounds of the inset root?
+
+while in the inset mode, picking begins with the contents of the inset root instead of the main root, but not the inset root itself
+while in the inset mode, a button is shown to exit from the inset root
+this button disabled group mode.
+
+while in inset mode, children can be moved around appropriately
+
 
 
 
