@@ -1,0 +1,78 @@
+<html>
+    <style>
+        canvas {
+            image-rendering: crisp-edges;
+        }
+    </style>
+    <body>
+
+
+        <canvas id="canvas" width="640" height="320"></canvas>
+
+        <script type="module">
+
+const $ = (sel) => document.querySelector(sel)
+const on = (el,type,cb) => el.addEventListener(type,cb)
+const numbers = new Image()
+const background = new Image()
+
+
+function redraw() {
+    const can = $("#canvas")
+    const c = can.getContext('2d')
+    c.fillStyle = "#101010"
+    c.fillRect(0,0,can.width,can.height)
+    c.save()
+    c.scale(10,10)
+    c.imageSmoothingEnabled = false
+    c.drawImage(background,0,0)
+    c.translate(4,8)
+
+    let metrics = {}
+    metrics[0] = { x:0, y:0, w:10, h:16 }
+    metrics[1] = { x:10, y:0, w:10, h:16 }
+    metrics[2] = { x:23, y:0, w:10, h:16 }
+    metrics[3] = { x:39, y:0, w:10, h:16 }
+    metrics[4] = { x:56, y:0, w:10, h:16 }
+    metrics[5] = { x:71, y:0, w:10, h:16 }
+    metrics[6] = { x:88, y:0, w:10, h:16 }
+    metrics[7] = { x:103, y:0, w:10, h:16 }
+    metrics[8] = { x:119, y:0, w:10, h:16 }
+    metrics[9] = { x:135, y:0, w:10, h:16 }
+
+    let now = 20//new Date().getDate()
+    let xmas = 25
+    let daysleft = xmas-now
+    let tens = Math.floor(daysleft/10)
+    let ones = daysleft - tens*10
+    console.log("days left",daysleft, tens, ones)
+    let days = [tens,ones]
+
+    days.forEach((num,i) => {
+        let met = metrics[num]
+        c.drawImage(numbers,
+            met.x,met.y,met.w,met.h, //source
+            i*10,0,met.w,met.h,// destination
+        )
+    })
+    c.restore(0)
+}
+
+
+redraw()
+
+
+numbers.src = "./numbers@1.png"
+on(numbers,'load',() => {
+    redraw()
+})
+background.src = "./background@1.png"
+on(background,'load',() => {
+    redraw()
+})
+
+
+
+        </script>
+    </body>
+</html>
